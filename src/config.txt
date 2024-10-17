@@ -1,0 +1,5 @@
+fracTüüp = SVEN
+template = SVEN
+
+varps -> \varepsilon
+theta -> \ensuremath{\theta}
