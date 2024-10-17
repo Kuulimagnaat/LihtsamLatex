@@ -1,0 +1,7 @@
+lib/main.exe
+output/output.aux
+output/output.fdb_latexmk
+output/output.fls
+output/output.log
+output/output.synctex.gz
+output/output.pdf
