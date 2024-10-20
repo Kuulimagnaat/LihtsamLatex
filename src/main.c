@@ -20,7 +20,7 @@
 
 /* Function to convert fractions to LaTeX format */
 void convert_fraction(const char* input, char* output) {
-    char numerator[128] = {0}, denominator[128] = {0};
+    char numerator[16] = {0}, denominator[16] = {0};
     sscanf(input, "%[^/]/%s", numerator, denominator);  // Extract numerator and denominator
     sprintf(output, "\\dfrac{%s}{%s}", numerator, denominator);  // Create LaTeX fraction
 }
