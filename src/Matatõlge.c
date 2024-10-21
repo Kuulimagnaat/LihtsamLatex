@@ -135,5 +135,3 @@ char* TõlgiMathMode(const char* tekst)
     }
     return tõlge;
 }
-
-// Siin tuleb teha midagi sellist, et sulusisu anda uuesti Tõlgimathmode funktsioonile ja sedasi teha rekursioon. 
