@@ -5,6 +5,6 @@
 int main()
 {
     SetConsoleOutputCP(CP_UTF8);
-    char* tõlge = TõlgiMathMode("sin(a+b)-sin(x)");
+    char* tõlge = TõlgiMathMode("sin(a+b)-sinx");
     printf(tõlge);
 }

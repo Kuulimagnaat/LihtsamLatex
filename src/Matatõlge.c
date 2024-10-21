@@ -102,6 +102,7 @@ char* TõlgiMathMode(const char* tekst)
 
             // Kolm on tõlgitavas tekstis commandi pikkus. sin on 3 tähte pikk
             i+=3;
+            printf("%c", tekst[i]);
             if (tekst[i] == '(')
             {
                 MahtKogusTõlge(&tõlkeMaht, &kogus, tõlge, "\\left(");
@@ -129,7 +130,6 @@ char* TõlgiMathMode(const char* tekst)
             
             char uusTäht[2] = "\0"; /* gives {\0, \0} */
             uusTäht[0] = tekst[i]; 
-            printf("i: %s\n", uusTäht);
             MahtKogusTõlge(&tõlkeMaht, &kogus, tõlge, uusTäht);
         }
     }
