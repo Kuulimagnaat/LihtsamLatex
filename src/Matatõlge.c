@@ -1,4 +1,3 @@
-#include "Headers/Matatõlge.h"
 #include <string.h>
 #include <stdlib.h>
 #include <stdio.h>
@@ -24,9 +23,18 @@ char* LeiaSuluSisu(const char* tekst)
 {
     unsigned int maht = 32;
     char* mälu = malloc(maht);
+    if (mälu == NULL)
+    {
+        perror("Ei õnnestunud mälu eraldada :(");
+        exit(EXIT_FAILURE);
+    }
     //Sulutase algab arvust 1, sest otsitakse sulgu, mis viiks sulutaseme nulli.
     unsigned int sulutase = 1;
-    for (unsigned int i = 0; tekst[i]!='\0'; i++)
+    unsigned int i = 0;
+    unsigned int j = 0;
+    tekst++;
+
+        while (sulutase > 0 && tekst[i] != '\0')
     {
         if (i >= maht)
         {
@@ -38,23 +46,31 @@ char* LeiaSuluSisu(const char* tekst)
                 exit(EXIT_FAILURE);
             }
         }
+
         if (tekst[i] == '(')
         {
-            sulutase += 1;
+            sulutase++;
         }
         else if (tekst[i] == ')')
         {
-            sulutase -= 1;
+            sulutase--;
             if (sulutase == 0)
             {
-                mälu[i] = '\0';
-                return mälu;
+                break;
             }
         }
-        mälu[i] = tekst[i];
+
+        mälu[j++] = tekst[i++];
     }
-    perror("Ei leitud sulgevat sulgu :(");
-    exit(EXIT_FAILURE);
+
+    mälu[j] = '\0';  // Null-terminate the string
+    if (sulutase != 0)
+    {
+        perror("Ei leitud sulgevat sulgu :(");
+        exit(EXIT_FAILURE);
+    }
+
+    return mälu;
 }
 
 
@@ -90,7 +106,6 @@ char* TõlgiMathMode(const char* tekst)
     tõlge[0] = '\0'; // Esimene bait tuleb panna tekstilõpumärgiks, et seda saaks kasutada funktsioonis strcat.
     unsigned int kogus = 1;
 
-
     for (unsigned int i=0; tekst[i] != '\0'; )
     {
         printf("%d: %c.\n", i, tekst[i]);
@@ -107,13 +122,13 @@ char* TõlgiMathMode(const char* tekst)
                 MahtKogusTõlge(&tõlkeMaht, &kogus, tõlge, "\\left(");
 
                 // suluSisu vaja millalgi vabastada. TEHTUD
-                char* suluSisu = LeiaSuluSisu(&tekst[i+1]);
+                char* suluSisu = LeiaSuluSisu(&tekst[i]);
                 // suluSisuTõlge vaja millalgi vabastada. TEHTUD
                 char* suluSisuTõlge = TõlgiMathMode(suluSisu);
 
                 MahtKogusTõlge(&tõlkeMaht, &kogus, tõlge, suluSisuTõlge);
 
-                i += 1 + strlen(suluSisu) + 1;
+                i += 2 + strlen(suluSisu);
                 free(suluSisu);
                 free(suluSisuTõlge);
 
@@ -126,7 +141,7 @@ char* TõlgiMathMode(const char* tekst)
             printf("Praegune täht on %c\n", tekst[i]);
             char uusTäht[2] = "\0"; /* gives {\0, \0} */
             uusTäht[0] = tekst[i]; 
-            i += 1;
+            i++;
             MahtKogusTõlge(&tõlkeMaht, &kogus, tõlge, uusTäht);
             
         }

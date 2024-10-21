@@ -5,6 +5,6 @@
 int main()
 {
     SetConsoleOutputCP(CP_UTF8);
-    char* tõlge = TõlgiMathMode("sin(sin())+a");
+    char* tõlge = TõlgiMathMode2("cos(x+sin(ln(y)))-cd");
     printf(tõlge);
 }
