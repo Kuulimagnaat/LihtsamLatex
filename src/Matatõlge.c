@@ -120,12 +120,16 @@ char* TõlgiMathMode(const char* tekst)
 
                 MahtKogusTõlge(&tõlkeMaht, &kogus, tõlge, "\\right)");
             }
+
+
         }
         // Siia tulevad veel muude funtksioonide kontrollid ja veel tuleb jagamisega tegeleda.
         else
         {
+            
             char uusTäht[2] = "\0"; /* gives {\0, \0} */
             uusTäht[0] = tekst[i]; 
+            printf("i: %s\n", uusTäht);
             MahtKogusTõlge(&tõlkeMaht, &kogus, tõlge, uusTäht);
         }
     }
