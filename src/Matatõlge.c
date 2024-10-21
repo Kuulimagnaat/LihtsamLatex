@@ -102,7 +102,6 @@ char* TõlgiMathMode(const char* tekst)
 
             // Kolm on tõlgitavas tekstis commandi pikkus. sin on 3 tähte pikk
             i+=3;
-            printf("%c", tekst[i]);
             if (tekst[i] == '(')
             {
                 MahtKogusTõlge(&tõlkeMaht, &kogus, tõlge, "\\left(");
@@ -111,7 +110,6 @@ char* TõlgiMathMode(const char* tekst)
                 char* suluSisu = LeiaSuluSisu(&tekst[i+1]);
                 // suluSisuTõlge vaja millalgi vabastada. TEHTUD
                 char* suluSisuTõlge = TõlgiMathMode(suluSisu);
-                printf("suluSisuTõlge: %s\n", suluSisuTõlge);
 
                 MahtKogusTõlge(&tõlkeMaht, &kogus, tõlge, suluSisuTõlge);
 
@@ -121,13 +119,11 @@ char* TõlgiMathMode(const char* tekst)
 
                 MahtKogusTõlge(&tõlkeMaht, &kogus, tõlge, "\\right)");
             }
-
-
         }
         // Siia tulevad veel muude funtksioonide kontrollid ja veel tuleb jagamisega tegeleda.
         else
         {
-            
+            printf("Praegune täht on %c\n", tekst[i]);
             char uusTäht[2] = "\0"; /* gives {\0, \0} */
             uusTäht[0] = tekst[i]; 
             i += 1;
