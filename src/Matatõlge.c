@@ -91,7 +91,7 @@ char* TõlgiMathMode(const char* tekst)
     unsigned int kogus = 1;
 
 
-    for (unsigned int i=0; tekst[i] != '\0'; i++)
+    for (unsigned int i=0; tekst[i] != '\0'; )
     {
         printf("%d: %c.\n", i, tekst[i]);
         if (KasEsimesedTähed(&(tekst[i]), "sin"))
@@ -115,7 +115,7 @@ char* TõlgiMathMode(const char* tekst)
 
                 MahtKogusTõlge(&tõlkeMaht, &kogus, tõlge, suluSisuTõlge);
 
-                i += 1 + strlen(suluSisu);
+                i += 1 + strlen(suluSisu) + 1;
                 free(suluSisu);
                 free(suluSisuTõlge);
 
@@ -130,10 +130,11 @@ char* TõlgiMathMode(const char* tekst)
             
             char uusTäht[2] = "\0"; /* gives {\0, \0} */
             uusTäht[0] = tekst[i]; 
+            i += 1;
             MahtKogusTõlge(&tõlkeMaht, &kogus, tõlge, uusTäht);
+            
         }
     }
+    printf("%s\n", tõlge);
     return tõlge;
 }
-
-// Siin tuleb teha midagi sellist, et sulusisu anda uuesti Tõlgimathmode funktsioonile ja sedasi teha rekursioon. 
