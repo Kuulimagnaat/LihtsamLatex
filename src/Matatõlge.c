@@ -94,7 +94,7 @@ char* TõlgiMathMode(const char* tekst)
     for (unsigned int i=0; tekst[i] != '\0'; i++)
     {
         printf("%d: %c.\n", i, tekst[i]);
-        if (KasEsimesedTähed(tekst, "sin"))
+        if (KasEsimesedTähed(&(tekst[i]), "sin"))
         {
             // Neli on tõlkesse lisanduva teksti pikkus. \sin on 4 tähte pikk. Paljudes kohtades siin funktsioonis on vaja tõlkele lisada uut teksti ja iga kord ei viitsi mahtu vajadusel kasvatada, kogust suurendada, errorit checkida jne. Selle asemel kasutan funktsiooni MahtKogusTõlge, mis teeb seda kõike.
             MahtKogusTõlge(&tõlkeMaht, &kogus, tõlge, "\\sin");
@@ -114,7 +114,7 @@ char* TõlgiMathMode(const char* tekst)
 
                 MahtKogusTõlge(&tõlkeMaht, &kogus, tõlge, suluSisuTõlge);
 
-                i += 1 + strlen(suluSisu) + 1;
+                i += 1 + strlen(suluSisu);
                 free(suluSisu);
                 free(suluSisuTõlge);
 
