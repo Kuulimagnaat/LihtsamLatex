@@ -12,6 +12,7 @@ int KasEsimesedTähed(const char* tekstis, const char* tekst)
     {
         if (tekstis[i] != tekst[i])
         {
+
             return 0;
         }
     }
@@ -72,13 +73,6 @@ char* LeiaSuluSisu(const char* tekst)
 // Ma olen veendunud, et tõlkimises tühikute asjaks kasutamine on saatanast. Igast kohast, kus tühikuga tahaks tajuda argumendi algust vms, alati on võimalik mingi olukord välja mõelda, kus on mitu võimalikku tõlgendust. Seepärast las sinx/2 ja sin x/2 olla samad asjad, mis tähendavad järgmist (sin(x))/2. Siinus, kui tema järel pole sulgi, võtab oma argumendiks esimese tähemärgi ja ülejäänud kood jätkab, arvestades, et siinuse argument on see esimene temale järgnev tähemärk.
 
 
-struct LimiTagastus
-{
-    char* Tõlge;
-    unsigned int TähtiLoeti;
-};
-
-
 // Abimeetod, mis appendib kaks stringi, kusjuures esimene nendest on dünaamiliselt eraldatud mälu.
 char* LiidaTekstid(char* eelmineMälu, const char* lisatav)
 {
@@ -94,7 +88,9 @@ char* LiidaTekstid(char* eelmineMälu, const char* lisatav)
 
 
 // mingi list tuntud funktsioonidest
-const char* math_functions[] = {"sin", "cos", "tan", "log", "ln", "sqrt", "fii", "roo", "alfa", "beeta", "epsilon", "to", "inf", NULL};
+unsigned int poolituskoht = 6;
+const char* math_functions[] = {"sin", "cos", "tan", "log", "ln", "sqrt", "fii", "roo", "alfa", "beeta", "epsilon", "to", "inf", "lim", NULL};
+const char* math_functions_tähendused[] = {"sin", "cos", "tan", "log", "ln", "sqrt", "varphi", "rho", "alpha", "beta", "varepsilon", "to", "infty", "lim", NULL};
 
 // duplikeerib antud stringi kuni n baidini (tagastab pointeri uuele stringile)
 char* my_strndup(const char* s, size_t n) {
@@ -105,7 +101,7 @@ char* my_strndup(const char* s, size_t n) {
         len = n;
     }
 
-    result = (char*)malloc(len + 1); // Mälu substringi jaoks
+    result = malloc(len + 1); // Mälu substringi jaoks
     if (!result) {
         perror("Mälu ei saadud eraldada. :(\n");
         exit(EXIT_FAILURE);
@@ -140,26 +136,55 @@ char* TõlgiMathMode(const char* expression) {
     result[0] = '\0';
     
     int i = 0;
-    while (expression[i] != '\0') {
+    while (i < strlen(expression)) {
         // Kontrollime kas on mõni tuntud käsk
-        int func_len = is_math_function(&expression[i]);
+        int func_len = 0;
+        int j = 0;
+        for (; math_functions[j] != NULL; j++) {
+            if (strncmp(&expression[i], math_functions[j], strlen(math_functions[j])) == 0) {
+                func_len = strlen(math_functions[j]);
+                break;
+            }
+        }
+
         if (func_len != 0) {
             //Leiame funktsiooni nime
             //Kopeerime leitud funktsiooni nime, et siis saaksime seda kasutada kui eraldi "muutujat". Me ei taha modifitseerida algset *expression* stringi.
             //Samuti saame selle eluaega ise määrata, st. vabastada, millal soovime
-            char* func_name = my_strndup(&expression[i], func_len);
+            char* func_name = my_strndup(math_functions_tähendused[j], strlen(math_functions_tähendused[j]));
 
             
             // Lisame vajaliku latex süntaksi
             // !!! Siin on mäluleke imo. muutuja func_name mälu vabastatakse, aga see mälu, mille eraldab sisemine append_str, ei saa kunagi vabastatud. See lic eraldatakse, mäluaadress antakse teisele appendstr funktsioonile, mis eraldab uut mälu, aga eelmist ei vabasta. Ainult kõige viimasena eraldatud mälu vabastatakse. !!!
-            char* latex_func_with_left = append_str(append_str("\\", func_name), "\\left(");
+            char* latex_func_with_left;
+            if (j>=poolituskoht)
+            {
+                if (strcmp(func_name, "lim") == 0)
+                {
+
+                    char* inner_expression = my_strndup(&expression[i], strlen(&expression[i]));
+                    struct LimiTagastus tagastus = TõlgiLim(inner_expression); 
+
+                    latex_func_with_left = tagastus.Tõlge;
+                    i+=tagastus.TähtiLoeti;
+                }
+                else
+                {
+                    latex_func_with_left = append_str("\\", func_name);
+                }
+            }
+            else{
+                latex_func_with_left = append_str("\\", func_name);
+                latex_func_with_left = append_str(latex_func_with_left, "\\left(");
+            }
+
+            //result = append_str(result, latex_func_with_left);
+            result = LiidaTekstid(result, latex_func_with_left);
+            if (strcmp(func_name, "lim") != 0)
+            {
+                i += func_len;
+            } // Liigume mööda antud käsust
             free(func_name);
-
-            result = append_str(result, latex_func_with_left);
-            free(latex_func_with_left);
-
-            i += func_len; // Liigume mööda antud käsust
-
             // Näpime seda argumenti sulgude vahel
             if (expression[i] == '(') {
                 int start = i + 1;
@@ -183,6 +208,7 @@ char* TõlgiMathMode(const char* expression) {
 
                 result = append_str(result, "\\right)");
             }
+           free(latex_func_with_left);
         } else {
             // Kõik ülejäänud pask läheb tavaliselt
             char* single_char = my_strndup(&expression[i], 1);
@@ -191,8 +217,40 @@ char* TõlgiMathMode(const char* expression) {
             i++;
         }
     }
-
     return result;
+}
+
+
+char* LeiaTekstEnneTähte(const char* tekst, char täht)
+{
+    for (unsigned int i=0; i<strlen(tekst); i++)
+    {
+        if (tekst[i] == täht)
+        {
+            char* tekstEnne = malloc(i+1);
+            memcpy(tekstEnne, tekst, i);
+            tekstEnne[i] = '\0';
+            return tekstEnne;
+        }
+    }
+    return NULL;
+}
+
+
+char* LeiaTekstEnneTeksti(const char* tekst, const char* teksti)
+{
+    char* koht = strstr(tekst, teksti);
+    if (koht == NULL)
+    {
+        char* leitud = malloc(strlen(tekst)+1);
+        memcpy(leitud, tekst, strlen(tekst));
+        leitud[strlen(tekst)] = '\0';
+        return leitud;
+    }
+    char* leitud = malloc(koht-tekst+1);
+    memcpy(leitud, tekst, koht-tekst);
+    leitud[koht-tekst] = '\0';
+    return leitud;
 }
 
 
@@ -200,10 +258,12 @@ char* TõlgiMathMode(const char* expression) {
 Täpsemalt on kolm võimalust, mis limi tekstile järgnev jähemärk olla saab. Iga võimaluse puhul käitutakse erinevalt.
 1) limi järel on tühik. Siis limi alla teksti ei tule ja lim on üksinda. Selline lim on jadade piirväärtusel.
 2) limi järel on avanev sulg. Siis limi alla läheb kõik see, mis jääb nimetatud avaneva ja seda sulgeva sulu vahele.
-3) limi järel on mingi muu täht. Siis läheb limi alla kõik see, mis jääb limi ja esimese tühiku vahele.
+3) limi järel on mingi muu täht. Siis läheb limi alla kõik see, mis jääb limi ja esimese tühiku vahele. limlima/btoc (a+b)/c+d
 */
-char* TõlgiLim(const char* tekst)
+struct LimiTagastus TõlgiLim(const char* tekst)
 {
+    struct LimiTagastus tagastus = {.TähtiLoeti=0, .Tõlge=NULL};
+
     char* mälu = malloc(1);
     if (mälu == NULL)
     {
@@ -212,13 +272,44 @@ char* TõlgiLim(const char* tekst)
     }
     mälu[0] = '\0';    
 
-    unsigned int i = 0;
     mälu = LiidaTekstid(mälu, "\\lim");
-    i += 3;
-    if (tekst[i] == '(')
+    if (tekst[3] == '(')
     {
-        char* sulusisu = LeiaSuluSisu(&tekst[i+1]);
+        char* sulusisu = LeiaSuluSisu(&tekst[4]);
         char* tõlge = TõlgiMathMode(sulusisu);
+        mälu = LiidaTekstid(mälu, "_{");
+        mälu = LiidaTekstid(mälu, tõlge);
+        free(tõlge);
+        mälu = LiidaTekstid(mälu, "}");
+        tagastus.TähtiLoeti = 4+strlen(sulusisu)+1;
+        tagastus.Tõlge = mälu;
         free(sulusisu);
+        return tagastus;
+    }
+    else if (tekst[3] == ' ')
+    {
+        mälu = LiidaTekstid(mälu, " ");
+        tagastus.TähtiLoeti = 4;
+        tagastus.Tõlge = mälu;
+        return tagastus;
+    }
+    // Tegeleda hiljem põhjalikumalt üldisema juhu jaoks, kus limi all võib omakorda lim olla ja esimene tühik tajutakse ära sisemise limi omaks, seega loetake edasi otsimaks järgmist tühikut, mis lõpetaks välimise limi.
+    else
+    {
+        char* limiAlla = LeiaTekstEnneTähte(&tekst[3], ' ');
+        if (limiAlla == NULL)
+        {
+            free(limiAlla);
+            limiAlla = &tekst[3];
+        }
+        char* tõlge = TõlgiMathMode(limiAlla);
+        mälu = LiidaTekstid(mälu, "_{");
+        mälu = LiidaTekstid(mälu, tõlge);
+        free(tõlge);
+        mälu = LiidaTekstid(mälu, "}");
+        tagastus.TähtiLoeti = 3+strlen(limiAlla)+1;
+        free(limiAlla);
+        tagastus.Tõlge = mälu;
+        return tagastus;
     }
 }
