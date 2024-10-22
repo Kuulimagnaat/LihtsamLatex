@@ -18,6 +18,7 @@ int KasEsimesedTähed(const char* tekstis, const char* tekst)
 }
 
 
+// SEDA FUNKTSIOONI VÕIB USALDADA: Käsitsi läbi katsetatud.
 // Funktsiooni kasutatakse juhul, kui jõutakse tõlgitavas koodis funktsioonini, mille järel on avanev sulg. Siis antakse sellele funktsioonile avanevale sulule järgneva tähe mäluaadress, misjärel funktsioon leiab kogu teksti, mis peaks avaneva ja sulgeva sulu vahele jääma. Funktsioon eraldab mälu, täidab selle sulu sisuga ja tagastab selle mälu aadressi. See mälu on vaja hiljem vabastada.
 char* LeiaSuluSisu(const char* tekst)
 {
@@ -30,11 +31,8 @@ char* LeiaSuluSisu(const char* tekst)
     }
     //Sulutase algab arvust 1, sest otsitakse sulgu, mis viiks sulutaseme nulli.
     unsigned int sulutase = 1;
-    unsigned int i = 0;
-    unsigned int j = 0;
-    tekst++;
 
-        while (sulutase > 0 && tekst[i] != '\0')
+    for (unsigned int i = 0; tekst[i]!='\0'; i++)
     {
         if (i >= maht)
         {
@@ -46,7 +44,6 @@ char* LeiaSuluSisu(const char* tekst)
                 exit(EXIT_FAILURE);
             }
         }
-
         if (tekst[i] == '(')
         {
             sulutase++;
@@ -56,21 +53,15 @@ char* LeiaSuluSisu(const char* tekst)
             sulutase--;
             if (sulutase == 0)
             {
-                break;
+                mälu[i] = '\0';
+                return mälu;
             }
         }
-
-        mälu[j++] = tekst[i++];
+        mälu[i] = tekst[i];
     }
 
-    mälu[j] = '\0';  // Null-terminate the string
-    if (sulutase != 0)
-    {
-        perror("Ei leitud sulgevat sulgu :(");
-        exit(EXIT_FAILURE);
-    }
-
-    return mälu;
+    perror("Ei leitud sulgevat sulgu :(\n");
+    exit(EXIT_FAILURE);
 }
 
 
@@ -80,72 +71,50 @@ char* LeiaSuluSisu(const char* tekst)
 // Ma olen veendunud, et tõlkimises tühikute asjaks kasutamine on saatanast. Igast kohast, kus tühikuga tahaks tajuda argumendi algust vms, alati on võimalik mingi olukord välja mõelda, kus on mitu võimalikku tõlgendust. Seepärast las sinx/2 ja sin x/2 olla samad asjad, mis tähendavad järgmist (sin(x))/2. Siinus, kui tema järel pole sulgi, võtab oma argumendiks esimese tähemärgi ja ülejäänud kood jätkab, arvestades, et siinuse argument on see esimene temale järgnev tähemärk.
 
 
-void MahtKogusTõlge(unsigned int* maht, unsigned int* kogus, char* tõlge, const char* lisatavTekst)
+struct LimiTagastus
 {
-    unsigned int lisanduvKogus = strlen(lisatavTekst);
-    *kogus += lisanduvKogus;
-    while (*kogus > *maht)
+    char* Tõlge;
+    unsigned int TähtiLoeti;
+};
+
+
+// Abimeetod, mis appendib kaks stringi, kusjuures esimene nendest on dünaamiliselt eraldatud mälu.
+char* LiidaTekstid(char* eelmineMälu, const char* lisatav)
+{
+    char* result = realloc(eelmineMälu, strlen(eelmineMälu) + strlen(lisatav) + 1);
+    if (result == NULL)
     {
-        maht += 32;
-        char* tõlge = realloc(tõlge, *maht);
-        if (tõlge == NULL)
-        {
-            perror("Ei õnnestunud mälu eraldada MahtKogusTõlge funktsioonis. :(");
-            exit(EXIT_FAILURE);
-        }
+        perror("Ei õnnestunud mälu eraldada :(");
+        exit(EXIT_FAILURE);
     }
-    strcat(tõlge, lisatavTekst);
+    strcat(result, lisatav);
+    return result;
 }
 
 
-// Funkstioon võtab argumendiks mäluaadressi, kus on math mode'i tekst. See hakkab sealt teksti lugema ja tõlkima seda latexi koodiks. Funktsioon eraldab omale sobiva koguse mälu ja kirjutab sinna latexiks tõlgitud teksti. Tagastatakse selle mälu aadress, kus on tõlge. Kunagi pärast selle funktsiooni kasutamist on vaja selle tagastatud mäluaadressi mälu vabastada. 
-char* TõlgiMathMode(const char* tekst)
+// Funktsioon võtab sisse mäluaadressi, kus on limi algus. Funktsioon hakkab sealt teksti lugema, eraldab endale sobiva koguse mälu ja kirjutab sellesse loetud teksti tõlke. Tagastab structi, mis sisaldab endas tõlke alguse aadressi ja seda, kui palju funktsiooni väline kood peaks lähtekoodis edasi hüppama, et jõuda tekstis sinnamaale, kus lim läbi saab.
+char* TõlgiLim(const char* tekst)
 {
-    unsigned int tõlkeMaht = 32;
-    char* tõlge = malloc(tõlkeMaht);
-    tõlge[0] = '\0'; // Esimene bait tuleb panna tekstilõpumärgiks, et seda saaks kasutada funktsioonis strcat.
-    unsigned int kogus = 1;
-
-    for (unsigned int i=0; tekst[i] != '\0'; )
+    char* mälu = malloc(1);
+    if (mälu == NULL)
     {
-        printf("%d: %c.\n", i, tekst[i]);
-        if (KasEsimesedTähed(&(tekst[i]), "sin"))
+        perror("Ei õnnestunud mälu eraldada :(");
+        exit(EXIT_FAILURE);
+    }
+    mälu[0] = '\0';    
+
+    unsigned int i = 0;
+    mälu = LiidaTekstid(mälu, "\\lim");
+    i += 3;
+    if (mälu[i] != '(') // Järelikult kasutatakse kuju limatob, kus a on mingi sümbol ja b on mingi sümbol ja to on garanteeritud olema kusagil keskel.
+    {
+        unsigned int toIndeks;
+        for(unsigned int j=i; tekst[j]!=' '; j++)
         {
-            // Neli on tõlkesse lisanduva teksti pikkus. \sin on 4 tähte pikk. Paljudes kohtades siin funktsioonis on vaja tõlkele lisada uut teksti ja iga kord ei viitsi mahtu vajadusel kasvatada, kogust suurendada, errorit checkida jne. Selle asemel kasutan funktsiooni MahtKogusTõlge, mis teeb seda kõike.
-            MahtKogusTõlge(&tõlkeMaht, &kogus, tõlge, "\\sin");
-
-
-            // Kolm on tõlgitavas tekstis commandi pikkus. sin on 3 tähte pikk
-            i+=3;
-            if (tekst[i] == '(')
+            if(strncmp(&tekst[j], "to", 2))
             {
-                MahtKogusTõlge(&tõlkeMaht, &kogus, tõlge, "\\left(");
-
-                // suluSisu vaja millalgi vabastada. TEHTUD
-                char* suluSisu = LeiaSuluSisu(&tekst[i]);
-                // suluSisuTõlge vaja millalgi vabastada. TEHTUD
-                char* suluSisuTõlge = TõlgiMathMode(suluSisu);
-
-                MahtKogusTõlge(&tõlkeMaht, &kogus, tõlge, suluSisuTõlge);
-
-                i += 2 + strlen(suluSisu);
-                free(suluSisu);
-                free(suluSisuTõlge);
-
-                MahtKogusTõlge(&tõlkeMaht, &kogus, tõlge, "\\right)");
+                toIndeks = j;
             }
         }
-        // Siia tulevad veel muude funtksioonide kontrollid ja veel tuleb jagamisega tegeleda.
-        else
-        {
-            printf("Praegune täht on %c\n", tekst[i]);
-            char uusTäht[2] = "\0"; /* gives {\0, \0} */
-            uusTäht[0] = tekst[i]; 
-            i++;
-            MahtKogusTõlge(&tõlkeMaht, &kogus, tõlge, uusTäht);
-            
-        }
     }
-    printf("%s\n", tõlge);
-    return tõlge;
 }

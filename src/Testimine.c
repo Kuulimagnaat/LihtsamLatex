@@ -4,7 +4,7 @@
 #include "Headers/Matatõlge.h"
 
 // mingi list tuntud funktsioonidest
-const char* math_functions[] = {"sin", "cos", "tan", "log", "ln", "sqrt", NULL};
+const char* math_functions[] = {"sin", "cos", "tan", "log", "ln", "sqrt", "fii", "roo", "alfa", "beeta", "epsilon", NULL};
 
 // duplikeerib antud stringi kuni n baidini (tagastab pointeri uuele stringile)
 char* my_strndup(const char* s, size_t n) {
@@ -17,7 +17,8 @@ char* my_strndup(const char* s, size_t n) {
 
     result = (char*)malloc(len + 1); // Mälu substringi jaoks
     if (!result) {
-        return NULL;
+        perror("Mälu ei saadud eraldada. :(\n");
+        exit(EXIT_FAILURE);
     }
 
     strncpy(result, s, len); // Kopeerime kuni n characteri
@@ -29,7 +30,7 @@ char* my_strndup(const char* s, size_t n) {
 int is_math_function(const char* str) {
     for (int i = 0; math_functions[i] != NULL; i++) {
         if (strncmp(str, math_functions[i], strlen(math_functions[i])) == 0) {
-            return 1;
+            return strlen(math_functions[i]);
         }
     }
     return 0;
@@ -37,7 +38,7 @@ int is_math_function(const char* str) {
 
 // Abimeetod, mis appendib kaks stringi
 char* append_str(const char* a, const char* b) {
-    char* result = (char*)malloc(strlen(a) + strlen(b) + 1);
+    char* result = malloc(strlen(a) + strlen(b) + 1);
     strcpy(result, a);
     strcat(result, b);
     return result;
@@ -45,23 +46,19 @@ char* append_str(const char* a, const char* b) {
 
 // Rekursiivselt tõlgime math moodi latexisse
 char* TõlgiMathMode2(const char* expression) {
-    char* result = (char*)malloc(1); // Tühi string
+    char* result = malloc(1); // Tühi string
     result[0] = '\0';
     
     int i = 0;
     while (expression[i] != '\0') {
         // Kontrollime kas on mõni tuntud käsk
-        if (is_math_function(&expression[i])) {
-            // Leiame käsu nime pikkuse
-            int func_len = 0;
-            while (expression[i + func_len] != '(' && expression[i + func_len] != '\0') {
-                func_len++;
-            }
-
-            //Leiame ka funktsiooni nime
+        int func_len = is_math_function(&expression[i]);
+        if (func_len != 0) {
+            //Leiame funktsiooni nime
             //Kopeerime leitud funktsiooni nime, et siis saaksime seda kasutada kui eraldi "muutujat". Me ei taha modifitseerida algset *expression* stringi.
             //Samuti saame selle eluaega ise määrata, st. vabastada, millal soovime
             char* func_name = my_strndup(&expression[i], func_len);
+
             
             // Lisame vajaliku latex süntaksi
             char* latex_func_with_left = append_str(append_str("\\", func_name), "\\left(");
