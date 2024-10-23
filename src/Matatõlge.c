@@ -138,10 +138,11 @@ char* TõlgiMathMode(const char* expression) {
     int i = 0;
     while (i < strlen(expression)) 
     {
-        puts(expression);
         if (KasLugeja(&expression[i]) == 1)
         {
+            puts("mind kutsuti välja");
             char* lugeja = LeiaTekstEnneTeksti(&expression[i], "/");
+            puts(lugeja);
             char* lugejaTõlge = TõlgiMathMode(lugeja);
             char* nimetaja = LeiaNimetaja(&expression[i+strlen(lugeja)+1]);
             char* nimetajaTõlge = TõlgiMathMode(nimetaja);
@@ -161,11 +162,9 @@ char* TõlgiMathMode(const char* expression) {
         // Kontrollime kas on mõni tuntud käsk
         int func_len = 0;
         int j = 0;
-        //printf("%d", func_len);
         for (; math_functions[j] != NULL; j++) {
             if (strncmp(&expression[i], math_functions[j], strlen(math_functions[j])) == 0) {
                 func_len = strlen(math_functions[j]);
-                
                 break;
             }
         }

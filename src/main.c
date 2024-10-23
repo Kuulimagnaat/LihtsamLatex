@@ -42,8 +42,20 @@ char* read_line(FILE* file) {
 
 
 int main()
-{
+{   
+    const char* math_functions[] = {"sin", "cos", "tan", "log", "ln", "sqrt", "fii", "roo", "alfa", "beeta", "epsilon", "to", "inf", "lim", NULL};
+    const char* math_functions_tähendused[] = {"sin", "cos", "tan", "log", "ln", "sqrt", "varphi", "rho", "alpha", "beta", "varepsilon", "to", "infty", "lim", NULL};
 
+    int func_len = 0;
+    int j = 0;
+    for (; math_functions[j] != NULL; j++) {
+        if (strncmp("a", math_functions[j], strlen(math_functions[j])) == 0) {
+            func_len = strlen(math_functions[j]);
+            break;
+        }
+    }
+
+    printf("%d\n", func_len);
 
     SetConsoleOutputCP(CP_UTF8);
     
