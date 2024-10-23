@@ -7,6 +7,13 @@ struct LimiTagastus
     unsigned int TähtiLoeti;
 };
 
+struct TekstArv
+{
+    char* Tõlge;
+    unsigned int TähtiLoeti;
+};
+
+
 int KasEsimesedTähed(const char* tekstis, const char* tekst);
 char* LeiaSuluSisu(const char* tekst);
 char* LiidaTekstid(char* eelmineMälu, const char* lisatav);
@@ -17,5 +24,8 @@ char* TõlgiMathMode(const char* expression);
 char* LeiaTekstEnneTähte(const char* tekst, char täht);
 struct LimiTagastus TõlgiLim(const char* tekst);
 char* LeiaTekstEnneTeksti(const char* tekst, const char* teksti);
+int KasLugeja(const char* tekst);
+char* LeiaNimetaja(const char* tekst);
+struct TekstArv TõlgiFrac(const char* tekst);
 
 #endif

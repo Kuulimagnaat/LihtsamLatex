@@ -136,16 +136,40 @@ char* TõlgiMathMode(const char* expression) {
     result[0] = '\0';
     
     int i = 0;
-    while (i < strlen(expression)) {
+    while (i < strlen(expression)) 
+    {
+        puts(expression);
+        if (KasLugeja(&expression[i]) == 1)
+        {
+            char* lugeja = LeiaTekstEnneTeksti(&expression[i], "/");
+            char* lugejaTõlge = TõlgiMathMode(lugeja);
+            char* nimetaja = LeiaNimetaja(&expression[i+strlen(lugeja)+1]);
+            char* nimetajaTõlge = TõlgiMathMode(nimetaja);
+            result = LiidaTekstid(result, "\\frac{");
+            result = LiidaTekstid(result, lugejaTõlge);
+            result = LiidaTekstid(result, "}{");
+            result = LiidaTekstid(result, nimetajaTõlge);
+            result = LiidaTekstid(result, "}");
+            i += strlen(lugeja)+1+strlen(nimetaja);
+            free(lugeja);
+            free(nimetaja);
+            free(lugejaTõlge);
+            free(nimetajaTõlge);
+            continue;
+        }
+
         // Kontrollime kas on mõni tuntud käsk
         int func_len = 0;
         int j = 0;
+        //printf("%d", func_len);
         for (; math_functions[j] != NULL; j++) {
             if (strncmp(&expression[i], math_functions[j], strlen(math_functions[j])) == 0) {
                 func_len = strlen(math_functions[j]);
+                
                 break;
             }
         }
+        
 
         if (func_len != 0) {
             //Leiame funktsiooni nime
@@ -209,7 +233,9 @@ char* TõlgiMathMode(const char* expression) {
                 result = append_str(result, "\\right)");
             }
            free(latex_func_with_left);
-        } else {
+        } 
+        else 
+        {
             // Kõik ülejäänud pask läheb tavaliselt
             char* single_char = my_strndup(&expression[i], 1);
             result = append_str(result, single_char);
@@ -313,3 +339,149 @@ struct LimiTagastus TõlgiLim(const char* tekst)
         return tagastus;
     }
 }
+
+
+
+/* Murruga on lugu selline.
+sin(x+y)/2  -->  (sin(x+y))/2, mitte sin((x+y)/2)
+Sulgude omistamine käib vasakult paremale. Sin on enne murrujoont ja seega sulud on siinuse omad ja seega vähim lugeja on sin(x+y).
+Küsimus on, kuidas seda tajuda.
+MÕTE 1.  Saaks teha funktsiooni, mis ütleb kas tõlgitava teksti kohal [i] algab mingi murru lugeja. Sel juhul tõlgimathmode sees pannakse resulti \\frac{ ja antakse &tekst[i] funktsioonile tõlgifrac, mis loeb sisse lugeja ja nimetaja ja tagastab ülejäänud tõlke, mis on kujul a}{b}. Samas tõlgimathmodes astutakse vist ka nimetatud avaldises sin(x+y)/2 ka ( märgi peale ja sel puhul murru lugeja tajuja funktsioon ütleks ka selle kohta, et algab murd. 
+MÕTE 2.  Veel üks võimalus oleks mitte tajuda ette, kas tekstikoht on mingi nimetaja, vaid rahulikult jõuda lugemisega lõpuks murrujooneni ja siis hakata uurima, mis oleks pidanud nimetaja olema. Ma arvan, et see on lugeja väljaselgitamise koha pealt veidike lihtsam, aga miinus on see, et siis peab juba kirjutatud resulti tagantjärele muutma niimoodi, et \frac{ oleks selle sees täpselt õiges kohas.*/
+
+
+// Funktsioon tagastab mäluaadressi, millel on antud teksti esimene mittetühik. Kui juba esimene täht pole tühik, siis tagastab sellesama mäluaadressi, mis sisse anti. Tagastab aadressi NULL, kui teksti lõpuni ei olnud midagi muud peale tühikute.
+char* TähtPealeTühikuid(const char* tekst)
+{
+    for (unsigned int i=0; i<strlen(tekst); i++)
+    {
+        if (tekst[i] != ' ')
+        {
+            return &tekst[i];
+        }
+    }
+    return NULL;
+}
+
+
+char* LeiaNimetaja(const char* tekst) // nin(x)/sin(x + 4)abc     va(4 sin(x)x)/sin(x + 4)abc
+{
+    for (unsigned int i = 0; tekst[i]!='/';)
+    {
+        if (tekst[i] == ' ' || tekst[i]=='\0')
+        {
+            char* nimetajaMälu = malloc(i+1);
+            memcpy(nimetajaMälu, tekst, i);
+            nimetajaMälu[i] == '\0';
+            return nimetajaMälu;
+        }
+        if (tekst[i] == '(')
+        {
+            char* sulusisu = LeiaSuluSisu(&tekst[i+1]);
+            unsigned int pikkus = strlen(sulusisu);
+            free(sulusisu);
+            i += pikkus+2;
+        }
+        else
+        {
+            i++;
+        }
+    }
+}
+
+
+int KasLugeja(const char* tekst) // nin(x)/sin(x + 4)abc     va(4 sin(x)x)/sin(x + 4)abc
+{
+    for (unsigned int i = 0; tekst[i]!='/';)
+    {
+        if (tekst[i] == ' ')
+        {
+            return 0;
+        }
+        if (tekst[i] == '(')
+        {
+            char* sulusisu = LeiaSuluSisu(&tekst[i+1]);
+            unsigned int pikkus = strlen(sulusisu);
+            free(sulusisu);
+            i += pikkus+2;
+        }
+        else
+        {
+            i++;
+        }
+    }
+    return 1;
+    /*
+    // Esimeseks kontrollib, ega / otse vaadeldava koha kõrval pole. Kõrvalolemist tuleb kontrollida nii, et tühikuid ei arvestataks. avaldises "a /b" on / a kõrval
+    // Teiseks kontrollib, ega küsitaval kohal pole avanev sulg. Siis otsib vastava sulgeva sulu ja kui selle taga on /, siis on murd.
+    if (*(TähtPealeTühikuid(&tekst[1])) == '/')
+    {
+        return 1;
+    }
+    if (tekst[0] == '(')
+    {
+        
+        char* suluSisu = LeiaSuluSisu(&tekst[1]);
+        unsigned int pikkus = strlen(suluSisu);
+        if (*(TähtPealeTühikuid(&tekst[pikkus+2])) == '/')
+        {
+            return 1;
+        }
+    }
+    // Kolmandaks kontrollib, ega tegu pole funktsiooniga, mille järel on sulud ja nende järel omakorda /. Näiteks avaldises 1+sin(x+b)/2 on sin(x+b) lugeja.
+    for (unsigned int i=0; i<poolituskoht; i++)
+    {
+        if (KasEsimesedTähed(tekst, math_functions[i]))
+        {
+            if (tekst[strlen(math_functions[i])] == '(')
+            {
+                char* suluSisu = LeiaSuluSisu(&tekst[strlen(math_functions[i])+1]);
+                unsigned int pikkus = strlen(suluSisu);
+                if (*(TähtPealeTühikuid(&tekst[strlen(math_functions[i])+pikkus+2])) == '/') // trust.
+                {
+                    return 1;
+                }
+            }
+        }
+    }
+    // Viimasena kontrollib ega kontrollitaval kohal pole funktsiooni, mille järel ei pea sulge olema nt alfa.
+    for (unsigned int i=poolituskoht; math_functions[i]!= NULL; i++)
+    {
+        if (KasEsimesedTähed(tekst, math_functions[i]))
+        {
+            if (*(TähtPealeTühikuid(&tekst[strlen(math_functions[i])])) == '/')
+            {
+                    return 1;
+            }
+        }
+    }
+    return 0;
+    */
+}
+
+
+/*Funktsioon võtab sisse murdu tähistava kaldkriipsu mäluaadressi tõlgitavas tekstis. Funktsioon vaatab sellest tagasipoole ja selgitab välja lugeja. Selleks, et kogemata liiga palju tagasi ei vaataks, on funktsioonil vaja ka teist argumenti, mis on tõlgitava teksti alguse mäluaadress. Funktsioon vaatab ka mälus edasipoole ja selgitab välja nimetaja. */
+
+
+struct TekstArv TõlgiFrac(const char* tekst)
+{
+    // V/tta kõik alates algusest kuni / märgini.   va(4 sin(x)x)/sin(x + 4)abc   /sin(x)  sin(x+y)/2  
+    char* lugeja = LeiaTekstEnneTeksti(tekst, "/");
+    
+}
+
+/*
+int KasOnLugeja(const char*)
+{
+
+}
+*/
+
+
+/* Funktsioon võtab argumendiks mäluaadressi, kust algab tekst, mille esimesed tähed on sum. Funktsioon loeb seda teksti, eraldab endale sobiva koguse mälu ja kirjutab sinna latexiks tõlgitud teksti. Funktsioon tagastab structi, milles on tõlke mälu aadress ja üks arv, mis ütleb, kui palju tõlgimathmode peab tälgitavas koodis edasi hüppama, et jõuda kohta, mis on TõlgiSum tõlgitud alast möödas.
+Täpsematl töötab TõlgiSum järgmiselt. On mitu võimalust, mis saab olla esimene tähemärk sum tähtede järel.
+1) sumi järel on avanev sulg. Siis sum paneb enda alaindeksiks selle sulu sisu. Kui avanevat sulgu sulgeva sulu järel on kohe veel üks avanev sulg, siis selle sisu läheb ülaindeksiks.
+2) sumi järel on tühik. siis eeldab sum, et tahetakse kahte argumenti, mis on omavahel eraldatud tühikutega.
+
+*/
+//struct TekstArv TõlgiSum(const char* tekst)
