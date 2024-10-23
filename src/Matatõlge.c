@@ -370,7 +370,7 @@ char* LeiaNimetaja(const char* tekst) // nin(x)/sin(x + 4)abc     va(4 sin(x)x)/
         {
             char* nimetajaMälu = malloc(i+1);
             memcpy(nimetajaMälu, tekst, i);
-            nimetajaMälu[i] == '\0';
+            nimetajaMälu[i] = '\0';
             return nimetajaMälu;
         }
         if (tekst[i] == '(')
@@ -390,9 +390,8 @@ char* LeiaNimetaja(const char* tekst) // nin(x)/sin(x + 4)abc     va(4 sin(x)x)/
 
 int KasLugeja(const char* tekst) // nin(x)/sin(x + 4)abc     va(4 sin(x)x)/sin(x + 4)abc
 {
-    for (unsigned int i = 0; tekst[i]!='/' && i < strlen(tekst);)
+    for (unsigned int i = 0; tekst[i]!='/';)
     {
-        printf("%c\n", tekst[i]);
         if (tekst[i] == ' ')
         {
             return 0;
@@ -404,9 +403,7 @@ int KasLugeja(const char* tekst) // nin(x)/sin(x + 4)abc     va(4 sin(x)x)/sin(x
             unsigned int pikkus = strlen(sulusisu);
             free(sulusisu);
             i += pikkus+2;
-        }
-        else
-        {
+        } else {
             i++;
         }
     }
