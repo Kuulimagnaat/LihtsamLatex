@@ -6,6 +6,6 @@ int main()
 {
     SetConsoleOutputCP(CP_UTF8);
     char a[] = "a";
-    char* tulemus = TõlgiMathMode("a/b");
+    char* tulemus = TõlgiMathMode("a/");
     puts(tulemus);
 }

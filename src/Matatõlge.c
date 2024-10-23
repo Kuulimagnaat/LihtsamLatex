@@ -142,7 +142,6 @@ char* TõlgiMathMode(const char* expression) {
         {
             puts("mind kutsuti välja");
             char* lugeja = LeiaTekstEnneTeksti(&expression[i], "/");
-            puts(lugeja);
             char* lugejaTõlge = TõlgiMathMode(lugeja);
             char* nimetaja = LeiaNimetaja(&expression[i+strlen(lugeja)+1]);
             char* nimetajaTõlge = TõlgiMathMode(nimetaja);
@@ -391,12 +390,14 @@ char* LeiaNimetaja(const char* tekst) // nin(x)/sin(x + 4)abc     va(4 sin(x)x)/
 
 int KasLugeja(const char* tekst) // nin(x)/sin(x + 4)abc     va(4 sin(x)x)/sin(x + 4)abc
 {
-    for (unsigned int i = 0; tekst[i]!='/';)
+    for (unsigned int i = 0; tekst[i]!='/' && i < strlen(tekst);)
     {
+        printf("%c\n", tekst[i]);
         if (tekst[i] == ' ')
         {
             return 0;
         }
+
         if (tekst[i] == '(')
         {
             char* sulusisu = LeiaSuluSisu(&tekst[i+1]);
