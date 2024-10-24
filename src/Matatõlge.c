@@ -5,25 +5,42 @@
 
 
 // Funktsioon, mis kontorllib, kas antud teksti algus täpselt on sama, mis teine soovitud tekst. Tagastab 0 kui ei ole ja 1 kui on. Funktsiooni kasutusolukord: kui ollakse minemas tõlgitavas koodis üle tähtede, siis on vaja kontrollida, kas kättejõudnud kohas on mõne käsu nimi. Seda funktsiooni saab nimetatud olukorra tajumiseks kasutada.
+#define KasEsimesedTähedDebug 0
 int KasEsimesedTähed(const char* tekstis, const char* tekst)
 {
+    #if KasEsimesedTähedDebug == 1
+    puts("KasEsimesedTähed");
+    printf("SISSE: tekstis=%s, tekst=%s\n", tekstis, tekst);
+    #endif
+
     unsigned int tähtiKontrollida = strlen(tekst);
     for (unsigned int i = 0; i<tähtiKontrollida; i++)
     {
         if (tekstis[i] != tekst[i])
         {
-
+            #if KasEsimesedTähedDebug == 1
+            puts("VÄLJA: 0");
+            #endif
             return 0;
         }
     }
+
+    #if KasEsimesedTähedDebug == 1
+    puts("VÄLJA: 1");
+    #endif
     return 1;
 }
 
 
 // SEDA FUNKTSIOONI VÕIB USALDADA: Käsitsi läbi katsetatud.
 // Funktsiooni kasutatakse juhul, kui jõutakse tõlgitavas koodis funktsioonini, mille järel on avanev sulg. Siis antakse sellele funktsioonile avanevale sulule järgneva tähe mäluaadress, misjärel funktsioon leiab kogu teksti, mis peaks avaneva ja sulgeva sulu vahele jääma. Funktsioon eraldab mälu, täidab selle sulu sisuga ja tagastab selle mälu aadressi. See mälu on vaja hiljem vabastada.
+#define LeiaSuluSisuDebug 0
 char* LeiaSuluSisu(const char* tekst)
 {
+    #if LeiaSuluSisuDebug == 1
+    puts("LeiaSuluSisu");
+    printf("SISSE: %s\n", tekst);
+    #endif
     unsigned int maht = 32;
     char* mälu = malloc(maht);
     if (mälu == NULL)
@@ -56,12 +73,14 @@ char* LeiaSuluSisu(const char* tekst)
             if (sulutase == 0)
             {
                 mälu[i] = '\0';
+                #if LeiaSuluSisuDebug == 1
+                printf("VÄLJA: %s\n\n", mälu);
+                #endif
                 return mälu;
             }
         }
         mälu[i] = tekst[i];
     }
-
     perror("Ei leitud sulgevat sulgu :(\n");
     exit(EXIT_FAILURE);
 }
@@ -131,7 +150,9 @@ char* append_str(const char* a, const char* b) {
 }
 
 // Rekursiivselt tõlgime math moodi latexisse
-char* TõlgiMathMode(const char* expression) {
+char* TõlgiMathMode(const char* expression)
+{
+    //puts(expression);
     char* result = malloc(1); // Tühi string
     result[0] = '\0';
     
@@ -140,7 +161,6 @@ char* TõlgiMathMode(const char* expression) {
     {
         if (KasLugeja(&expression[i]) == 1)
         {
-            puts("mind kutsuti välja");
             char* lugeja = LeiaTekstEnneTeksti(&expression[i], "/");
             char* lugejaTõlge = TõlgiMathMode(lugeja);
             char* nimetaja = LeiaNimetaja(&expression[i+strlen(lugeja)+1]);
@@ -387,17 +407,30 @@ char* LeiaNimetaja(const char* tekst) // nin(x)/sin(x + 4)abc     va(4 sin(x)x)/
     }
 }
 
-
+#define KasLugejaDebug 1
 int KasLugeja(const char* tekst) // nin(x)/sin(x + 4)abc     va(4 sin(x)x)/sin(x + 4)abc
 {
+    #if KasLugejaDebug == 1
+    puts("KasLugeja");
+    printf("SISSE: tekst=%s\n", tekst);
+    #endif
     for (unsigned int i = 0; tekst[i]!='/';)
     {
-        if (tekst[i] == ' ')
+        if(tekst[i]=='\0')
         {
+            #if KasLugejaDebug == 1
+            puts("VÄLJA: 0\n");
+            #endif
             return 0;
         }
-
-        if (tekst[i] == '(')
+        if (tekst[i] == ' ')
+        {
+            #if KasLugejaDebug == 1
+            puts("VÄLJA: 0\n");
+            #endif
+            return 0;
+        }
+        else if (tekst[i] == '(')
         {
             char* sulusisu = LeiaSuluSisu(&tekst[i+1]);
             unsigned int pikkus = strlen(sulusisu);
@@ -407,7 +440,11 @@ int KasLugeja(const char* tekst) // nin(x)/sin(x + 4)abc     va(4 sin(x)x)/sin(x
             i++;
         }
     }
+    #if KasLugejaDebug == 1
+    puts("VÄLJA: 1\n");
+    #endif
     return 1;
+}
     /*
     // Esimeseks kontrollib, ega / otse vaadeldava koha kõrval pole. Kõrvalolemist tuleb kontrollida nii, et tühikuid ei arvestataks. avaldises "a /b" on / a kõrval
     // Teiseks kontrollib, ega küsitaval kohal pole avanev sulg. Siis otsib vastava sulgeva sulu ja kui selle taga on /, siis on murd.
@@ -454,7 +491,7 @@ int KasLugeja(const char* tekst) // nin(x)/sin(x + 4)abc     va(4 sin(x)x)/sin(x
     }
     return 0;
     */
-}
+
 
 
 /*Funktsioon võtab sisse murdu tähistava kaldkriipsu mäluaadressi tõlgitavas tekstis. Funktsioon vaatab sellest tagasipoole ja selgitab välja lugeja. Selleks, et kogemata liiga palju tagasi ei vaataks, on funktsioonil vaja ka teist argumenti, mis on tõlgitava teksti alguse mäluaadress. Funktsioon vaatab ka mälus edasipoole ja selgitab välja nimetaja. */
