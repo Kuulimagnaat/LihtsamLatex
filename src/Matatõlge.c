@@ -31,6 +31,67 @@ int KasEsimesedTähed(const char* tekstis, const char* tekst)
     return 1;
 }
 
+/* Funktsioonile antakse sisse mäluaadress, millal asub ^ märk. On mitu võimalust, mis saab olla.
+1. ^ märgi järel on avanev sulg. Siis */
+
+
+#define TõlgiAsteDebug 0
+struct TekstArv TõlgiAste(const char* tekst)
+{
+    #if TõlgiAsteDebug == 1
+    printf("TõlgiAste\n");
+    printf("SISSE: %s.", tekst);
+    #endif
+    struct TekstArv tagastus = {.Tekst=NULL, .Arv=0};
+    
+
+    char* tulemus = malloc(1);
+    tulemus[0] = '\0';
+    if (tekst[1] == '(')
+    {
+        char* sulusisu = LeiaSuluSisu(&tekst[2]);
+        unsigned int sulusisuPikkus = strlen(sulusisu);
+        char* sulusisuTõlge = TõlgiMathMode(sulusisu);
+        free(sulusisu);
+        tulemus = LiidaTekstid(tulemus, "^{");
+        tulemus = LiidaTekstid(tulemus, sulusisuTõlge);
+        free(sulusisuTõlge);
+        tulemus = LiidaTekstid(tulemus, "}");
+        // See on vaja väljaspool funktsiooni vabastada.
+        tagastus.Tekst = tulemus;
+        tagastus.Arv = 2+sulusisuPikkus+1;
+
+        #if TõlgiAsteDebug == 1
+        printf("VÄLJA: %s, %d.", tagastus.Tekst, tagastus.Arv);
+        #endif
+        return tagastus;
+    }
+    if (tekst[1] == ' ')
+    {
+        perror("^ märgi järel oli tühik. Does not make no sense");
+        exit(EXIT_SUCCESS);
+    }
+    else
+    {
+        char* sulusisu = LeiaTekstEnneTeksti(&tekst[1], " ");
+        unsigned int sulusisuPikkus = strlen(sulusisu);
+        char* sulusisuTõlge = TõlgiMathMode(sulusisu);
+        free(sulusisu);
+        tulemus = LiidaTekstid(tulemus, "^{");
+        tulemus = LiidaTekstid(tulemus, sulusisuTõlge);
+        free(sulusisuTõlge);
+        tulemus = LiidaTekstid(tulemus, "}");
+        // See on vaja väljaspool funktsiooni vabastada.
+        tagastus.Tekst = tulemus;
+        tagastus.Arv = sulusisuPikkus+1;
+
+        #if TõlgiAsteDebug == 1
+        printf("VÄLJA: %s, %d.", tagastus.Tekst, tagastus.Arv);
+        #endif
+        return tagastus;
+    }
+}
+
 
 // SEDA FUNKTSIOONI VÕIB USALDADA: Käsitsi läbi katsetatud.
 // Funktsiooni kasutatakse juhul, kui jõutakse tõlgitavas koodis funktsioonini, mille järel on avanev sulg. Siis antakse sellele funktsioonile avanevale sulule järgneva tähe mäluaadress, misjärel funktsioon leiab kogu teksti, mis peaks avaneva ja sulgeva sulu vahele jääma. Funktsioon eraldab mälu, täidab selle sulu sisuga ja tagastab selle mälu aadressi. See mälu on vaja hiljem vabastada.
@@ -497,19 +558,8 @@ int KasLugeja(const char* tekst) // nin(x)/sin(x + 4)abc     va(4 sin(x)x)/sin(x
 /*Funktsioon võtab sisse murdu tähistava kaldkriipsu mäluaadressi tõlgitavas tekstis. Funktsioon vaatab sellest tagasipoole ja selgitab välja lugeja. Selleks, et kogemata liiga palju tagasi ei vaataks, on funktsioonil vaja ka teist argumenti, mis on tõlgitava teksti alguse mäluaadress. Funktsioon vaatab ka mälus edasipoole ja selgitab välja nimetaja. */
 
 
-struct TekstArv TõlgiFrac(const char* tekst)
-{
-    // V/tta kõik alates algusest kuni / märgini.   va(4 sin(x)x)/sin(x + 4)abc   /sin(x)  sin(x+y)/2  
-    char* lugeja = LeiaTekstEnneTeksti(tekst, "/");
-    
-}
 
-/*
-int KasOnLugeja(const char*)
-{
 
-}
-*/
 
 
 /* Funktsioon võtab argumendiks mäluaadressi, kust algab tekst, mille esimesed tähed on sum. Funktsioon loeb seda teksti, eraldab endale sobiva koguse mälu ja kirjutab sinna latexiks tõlgitud teksti. Funktsioon tagastab structi, milles on tõlke mälu aadress ja üks arv, mis ütleb, kui palju tõlgimathmode peab tälgitavas koodis edasi hüppama, et jõuda kohta, mis on TõlgiSum tõlgitud alast möödas.
