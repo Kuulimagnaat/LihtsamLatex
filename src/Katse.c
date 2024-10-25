@@ -5,6 +5,6 @@
 int main()
 {
     SetConsoleOutputCP(CP_UTF8);
-    char* tulemus = TõlgiMathMode("asin(x)/b");
+    char* tulemus = TõlgiMathMode("limxtoinf a_n");
     puts(tulemus);
 }
