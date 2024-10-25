@@ -35,12 +35,12 @@ int KasEsimesedTähed(const char* tekstis, const char* tekst)
 1. ^ märgi järel on avanev sulg. Siis */
 
 
-#define TõlgiAsteDebug 0
+#define TõlgiAsteDebug 1
 struct TekstArv TõlgiAste(const char* tekst)
 {
     #if TõlgiAsteDebug == 1
     printf("TõlgiAste\n");
-    printf("SISSE: %s.", tekst);
+    printf("SISSE: %s.\n", tekst);
     #endif
     struct TekstArv tagastus = {.Tekst=NULL, .Arv=0};
     
@@ -86,7 +86,7 @@ struct TekstArv TõlgiAste(const char* tekst)
         tagastus.Arv = sulusisuPikkus+1;
 
         #if TõlgiAsteDebug == 1
-        printf("VÄLJA: %s, %d.", tagastus.Tekst, tagastus.Arv);
+        printf("VÄLJA: %s, %d.\n\n", tagastus.Tekst, tagastus.Arv);
         #endif
         return tagastus;
     }
@@ -95,12 +95,12 @@ struct TekstArv TõlgiAste(const char* tekst)
 
 // SEDA FUNKTSIOONI VÕIB USALDADA: Käsitsi läbi katsetatud.
 // Funktsiooni kasutatakse juhul, kui jõutakse tõlgitavas koodis funktsioonini, mille järel on avanev sulg. Siis antakse sellele funktsioonile avanevale sulule järgneva tähe mäluaadress, misjärel funktsioon leiab kogu teksti, mis peaks avaneva ja sulgeva sulu vahele jääma. Funktsioon eraldab mälu, täidab selle sulu sisuga ja tagastab selle mälu aadressi. See mälu on vaja hiljem vabastada.
-#define LeiaSuluSisuDebug 0
+#define LeiaSuluSisuDebug 1
 char* LeiaSuluSisu(const char* tekst)
 {
     #if LeiaSuluSisuDebug == 1
     puts("LeiaSuluSisu");
-    printf("SISSE: %s\n", tekst);
+    printf("  SISSE: %s\n", tekst);
     #endif
     unsigned int maht = 32;
     char* mälu = malloc(maht);
@@ -135,7 +135,7 @@ char* LeiaSuluSisu(const char* tekst)
             {
                 mälu[i] = '\0';
                 #if LeiaSuluSisuDebug == 1
-                printf("VÄLJA: %s\n\n", mälu);
+                printf("  VÄLJA: %s\n", mälu);
                 #endif
                 return mälu;
             }
@@ -236,6 +236,14 @@ char* TõlgiMathMode(const char* expression)
             free(nimetaja);
             free(lugejaTõlge);
             free(nimetajaTõlge);
+            continue;
+        }
+        if (expression[i] == '^')
+        {
+            struct TekstArv astmeTõlge = TõlgiAste(&expression[i]);
+            result = LiidaTekstid(result, astmeTõlge.Tekst);
+            free(astmeTõlge.Tekst);
+            i += astmeTõlge.Arv;
             continue;
         }
 
@@ -473,21 +481,21 @@ int KasLugeja(const char* tekst) // nin(x)/sin(x + 4)abc     va(4 sin(x)x)/sin(x
 {
     #if KasLugejaDebug == 1
     puts("KasLugeja");
-    printf("SISSE: tekst=%s\n", tekst);
+    printf("  SISSE: tekst=%s\n", tekst);
     #endif
     for (unsigned int i = 0; tekst[i]!='/';)
     {
         if(tekst[i]=='\0')
         {
             #if KasLugejaDebug == 1
-            puts("VÄLJA: 0\n");
+            puts("  VÄLJA: 0");
             #endif
             return 0;
         }
-        if (tekst[i] == ' ')
+        else if (tekst[i] == ' ')
         {
             #if KasLugejaDebug == 1
-            puts("VÄLJA: 0\n");
+            puts("  VÄLJA: 0");
             #endif
             return 0;
         }
@@ -502,7 +510,7 @@ int KasLugeja(const char* tekst) // nin(x)/sin(x + 4)abc     va(4 sin(x)x)/sin(x
         }
     }
     #if KasLugejaDebug == 1
-    puts("VÄLJA: 1\n");
+    puts("  VÄLJA: 1");
     #endif
     return 1;
 }

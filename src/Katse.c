@@ -5,6 +5,6 @@
 int main()
 {
     SetConsoleOutputCP(CP_UTF8);
-    char* tulemus = TõlgiMathMode("limxtoinf a_n");
+    char* tulemus = TõlgiMathMode("a^sin(x/2)/2");
     puts(tulemus);
 }
