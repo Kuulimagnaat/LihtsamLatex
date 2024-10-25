@@ -9,8 +9,8 @@ struct LimiTagastus
 
 struct TekstArv
 {
-    char* Tõlge;
-    unsigned int TähtiLoeti;
+    char* Tekst;
+    unsigned int Arv;
 };
 
 
@@ -26,6 +26,5 @@ struct LimiTagastus TõlgiLim(const char* tekst);
 char* LeiaTekstEnneTeksti(const char* tekst, const char* teksti);
 int KasLugeja(const char* tekst);
 char* LeiaNimetaja(const char* tekst);
-struct TekstArv TõlgiFrac(const char* tekst);
 
 #endif
