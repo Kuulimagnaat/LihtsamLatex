@@ -5,6 +5,6 @@
 int main()
 {
     SetConsoleOutputCP(CP_UTF8);
-    char* tulemus = TõlgiMathMode("a^sin(x/2)/2");
+    char* tulemus = TõlgiMathMode("(a/b)/c");
     puts(tulemus);
 }

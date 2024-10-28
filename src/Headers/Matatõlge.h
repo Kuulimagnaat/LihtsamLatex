@@ -27,5 +27,6 @@ char* LeiaTekstEnneTeksti(const char* tekst, const char* teksti);
 int KasLugeja(const char* tekst);
 char* LeiaNimetaja(const char* tekst);
 struct TekstArv TõlgiAste(const char* tekst);
+char* LeiaLugeja(const char* tekst);
 
 #endif

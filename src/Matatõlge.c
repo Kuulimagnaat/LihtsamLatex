@@ -35,7 +35,7 @@ int KasEsimesedTähed(const char* tekstis, const char* tekst)
 1. ^ märgi järel on avanev sulg. Siis */
 
 
-#define TõlgiAsteDebug 1
+#define TõlgiAsteDebug 0
 struct TekstArv TõlgiAste(const char* tekst)
 {
     #if TõlgiAsteDebug == 1
@@ -95,7 +95,7 @@ struct TekstArv TõlgiAste(const char* tekst)
 
 // SEDA FUNKTSIOONI VÕIB USALDADA: Käsitsi läbi katsetatud.
 // Funktsiooni kasutatakse juhul, kui jõutakse tõlgitavas koodis funktsioonini, mille järel on avanev sulg. Siis antakse sellele funktsioonile avanevale sulule järgneva tähe mäluaadress, misjärel funktsioon leiab kogu teksti, mis peaks avaneva ja sulgeva sulu vahele jääma. Funktsioon eraldab mälu, täidab selle sulu sisuga ja tagastab selle mälu aadressi. See mälu on vaja hiljem vabastada.
-#define LeiaSuluSisuDebug 1
+#define LeiaSuluSisuDebug 0
 char* LeiaSuluSisu(const char* tekst)
 {
     #if LeiaSuluSisuDebug == 1
@@ -222,8 +222,11 @@ char* TõlgiMathMode(const char* expression)
     {
         if (KasLugeja(&expression[i]) == 1)
         {
-            char* lugeja = LeiaTekstEnneTeksti(&expression[i], "/");
+            printf("Kui on lugeja, siis prindib selle. i = %d.\n", i);
+            char* lugeja = LeiaLugeja(&expression[i]);
+            printf("Leitud lugeja on %s.\n", lugeja);
             char* lugejaTõlge = TõlgiMathMode(lugeja);
+            printf("Leitud lugeja tõlge on %s\n", lugejaTõlge);
             char* nimetaja = LeiaNimetaja(&expression[i+strlen(lugeja)+1]);
             char* nimetajaTõlge = TõlgiMathMode(nimetaja);
             result = LiidaTekstid(result, "\\frac{");
@@ -476,7 +479,55 @@ char* LeiaNimetaja(const char* tekst) // nin(x)/sin(x + 4)abc     va(4 sin(x)x)/
     }
 }
 
-#define KasLugejaDebug 1
+
+#define LeiaLugejaDebug 0
+char* LeiaLugeja(const char* tekst)
+{
+    #if LeiaLugejaDebug == 1
+    printf("LeiaLugeja\n");
+    printf("  SISSE: %s.\n", tekst);
+    #endif
+
+    unsigned int i=0;
+    // Kui lugeja on selline, kus sulg avaneb kohe alguses ja läheb kinni just enne jagamismärki, siis terve sulusisu on lugeja ja sulgusid ei tohi lugejasse kaasa arvata.
+    
+    if (tekst[0] == '(')
+    {
+        char* sulusisu = LeiaSuluSisu(&tekst[1]);
+        unsigned int sulupikkus = strlen(sulusisu);
+        if (tekst[sulupikkus+2] == '/')
+        {
+            // Tagastatakse lugejaks sulusisu. Vabastamine toimub, nagu muidu lugeja tagastamisel, funkstioonist väljaspool. Kui sulusisu sul läheb kinni ja enne murrujoont on veel mingi sümbol, siis minnakse edasi mõttega, et sulud on vaja lugeasse kaasa arvata.
+            #if LeiaLugejaDebug == 1
+            printf("  VÄLJA: %s.\n", sulusisu);
+            #endif
+            return sulusisu;
+        }
+        free(sulusisu);
+    }
+    for ( ; tekst[i] != '/'; )
+    {
+        if (tekst[i] == '(')
+        {
+            char* sulusisu = LeiaSuluSisu(&tekst[i+1]);
+            unsigned int sulupikkus = strlen(sulusisu);
+            free(sulusisu);
+            i+=sulupikkus+2;
+            continue;
+        }
+        i++;
+    }
+    char* lugeja = malloc(i+1);
+    memcpy(lugeja, tekst, i+1);
+    lugeja[i] = '\0';
+    #if LeiaLugejaDebug == 1
+    printf("  VÄLJA: %s.\n", lugeja);
+    #endif
+    return lugeja;
+}
+
+
+#define KasLugejaDebug 0
 int KasLugeja(const char* tekst) // nin(x)/sin(x + 4)abc     va(4 sin(x)x)/sin(x + 4)abc
 {
     #if KasLugejaDebug == 1
