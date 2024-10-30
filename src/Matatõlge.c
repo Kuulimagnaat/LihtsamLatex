@@ -5,7 +5,7 @@
 
 
 // Funktsioon, mis kontorllib, kas antud teksti algus täpselt on sama, mis teine soovitud tekst. Tagastab 0 kui ei ole ja 1 kui on. Funktsiooni kasutusolukord: kui ollakse minemas tõlgitavas koodis üle tähtede, siis on vaja kontrollida, kas kättejõudnud kohas on mõne käsu nimi. Seda funktsiooni saab nimetatud olukorra tajumiseks kasutada.
-#define KasEsimesedTähedDebug 0
+#define KasEsimesedTähedDebug 1
 int KasEsimesedTähed(const char* tekstis, const char* tekst)
 {
     #if KasEsimesedTähedDebug == 1
@@ -35,12 +35,12 @@ int KasEsimesedTähed(const char* tekstis, const char* tekst)
 1. ^ märgi järel on avanev sulg. Siis */
 
 
-#define TõlgiAsteDebug 0
+#define TõlgiAsteDebug 1
 struct TekstArv TõlgiAste(const char* tekst)
 {
     #if TõlgiAsteDebug == 1
     printf("TõlgiAste\n");
-    printf("SISSE: %s.", tekst);
+    printf("SISSE: %s.\n", tekst);
     #endif
     struct TekstArv tagastus = {.Tekst=NULL, .Arv=0};
     
@@ -86,7 +86,7 @@ struct TekstArv TõlgiAste(const char* tekst)
         tagastus.Arv = sulusisuPikkus+1;
 
         #if TõlgiAsteDebug == 1
-        printf("VÄLJA: %s, %d.", tagastus.Tekst, tagastus.Arv);
+        printf("VÄLJA: %s, %d.\n\n", tagastus.Tekst, tagastus.Arv);
         #endif
         return tagastus;
     }
@@ -95,12 +95,12 @@ struct TekstArv TõlgiAste(const char* tekst)
 
 // SEDA FUNKTSIOONI VÕIB USALDADA: Käsitsi läbi katsetatud.
 // Funktsiooni kasutatakse juhul, kui jõutakse tõlgitavas koodis funktsioonini, mille järel on avanev sulg. Siis antakse sellele funktsioonile avanevale sulule järgneva tähe mäluaadress, misjärel funktsioon leiab kogu teksti, mis peaks avaneva ja sulgeva sulu vahele jääma. Funktsioon eraldab mälu, täidab selle sulu sisuga ja tagastab selle mälu aadressi. See mälu on vaja hiljem vabastada.
-#define LeiaSuluSisuDebug 0
+#define LeiaSuluSisuDebug 1
 char* LeiaSuluSisu(const char* tekst)
 {
     #if LeiaSuluSisuDebug == 1
     puts("LeiaSuluSisu");
-    printf("SISSE: %s\n", tekst);
+    printf("  SISSE: %s\n", tekst);
     #endif
     unsigned int maht = 32;
     char* mälu = malloc(maht);
@@ -135,7 +135,7 @@ char* LeiaSuluSisu(const char* tekst)
             {
                 mälu[i] = '\0';
                 #if LeiaSuluSisuDebug == 1
-                printf("VÄLJA: %s\n\n", mälu);
+                printf("  VÄLJA: %s\n", mälu);
                 #endif
                 return mälu;
             }
@@ -222,8 +222,11 @@ char* TõlgiMathMode(const char* expression)
     {
         if (KasLugeja(&expression[i]) == 1)
         {
-            char* lugeja = LeiaTekstEnneTeksti(&expression[i], "/");
+            printf("Kui on lugeja, siis prindib selle. i = %d.\n", i);
+            char* lugeja = LeiaLugeja(&expression[i]);
+            printf("Leitud lugeja on %s.\n", lugeja);
             char* lugejaTõlge = TõlgiMathMode(lugeja);
+            printf("Leitud lugeja tõlge on %s\n", lugejaTõlge);
             char* nimetaja = LeiaNimetaja(&expression[i+strlen(lugeja)+1]);
             char* nimetajaTõlge = TõlgiMathMode(nimetaja);
             result = LiidaTekstid(result, "\\frac{");
@@ -236,6 +239,14 @@ char* TõlgiMathMode(const char* expression)
             free(nimetaja);
             free(lugejaTõlge);
             free(nimetajaTõlge);
+            continue;
+        }
+        if (expression[i] == '^')
+        {
+            struct TekstArv astmeTõlge = TõlgiAste(&expression[i]);
+            result = LiidaTekstid(result, astmeTõlge.Tekst);
+            free(astmeTõlge.Tekst);
+            i += astmeTõlge.Arv;
             continue;
         }
 
@@ -468,26 +479,74 @@ char* LeiaNimetaja(const char* tekst) // nin(x)/sin(x + 4)abc     va(4 sin(x)x)/
     }
 }
 
+
+#define LeiaLugejaDebug 1
+char* LeiaLugeja(const char* tekst)
+{
+    #if LeiaLugejaDebug == 1
+    printf("LeiaLugeja\n");
+    printf("  SISSE: %s.\n", tekst);
+    #endif
+
+    unsigned int i=0;
+    // Kui lugeja on selline, kus sulg avaneb kohe alguses ja läheb kinni just enne jagamismärki, siis terve sulusisu on lugeja ja sulgusid ei tohi lugejasse kaasa arvata.
+    
+    if (tekst[0] == '(')
+    {
+        char* sulusisu = LeiaSuluSisu(&tekst[1]);
+        unsigned int sulupikkus = strlen(sulusisu);
+        if (tekst[sulupikkus+2] == '/')
+        {
+            // Tagastatakse lugejaks sulusisu. Vabastamine toimub, nagu muidu lugeja tagastamisel, funkstioonist väljaspool. Kui sulusisu sul läheb kinni ja enne murrujoont on veel mingi sümbol, siis minnakse edasi mõttega, et sulud on vaja lugeasse kaasa arvata.
+            #if LeiaLugejaDebug == 1
+            printf("  VÄLJA: %s.\n", sulusisu);
+            #endif
+            return sulusisu;
+        }
+        free(sulusisu);
+    }
+    for ( ; tekst[i] != '/'; )
+    {
+        if (tekst[i] == '(')
+        {
+            char* sulusisu = LeiaSuluSisu(&tekst[i+1]);
+            unsigned int sulupikkus = strlen(sulusisu);
+            free(sulusisu);
+            i+=sulupikkus+2;
+            continue;
+        }
+        i++;
+    }
+    char* lugeja = malloc(i+1);
+    memcpy(lugeja, tekst, i+1);
+    lugeja[i] = '\0';
+    #if LeiaLugejaDebug == 1
+    printf("  VÄLJA: %s.\n", lugeja);
+    #endif
+    return lugeja;
+}
+
+
 #define KasLugejaDebug 1
 int KasLugeja(const char* tekst) // nin(x)/sin(x + 4)abc     va(4 sin(x)x)/sin(x + 4)abc
 {
     #if KasLugejaDebug == 1
     puts("KasLugeja");
-    printf("SISSE: tekst=%s\n", tekst);
+    printf("  SISSE: tekst=%s\n", tekst);
     #endif
     for (unsigned int i = 0; tekst[i]!='/';)
     {
         if(tekst[i]=='\0')
         {
             #if KasLugejaDebug == 1
-            puts("VÄLJA: 0\n");
+            puts("  VÄLJA: 0");
             #endif
             return 0;
         }
-        if (tekst[i] == ' ')
+        else if (tekst[i] == ' ')
         {
             #if KasLugejaDebug == 1
-            puts("VÄLJA: 0\n");
+            puts("  VÄLJA: 0");
             #endif
             return 0;
         }
@@ -502,7 +561,7 @@ int KasLugeja(const char* tekst) // nin(x)/sin(x + 4)abc     va(4 sin(x)x)/sin(x
         }
     }
     #if KasLugejaDebug == 1
-    puts("VÄLJA: 1\n");
+    puts("  VÄLJA: 1");
     #endif
     return 1;
 }
