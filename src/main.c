@@ -43,8 +43,8 @@ char* read_line(FILE* file) {
 
 int main()
 {   
-    const char* math_functions[] = {"sin", "cos", "tan", "log", "ln", "sqrt", "fii", "roo", "alfa", "beeta", "epsilon", "to", "inf", "lim", NULL};
-    const char* math_functions_tähendused[] = {"sin", "cos", "tan", "log", "ln", "sqrt", "varphi", "rho", "alpha", "beta", "varepsilon", "to", "infty", "lim", NULL};
+    const char* math_functions[] = {"sin", "cos", "tan", "log", "ln", "sqrt", "fii", "roo", "alfa", "beeta", "epsilon", "delta", "to", "inf", "lim", NULL};
+    const char* math_functions_tähendused[] = {"sin", "cos", "tan", "log", "ln", "sqrt", "varphi", "rho", "alpha", "beta", "varepsilon", "delta", "to", "infty", "lim", NULL};
 
     int func_len = 0;
     int j = 0;
@@ -88,33 +88,44 @@ int main()
         // Check if the line contains a placeholder for content
         if (strcmp(line, "{{content}}") == 0) {
             // Process the main.txt content
-            int onMathmode = 0;
             while ((line = read_line(file)) != NULL)
             {
                 for ( unsigned int i=0; i<strlen(line); i++)
                 {
-                    if (KasEsimesedTähed(&line[i], " mm "))
+                    if (i==0 && KasEsimesedTähed(&line[i], "mm "))
                     {
-                        onMathmode = (onMathmode+1)%2;
                         i += 4;
-                        if (onMathmode)
-                        {
-                            fprintf(output_file, "\\[ ");
-                        }
-                        else if (!onMathmode)
-                        {
-                            fprintf(output_file, "\\] ");
-                        }
-                    }
-                    if (onMathmode)
-                    {
+                        fprintf(output_file, "\\[ ");
                         char* tõlgitav = LeiaTekstEnneTeksti(&line[i], " mm ");
                         i += strlen(tõlgitav)-1; 
                         char* tõlge = TõlgiMathMode(tõlgitav);
                         free(tõlgitav);
                         fprintf(output_file, tõlge);
+                        fprintf(output_file, "\\] ");
+                        i += 4;
+                    }
+                    else if (KasEsimesedTähed(&line[i], " mm "))
+                    {
+                        i += 4;
+                        fprintf(output_file, " $");
+                        char* tõlgitav = LeiaTekstEnneTeksti(&line[i], " mm ");
+                        i += strlen(tõlgitav)-1; 
+                        char* tõlge = TõlgiMathMode(tõlgitav);
+                        free(tõlgitav);
+                        fprintf(output_file, tõlge);
+                        fprintf(output_file, "$ ");
+                        i += 4;
+                    }
+                    else
+                    {
+                        char* Täht = malloc(2);
+                        Täht[0] = line[i];
+                        Täht[1] = '\0';
+                        fprintf(output_file, Täht);
+                        free(Täht);
                     }
                 }
+                fprintf(output_file, "\n");
             }
         }
         else {

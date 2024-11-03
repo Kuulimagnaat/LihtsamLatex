@@ -22,11 +22,13 @@ int is_math_function(const char* str);
 char* append_str(const char* a, const char* b);
 char* TõlgiMathMode(const char* expression);
 char* LeiaTekstEnneTähte(const char* tekst, char täht);
-struct LimiTagastus TõlgiLim(const char* tekst);
+struct LimiTagastus TõlgiLim(char* tekst);
 char* LeiaTekstEnneTeksti(const char* tekst, const char* teksti);
 int KasLugeja(const char* tekst);
 char* LeiaNimetaja(const char* tekst);
 struct TekstArv TõlgiAste(const char* tekst);
 char* LeiaLugeja(const char* tekst);
+char* EemaldaEsimeneViimane(char* tekst);
+int KasAvaldiseÜmberOnSulud(const char* tekst);
 
 #endif
