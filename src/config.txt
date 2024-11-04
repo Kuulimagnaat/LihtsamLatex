@@ -1,5 +1,7 @@
 fracTüüp = SVEN
 template = SVEN
 
-varps -> \varepsilon
-theta -> \ensuremath{\theta}
+epsilon -> varepsilon
+delta -> delta
+alfa -> alpha
+beeta -> beta

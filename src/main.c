@@ -88,6 +88,13 @@ char* get_template_name(const char* config_path) {
     return template_name;
 }
 
+void free_replacements() {
+    for (int i = 0; i < replacement_count; i++) {
+        free((char*)math_functions_replace[i]);
+        free((char*)math_functions_replace_tähendused[i]);
+    }
+}
+
 int main() {
     SetConsoleOutputCP(CP_UTF8);
 
@@ -122,6 +129,13 @@ int main() {
     char* template_name = get_template_name(config_path);
     if (!template_name) {
         fprintf(stderr, "Error: Template name not specified in config.txt.\n");
+        return EXIT_FAILURE;
+    }
+
+    // Load user-defined replacements
+    if (load_replacements(config_path) != 0) {
+        fprintf(stderr, "Error loading replacements from config.txt.\n");
+        free(template_name);
         return EXIT_FAILURE;
     }
 
@@ -246,6 +260,7 @@ int main() {
 
     // Free the template name memory
     free(template_name);
+    free_replacements();
 
     return 0;
 }

@@ -169,9 +169,48 @@ char* LiidaArv(char* eelmineMälu, int lisatav)
 const char* math_functions[] = {"sin", "cos", "tan", "log", "ln", "sqrt", "lim", NULL};
 const char* math_functions_tähendused[] = {"sin", "cos", "tan", "log", "ln", "sqrt", "lim", NULL};
 
-const char* math_functions_replace[] = {"alfa", "beeta", "epsilon", "delta", "to", "inf", NULL};
-const char* math_functions_replace_tähendused[] = {"alpha", "beta", "varepsilon", "delta", "to", "infty", NULL};
+const char* math_functions_replace[MAX_REPLACEMENTS];
+const char* math_functions_replace_tähendused[MAX_REPLACEMENTS];
+int replacement_count = 0;
 
+// Function to trim whitespace from a string
+char* trim_whitespace(char* str) {
+    while (isspace((unsigned char)*str)) str++;
+    char* end = str + strlen(str) - 1;
+    while (end > str && isspace((unsigned char)*end)) end--;
+    *(end + 1) = '\0';
+    return str;
+}
+
+int load_replacements(const char* config_path) {
+    FILE* config_file = fopen(config_path, "r");
+    if (config_file == NULL) {
+        perror("Unable to open config.txt in src directory");
+        return -1;
+    }
+
+    char* line;
+    while ((line = read_line(config_file)) != NULL) {
+        // Check for lines with the replacement pattern
+        char* arrow = strstr(line, "->");
+        if (arrow) {
+            *arrow = '\0';  // Null-terminate the first part to isolate the command
+            char* command = trim_whitespace(line);  // This points to the command part
+             char* translation = trim_whitespace(arrow + 2);  // Move past the arrow to get the translation
+
+            if (replacement_count < MAX_REPLACEMENTS) {
+                math_functions_replace[replacement_count] = strdup(command);
+                math_functions_replace_tähendused[replacement_count] = strdup(translation);
+                replacement_count++;
+            } else {
+                fprintf(stderr, "Warning: Max replacement limit reached!\n");
+            }
+        }
+        free(line);
+    }
+    fclose(config_file);
+    return 0;  // Success
+}
 
 // duplikeerib antud stringi kuni n baidini (tagastab pointeri uuele stringile)
 char* my_strndup(const char* s, size_t n) {
@@ -306,8 +345,6 @@ char* KõrvutiolevadAstmeks(const char* tekst)
     }
     return tõlge;
 }
-
-
 
 // Rekursiivselt tõlgime math moodi latexisse
 #define TõlgiMathModeDebug 1

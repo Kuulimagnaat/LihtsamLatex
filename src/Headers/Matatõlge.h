@@ -13,7 +13,15 @@ struct TekstArv
     unsigned int Arv;
 };
 
+#define MAX_REPLACEMENTS 100 
 
+extern const char* math_functions_replace[MAX_REPLACEMENTS];
+extern const char* math_functions_replace_tähendused[MAX_REPLACEMENTS];
+extern int replacement_count;
+
+int load_replacements(const char* config_path);
+
+char* read_line(FILE* file);
 int KasEsimesedTähed(const char* tekstis, const char* tekst);
 char* LeiaSuluSisu(const char* tekst);
 char* LiidaTekstid(char* eelmineMälu, const char* lisatav);
