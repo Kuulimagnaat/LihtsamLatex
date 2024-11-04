@@ -3,7 +3,9 @@
 #include <stdlib.h>
 #include "Headers/Matatõlge.h"
 #include <Windows.h>
+#include <direct.h>  // for _getcwd on Windows
 
+#define MAX_PATH_LENGTH 256
 
 /* Dynamic line reading function */
 char* read_line(FILE* file) {
@@ -40,44 +42,95 @@ char* read_line(FILE* file) {
     return line;
 }
 
+/* Function to find the first .txt file in the current directory */
+int find_first_txt_file(char* txt_file_path) {
+    WIN32_FIND_DATA find_file_data;
+    HANDLE h_find = FindFirstFile("*.txt", &find_file_data);
+
+    if (h_find == INVALID_HANDLE_VALUE) {
+        printf("No .txt files found in the current directory.\n");
+        return 0;  // No .txt file found
+    } else {
+        // Store the name of the first .txt file found
+        strcpy(txt_file_path, find_file_data.cFileName);
+        FindClose(h_find);
+        return 1;  // Success
+    }
+}
+
+/* Function to strip .txt extension from the filename */
+void strip_txt_extension(char* filename) {
+    char* dot = strrchr(filename, '.');
+    if (dot && strcmp(dot, ".txt") == 0) {
+        *dot = '\0';  // Remove the .txt extension
+    }
+}
 
 int main()
 {   
-    const char* math_functions[] = {"sin", "cos", "tan", "log", "ln", "sqrt", "fii", "roo", "alfa", "beeta", "epsilon", "delta", "to", "inf", "lim", NULL};
-    const char* math_functions_tähendused[] = {"sin", "cos", "tan", "log", "ln", "sqrt", "varphi", "rho", "alpha", "beta", "varepsilon", "delta", "to", "infty", "lim", NULL};
-
-    int func_len = 0;
-    int j = 0;
-    for (; math_functions[j] != NULL; j++) {
-        if (strncmp("a", math_functions[j], strlen(math_functions[j])) == 0) {
-            func_len = strlen(math_functions[j]);
-            break;
-        }
-    }
-
-    printf("%d\n", func_len);
-
     SetConsoleOutputCP(CP_UTF8);
-    
-    // Open the input .txt file for reading
-    FILE *file = fopen("src/main.txt", "r");
-    if (file == NULL) {
-        perror("Unable to open input file");
+
+    char cwd[MAX_PATH_LENGTH];
+    char exe_path[MAX_PATH_LENGTH];
+    char exe_dir[MAX_PATH_LENGTH];
+    char txt_file_path[MAX_PATH_LENGTH];
+
+    // Get the current working directory
+    if (_getcwd(cwd, sizeof(cwd)) == NULL) {
+        perror("_getcwd() error");
         return EXIT_FAILURE;
     }
 
-    // Open the template file for reading
-    FILE *template_file = fopen("templates/defaultTemplate.txt", "r");
+    // Find the first .txt file in the current directory
+    if (!find_first_txt_file(txt_file_path)) {
+        printf("No .txt files found in the current directory.\n");
+        return EXIT_FAILURE;
+    }
+    
+    // Open the input .txt file for reading
+    FILE *file = fopen(txt_file_path, "r");
+    if (file == NULL) {
+        perror("Unable to open the .txt file found in the current directory");
+        return EXIT_FAILURE;
+    }
+
+    strip_txt_extension(txt_file_path);
+
+    // Create output filenames based on the .txt filename
+    char output_tex_file[MAX_PATH_LENGTH];
+    char output_pdf_file[MAX_PATH_LENGTH];
+    snprintf(output_tex_file, sizeof(output_tex_file), "%s.tex", txt_file_path);
+    snprintf(output_pdf_file, sizeof(output_pdf_file), "%s.pdf", txt_file_path);
+
+    // Get the executable path for template.txt
+    if (GetModuleFileName(NULL, exe_path, MAX_PATH_LENGTH) == 0) {
+        perror("GetModuleFileName() error");
+        return EXIT_FAILURE;
+    }
+
+    // Strip the executable name to get the directory
+    strcpy(exe_dir, exe_path);
+    char* last_backslash = strrchr(exe_dir, '\\');
+    if (last_backslash) {
+        *last_backslash = '\0';  // Cut the path at the last backslash
+    }
+    
+    // Construct full path to template.txt
+    char template_path[MAX_PATH_LENGTH];
+    snprintf(template_path, sizeof(template_path), "%s\\templates\\defaultTemplate.txt", exe_dir);
+
+    // Open the template file for reading from the executable's templates folder
+    FILE *template_file = fopen(template_path, "r");
     if (template_file == NULL) {
-        perror("Unable to open template file");
+        perror("Unable to open defaultTemplate.txt in the executable's templates directory");
         fclose(file);
         return EXIT_FAILURE;
     }
 
     // Open the output .tex file for writing
-    FILE *output_file = fopen("output/output.tex", "w");
+    FILE *output_file = fopen(output_tex_file, "w");
     if (output_file == NULL) {
-        perror("Error creating output file");
+        perror("Error creating output .tex file");
         fclose(file);
         fclose(template_file);
         return EXIT_FAILURE;
@@ -134,4 +187,19 @@ int main()
         }
         free(line);
     }
+
+    // Close all files
+    fclose(file);
+    fclose(template_file);
+    fclose(output_file);
+
+    // Compile output.tex to a .pdf using pdflatex
+    char compile_command[MAX_PATH_LENGTH];
+    snprintf(compile_command, sizeof(compile_command), "pdflatex %s", output_tex_file);
+    if (system(compile_command) != 0) {
+        perror("Error compiling .tex file with pdflatex");
+        return EXIT_FAILURE;
+    }
+
+    return 0;
 }
