@@ -2,6 +2,7 @@
 #include <string.h>
 #include <stdlib.h>
 #include "Headers/Matatõlge.h"
+#include <math.h>
 
 
 // Funktsioon, mis kontorllib, kas antud teksti algus täpselt on sama, mis teine soovitud tekst. Tagastab 0 kui ei ole ja 1 kui on. Funktsiooni kasutusolukord: kui ollakse minemas tõlgitavas koodis üle tähtede, siis on vaja kontrollida, kas kättejõudnud kohas on mõne käsu nimi. Seda funktsiooni saab nimetatud olukorra tajumiseks kasutada.
@@ -10,7 +11,7 @@ int KasEsimesedTähed(const char* tekstis, const char* tekst)
 {
     #if KasEsimesedTähedDebug == 1
     puts("KasEsimesedTähed");
-    printf("SISSE: tekstis=%s, tekst=%s\n", tekstis, tekst);
+    printf("  SISSE: %s, %s\n", tekstis, tekst);
     #endif
 
     unsigned int tähtiKontrollida = strlen(tekst);
@@ -19,78 +20,56 @@ int KasEsimesedTähed(const char* tekstis, const char* tekst)
         if (tekstis[i] != tekst[i])
         {
             #if KasEsimesedTähedDebug == 1
-            puts("VÄLJA: 0");
+            puts("  VÄLJA: 0");
             #endif
             return 0;
         }
     }
 
     #if KasEsimesedTähedDebug == 1
-    puts("VÄLJA: 1");
+    puts("  VÄLJA: 1");
     #endif
     return 1;
 }
 
-/* Funktsioonile antakse sisse mäluaadress, millal asub ^ märk. On mitu võimalust, mis saab olla.
-1. ^ märgi järel on avanev sulg. Siis */
 
 
-#define TõlgiAsteDebug 0
+#define TõlgiAsteDebug 1
 struct TekstArv TõlgiAste(const char* tekst)
 {
     #if TõlgiAsteDebug == 1
     printf("TõlgiAste\n");
-    printf("SISSE: %s.\n", tekst);
+    printf("  SISSE: %s\n", tekst);
     #endif
-    struct TekstArv tagastus = {.Tekst=NULL, .Arv=0};
-    
-
-    char* tulemus = malloc(1);
-    tulemus[0] = '\0';
-    if (tekst[1] == '(')
+    char* argument = LeiaLühemArgument(&tekst[1]);
+    unsigned int argumendiPikkus = strlen(argument);
+    char* sulgudetaArgument = NULL;
+    if (KasAvaldiseÜmberOnSulud(argument))
     {
-        char* sulusisu = LeiaSuluSisu(&tekst[2]);
-        unsigned int sulusisuPikkus = strlen(sulusisu);
-        char* sulusisuTõlge = TõlgiMathMode(sulusisu);
-        free(sulusisu);
-        tulemus = LiidaTekstid(tulemus, "^{");
-        tulemus = LiidaTekstid(tulemus, sulusisuTõlge);
-        free(sulusisuTõlge);
-        tulemus = LiidaTekstid(tulemus, "}");
-        // See on vaja väljaspool funktsiooni vabastada.
-        tagastus.Tekst = tulemus;
-        tagastus.Arv = 2+sulusisuPikkus+1;
-
-        #if TõlgiAsteDebug == 1
-        printf("VÄLJA: %s, %d.", tagastus.Tekst, tagastus.Arv);
-        #endif
-        return tagastus;
-    }
-    if (tekst[1] == ' ')
-    {
-        perror("^ märgi järel oli tühik. Does not make no sense");
-        exit(EXIT_SUCCESS);
+        sulgudetaArgument = EemaldaEsimeneViimane(argument);
+        free(argument);
     }
     else
     {
-        char* sulusisu = LeiaTekstEnneTeksti(&tekst[1], " ");
-        unsigned int sulusisuPikkus = strlen(sulusisu);
-        char* sulusisuTõlge = TõlgiMathMode(sulusisu);
-        free(sulusisu);
-        tulemus = LiidaTekstid(tulemus, "^{");
-        tulemus = LiidaTekstid(tulemus, sulusisuTõlge);
-        free(sulusisuTõlge);
-        tulemus = LiidaTekstid(tulemus, "}");
-        // See on vaja väljaspool funktsiooni vabastada.
-        tagastus.Tekst = tulemus;
-        tagastus.Arv = sulusisuPikkus+1;
-
-        #if TõlgiAsteDebug == 1
-        printf("VÄLJA: %s, %d.\n\n", tagastus.Tekst, tagastus.Arv);
-        #endif
-        return tagastus;
+        sulgudetaArgument = argument;
     }
+    char* argumendiTõlge = TõlgiMathMode(sulgudetaArgument);
+    free(sulgudetaArgument);
+
+    char* tõlge = malloc(1);
+    tõlge[0] = '\0';
+    tõlge = LiidaTekstid(tõlge, "^{");
+    tõlge = LiidaTekstid(tõlge, argumendiTõlge);
+    free(argumendiTõlge);
+    tõlge = LiidaTekstid(tõlge, "}");
+
+    struct TekstArv tagastus = {.Tekst = tõlge, .Arv = argumendiPikkus};
+    #if TõlgiAsteDebug == 1
+    printf("  VÄLJA: %s, %d\n", tagastus.Tekst, tagastus.Arv);
+    #endif
+    return tagastus;
 }
+
 
 
 // SEDA FUNKTSIOONI VÕIB USALDADA: Käsitsi läbi katsetatud.
@@ -147,11 +126,6 @@ char* LeiaSuluSisu(const char* tekst)
 }
 
 
-// Vaja oleks mingit funktsiooni, mis tagastaks tõeväärtuse selle kohta, kas meie latexi koodi tekst kujutab endast avaldist, mille viimane tehe on murrujoon. Seda funktsiooni kasutaks selle jaoks, et aru saada, kas latexi koodis näiteks siinuse argumendi ümber on vaja panna sulud või mitte. Tõlgitavas koodis vb on kirjutatud sin(a/b), aga tegelikult latexi faili läheb murd siinuse järele ilma sulgudeta. N2: tõlgitavas koodis võib olla kirjas sin(a+b) ja selles olurkorras tuleb sulud alles jätta ka latexi koodis.
-
-
-// Ma olen veendunud, et tõlkimises tühikute asjaks kasutamine on saatanast. Igast kohast, kus tühikuga tahaks tajuda argumendi algust vms, alati on võimalik mingi olukord välja mõelda, kus on mitu võimalikku tõlgendust. Seepärast las sinx/2 ja sin x/2 olla samad asjad, mis tähendavad järgmist (sin(x))/2. Siinus, kui tema järel pole sulgi, võtab oma argumendiks esimese tähemärgi ja ülejäänud kood jätkab, arvestades, et siinuse argument on see esimene temale järgnev tähemärk.
-
 
 // Abimeetod, mis appendib kaks stringi, kusjuures esimene nendest on dünaamiliselt eraldatud mälu.
 char* LiidaTekstid(char* eelmineMälu, const char* lisatav)
@@ -167,10 +141,36 @@ char* LiidaTekstid(char* eelmineMälu, const char* lisatav)
 }
 
 
+
+char* LiidaTäht(char* eelmineMälu, char lisatav)
+{
+    unsigned int pikkus = strlen(eelmineMälu);
+    char* uusMälu = realloc(eelmineMälu, pikkus+2);
+    uusMälu[pikkus] = lisatav;
+    uusMälu[pikkus+1] = '\0';
+    return uusMälu;
+}
+
+
+
+// Funktsioon lisab teksti lõppu mingi arvu. Ei tööta negatiivsete arvudega, aga ma tegingi selle esmalt ühe alati positiivse counteri numbri teksti lisamiseks. Vabastab eelmise mälu ja tagastab uue mälu aadressi, kuhu on kijutatud kogu eelmise tekst, aga lõpus on veel soovitud number. 
+char* LiidaArv(char* eelmineMälu, int lisatav)
+{
+    unsigned int numbriteKogus = log10(lisatav)+1;
+    unsigned int eelmisePikkus = strlen(eelmineMälu);
+    char* uusMälu = realloc(eelmineMälu, eelmisePikkus + numbriteKogus + 1);
+    sprintf(&uusMälu[eelmisePikkus], "%d", lisatav);
+    return uusMälu;
+}
+
+
+
 // mingi list tuntud funktsioonidest
 unsigned int poolituskoht = 6;
 const char* math_functions[] = {"sin", "cos", "tan", "log", "ln", "sqrt", "fii", "roo", "alfa", "beeta", "epsilon", "delta", "to", "inf", "lim", NULL};
 const char* math_functions_tähendused[] = {"sin", "cos", "tan", "log", "ln", "sqrt", "varphi", "rho", "alpha", "beta", "varepsilon", "delta", "to", "infty", "lim", NULL};
+
+
 
 // duplikeerib antud stringi kuni n baidini (tagastab pointeri uuele stringile)
 char* my_strndup(const char* s, size_t n) {
@@ -192,6 +192,8 @@ char* my_strndup(const char* s, size_t n) {
     return result;
 }
 
+
+
 // Kas antud string on listis olev funktsioon
 int is_math_function(const char* str) {
     for (int i = 0; math_functions[i] != NULL; i++) {
@@ -202,6 +204,8 @@ int is_math_function(const char* str) {
     return 0;
 }
 
+
+
 // Abimeetod, mis appendib kaks stringi
 char* append_str(const char* a, const char* b) {
     char* result = malloc(strlen(a) + strlen(b) + 1);
@@ -209,6 +213,7 @@ char* append_str(const char* a, const char* b) {
     strcat(result, b);
     return result;
 }
+
 
 
 // Võtab sisse mäluaadressi, kust algab mingi tekst. Eraldab mälu ja kirjutab sinna selle teksti ainult ilma esimese ja viimase täheta. Mõeldud selleks, et avaldiselt kujul (xxx) sulud ära võtta.
@@ -230,6 +235,7 @@ char* EemaldaEsimeneViimane(char* tekst)
 
     return lühem;
 }
+
 
 
 // Selleks, et teada saada, kas avaldis on ümbritsetud mõttetute sulgudega, ei piisa kontrollimast, kas esimene täht on ( ja viimane ), sest avaldis võib olla näiteks (a+b)*(c+d). Tõepoolest, esimene täht on ( ja viimane ), aga need sulud pole avaldist ümbritsevad sulud.
@@ -262,6 +268,44 @@ int KasAvaldiseÜmberOnSulud(const char* tekst)
     #endif
     return 0;
 }
+
+
+// Funktsioon, mis on mõeldud funktsiooni tul argumendi lihtsustamiseks. See peab kaks kõrvutiolevat sama tähte asendama selle tähe ruuduga, kolm kõrvutiolevat sama tähte selle tähe kuubiga jne. Näiteks xxxyy -> x^{3}y^{2} ja xxyxy -> x^{2}yxy
+char* KõrvutiolevadAstmeks(const char* tekst)
+{
+    char* tõlge = malloc(1);
+    tõlge[0] = '\0';
+    unsigned int aste = 1;
+    for (unsigned int i = 0; tekst[i]!='\0'; i++)
+    {
+        if (tekst[i+1] == tekst[i])
+        {
+            aste++;
+            printf("%d\n", aste);
+            puts("Astet kasvatati!");
+            continue;
+        }
+        else
+        {
+            if (aste == 1)
+            {
+                tõlge = LiidaTäht(tõlge, tekst[i]);
+            }
+            else
+            {
+                //puts("Programm jõudis ^{ lisamise juurde!");
+                tõlge = LiidaTäht(tõlge, tekst[i]);
+                tõlge = LiidaTekstid(tõlge, "^{");
+                tõlge = LiidaArv(tõlge, aste);
+
+                tõlge = LiidaTekstid(tõlge, "}");
+                aste = 1;
+            }
+        }
+    }
+    return tõlge;
+}
+
 
 
 // Rekursiivselt tõlgime math moodi latexisse
@@ -306,13 +350,13 @@ char* TõlgiMathMode(const char* expression)
             i += strlen(lugeja)+1+strlen(nimetaja);
 
             free(lugeja);
-            printf("Kas lugeja on sulgudeta: %d\n", lugejaOnSulgudeta);
+            //printf("Kas lugeja on sulgudeta: %d\n", lugejaOnSulgudeta);
             // Kui lugejaOnSulgudeta on väärtusega 1, siis on lugeja ja sulgudetaLugeja samal mäluaadressil, mistõttu ei tohi sulgudetaLugjejat vabastada, sest ss vabastaks sama mälu kaks korda. SulgudetaLugeja tuleb vabastada ainult siis, kui lugejaOnSulgudeta väärtus on 0, st esialgne lugeja on kujul (xxx) ja sulgudetalugeja jaoks loodi uus mälu, kus on tekst kujul xxx. 
             if (lugejaOnSulgudeta == 0)
             {
                 free(sulgudetaLugeja);
             }
-            printf("Result on järgmine: %s\n", result);
+            //printf("Result on järgmine: %s\n", result);
             free(nimetaja);
             free(lugejaTõlge);
             free(nimetajaTõlge);
@@ -327,6 +371,31 @@ char* TõlgiMathMode(const char* expression)
             continue;
         }
 
+        if (KasEsimesedTähed(&expression[i], "tul"))
+        {
+            char* tõlge = malloc(1);
+            tõlge[0] = '\0';
+
+            char* argument = LeiaLühemArgument(&expression[i+3]);
+            // argumendi xxy puhul peab tõlge olema '''_{xxy}
+            char* alatekst = KõrvutiolevadAstmeks(argument);
+            for (unsigned int j = 0; j<strlen(argument); j++)
+            {
+                tõlge = LiidaTäht(tõlge, '\'');
+            }
+            tõlge = LiidaTekstid(tõlge, "_{");
+            tõlge = LiidaTekstid(tõlge, alatekst);
+            tõlge = LiidaTekstid(tõlge, "}");
+
+            i += 3+strlen(argument);
+            result = LiidaTekstid(result, tõlge);
+            free(argument);
+            free(alatekst);
+            free(tõlge);
+            continue;
+        }
+        
+        
         // Kontrollime kas on mõni tuntud käsk
         int func_len = 0;
         int j = 0;
@@ -406,7 +475,7 @@ char* TõlgiMathMode(const char* expression)
         {
             // Kõik ülejäänud pask läheb tavaliselt
             char* single_char = my_strndup(&expression[i], 1);
-            printf("Resulti lisatakse tavaline täht %s.\n", single_char);
+            //printf("Resulti lisatakse tavaline täht %s.\n", single_char);
             result = append_str(result, single_char);
             free(single_char);
             i++;
@@ -417,6 +486,7 @@ char* TõlgiMathMode(const char* expression)
     #endif
     return result;
 }
+
 
 
 char* LeiaTekstEnneTähte(const char* tekst, char täht)
@@ -433,6 +503,7 @@ char* LeiaTekstEnneTähte(const char* tekst, char täht)
     }
     return NULL;
 }
+
 
 
 char* LeiaTekstEnneTeksti(const char* tekst, const char* teksti)
@@ -452,12 +523,12 @@ char* LeiaTekstEnneTeksti(const char* tekst, const char* teksti)
 }
 
 
+
 /* Funktsioon võtab sisse mäluaadressi, kus on limi algus. Funktsioon hakkab sealt teksti lugema, eraldab endale sobiva koguse mälu ja kirjutab sellesse loetud teksti tõlke. Tagastab structi, mis sisaldab endas tõlke alguse aadressi ja seda, kui palju funktsiooni väline kood peaks lähtekoodis edasi hüppama, et jõuda tekstis sinnamaale, kus lim läbi saab.
 Täpsemalt on kolm võimalust, mis limi tekstile järgnev jähemärk olla saab. Iga võimaluse puhul käitutakse erinevalt.
 1) limi järel on tühik. Siis limi alla teksti ei tule ja lim on üksinda. Selline lim on jadade piirväärtusel.
 2) limi järel on avanev sulg. Siis limi alla läheb kõik see, mis jääb nimetatud avaneva ja seda sulgeva sulu vahele.
-3) limi järel on mingi muu täht. Siis läheb limi alla kõik see, mis jääb limi ja esimese tühiku vahele. limlima/btoc (a+b)/c+d
-*/
+3) limi järel on mingi muu täht. Siis läheb limi alla kõik see, mis jääb limi ja esimese tühiku vahele. limlima/btoc (a+b)/c+d*/
 struct LimiTagastus TõlgiLim(char* tekst)
 {
     struct LimiTagastus tagastus = {.TähtiLoeti=0, .Tõlge=NULL};
@@ -514,29 +585,8 @@ struct LimiTagastus TõlgiLim(char* tekst)
 
 
 
-/* Murruga on lugu selline.
-sin(x+y)/2  -->  (sin(x+y))/2, mitte sin((x+y)/2)
-Sulgude omistamine käib vasakult paremale. Sin on enne murrujoont ja seega sulud on siinuse omad ja seega vähim lugeja on sin(x+y).
-Küsimus on, kuidas seda tajuda.
-MÕTE 1.  Saaks teha funktsiooni, mis ütleb kas tõlgitava teksti kohal [i] algab mingi murru lugeja. Sel juhul tõlgimathmode sees pannakse resulti \\frac{ ja antakse &tekst[i] funktsioonile tõlgifrac, mis loeb sisse lugeja ja nimetaja ja tagastab ülejäänud tõlke, mis on kujul a}{b}. Samas tõlgimathmodes astutakse vist ka nimetatud avaldises sin(x+y)/2 ka ( märgi peale ja sel puhul murru lugeja tajuja funktsioon ütleks ka selle kohta, et algab murd. 
-MÕTE 2.  Veel üks võimalus oleks mitte tajuda ette, kas tekstikoht on mingi nimetaja, vaid rahulikult jõuda lugemisega lõpuks murrujooneni ja siis hakata uurima, mis oleks pidanud nimetaja olema. Ma arvan, et see on lugeja väljaselgitamise koha pealt veidike lihtsam, aga miinus on see, et siis peab juba kirjutatud resulti tagantjärele muutma niimoodi, et \frac{ oleks selle sees täpselt õiges kohas.*/
-
-
-// Funktsioon tagastab mäluaadressi, millel on antud teksti esimene mittetühik. Kui juba esimene täht pole tühik, siis tagastab sellesama mäluaadressi, mis sisse anti. Tagastab aadressi NULL, kui teksti lõpuni ei olnud midagi muud peale tühikute.
-/*char* TähtPealeTühikuid(const char* tekst)
-{
-    for (unsigned int i=0; i<strlen(tekst); i++)
-    {
-        if (tekst[i] != ' ')
-        {
-            return &tekst[i];
-        }
-    }
-    return NULL;
-}*/
-
 #define LeiaNimetajaDebug 0
-char* LeiaNimetaja(const char* tekst) // nin(x)/sin(x + 4)abc     va(4 sin(x)x)/sin(x + 4)abc
+char* LeiaNimetaja(const char* tekst) // sin(x)/sin(x + 4)abc     va(4 sin(x)x)/sin(x + 4)abc
 {
     #if LeiaNimetajaDebug == 1
     printf("LeiaNimetaja\n");
@@ -570,6 +620,7 @@ char* LeiaNimetaja(const char* tekst) // nin(x)/sin(x + 4)abc     va(4 sin(x)x)/
 }
 
 
+
 #define LeiaLugejaDebug 0
 char* LeiaLugeja(const char* tekst)
 {
@@ -599,6 +650,7 @@ char* LeiaLugeja(const char* tekst)
     #endif
     return lugeja;
 }
+
 
 
 #define KasLugejaDebug 0
@@ -639,66 +691,69 @@ int KasLugeja(const char* tekst) // nin(x)/sin(x + 4)abc     va(4 sin(x)x)/sin(x
     #endif
     return 1;
 }
-    /*
-    // Esimeseks kontrollib, ega / otse vaadeldava koha kõrval pole. Kõrvalolemist tuleb kontrollida nii, et tühikuid ei arvestataks. avaldises "a /b" on / a kõrval
-    // Teiseks kontrollib, ega küsitaval kohal pole avanev sulg. Siis otsib vastava sulgeva sulu ja kui selle taga on /, siis on murd.
-    if (*(TähtPealeTühikuid(&tekst[1])) == '/')
+
+
+
+// Argumendi võtmine käib nii, et tagastatakse tekst enne esimest tühikut välja arvatud juhul kui see tühik on mingite sulgude sees. See ei ole aga ainus viis argumenti võtta, sest näitekst astmed tahavad veidi teistsugust argumendivõtmist. Teksti ax^2+bx+c peab tõlgendama nii, et ax^(2)+bx+c, mitte ax^(2+bx+c) nagu esimene variant tõlgendaks. Seega on olemas kaks argumendivõtmise funtksiooni. Üks on tavaline LeiaArgument, teine on LeiaLühemArgument selline, mis lõpetab argumendivõtu mitte ainult tühiku peale vaid ka tehete +-* peale. Jagamismärki selles nimekirjas pole, sest jagamise argumendid selgitatakse välja enne astmete omi, mistõttu jagamismärki ei tule kunagi astme argumendi otsimisel ette.
+#define LeiaArgumentDebug 0
+char* LeiaArgument(const char* tekst)
+{
+    #if LeiaArgumentDebug == 1
+    printf("LeiaArgument\n");
+    printf("  SISSE: %s\n", tekst);
+    #endif
+    for (unsigned int i=0; ; )
     {
-        return 1;
-    }
-    if (tekst[0] == '(')
-    {
-        
-        char* suluSisu = LeiaSuluSisu(&tekst[1]);
-        unsigned int pikkus = strlen(suluSisu);
-        if (*(TähtPealeTühikuid(&tekst[pikkus+2])) == '/')
+        if (tekst[i] == '(')
         {
-            return 1;
+            char* sulusisu = LeiaSuluSisu(&tekst[i+1]);
+            i += strlen(sulusisu)+2;
+            free(sulusisu);
+            continue;
         }
-    }
-    // Kolmandaks kontrollib, ega tegu pole funktsiooniga, mille järel on sulud ja nende järel omakorda /. Näiteks avaldises 1+sin(x+b)/2 on sin(x+b) lugeja.
-    for (unsigned int i=0; i<poolituskoht; i++)
-    {
-        if (KasEsimesedTähed(tekst, math_functions[i]))
+        if  (tekst[i] == ' ' || tekst[i]=='\0')
         {
-            if (tekst[strlen(math_functions[i])] == '(')
-            {
-                char* suluSisu = LeiaSuluSisu(&tekst[strlen(math_functions[i])+1]);
-                unsigned int pikkus = strlen(suluSisu);
-                if (*(TähtPealeTühikuid(&tekst[strlen(math_functions[i])+pikkus+2])) == '/') // trust.
-                {
-                    return 1;
-                }
-            }
+            char* argument = malloc(i+1);
+            memcpy(argument, tekst, i);
+            argument[i]='\0';
+
+            #if LeiaArgumentDebug == 1
+            printf("  VÄLJA: %s\n", a.Tekst);
+            #endif
+            return argument;
         }
+        i++;
     }
-    // Viimasena kontrollib ega kontrollitaval kohal pole funktsiooni, mille järel ei pea sulge olema nt alfa.
-    for (unsigned int i=poolituskoht; math_functions[i]!= NULL; i++)
+}
+
+// Identne eelmise funktsooniga, lic argumendi võtmise lõpetamise tingimusi on rohkem.
+#define LeiaLühemArgumentDebug 0
+char* LeiaLühemArgument(const char* tekst)
+{
+    #if LeiaLühemArgumentDebug == 1
+    printf("LeiaLühemArgument\n");
+    printf("  SISSE: %s\n", tekst);
+    #endif
+    for (unsigned int i=0; ; )
     {
-        if (KasEsimesedTähed(tekst, math_functions[i]))
+        if (tekst[i] == '(')
         {
-            if (*(TähtPealeTühikuid(&tekst[strlen(math_functions[i])])) == '/')
-            {
-                    return 1;
-            }
+            char* sulusisu = LeiaSuluSisu(&tekst[i+1]);
+            i += strlen(sulusisu)+2;
+            free(sulusisu);
+            continue;
         }
+        if  (tekst[i] == '+' || tekst[i] == '-' || tekst[i] == '*' || tekst[i] == ' ' || tekst[i]=='\0')
+        {
+            char* argument = malloc(i+1);
+            memcpy(argument, tekst, i);
+            argument[i]='\0';
+
+            #if LeiaLühemArgumentDebug == 1
+            printf("  VÄLJA: %s\n", argument);
+            #endif
+            return argument;
+        }
+        i++;
     }
-    return 0;
-    */
-
-
-
-/*Funktsioon võtab sisse murdu tähistava kaldkriipsu mäluaadressi tõlgitavas tekstis. Funktsioon vaatab sellest tagasipoole ja selgitab välja lugeja. Selleks, et kogemata liiga palju tagasi ei vaataks, on funktsioonil vaja ka teist argumenti, mis on tõlgitava teksti alguse mäluaadress. Funktsioon vaatab ka mälus edasipoole ja selgitab välja nimetaja. */
-
-
-
-
-
-
-/* Funktsioon võtab argumendiks mäluaadressi, kust algab tekst, mille esimesed tähed on sum. Funktsioon loeb seda teksti, eraldab endale sobiva koguse mälu ja kirjutab sinna latexiks tõlgitud teksti. Funktsioon tagastab structi, milles on tõlke mälu aadress ja üks arv, mis ütleb, kui palju tõlgimathmode peab tälgitavas koodis edasi hüppama, et jõuda kohta, mis on TõlgiSum tõlgitud alast möödas.
-Täpsematl töötab TõlgiSum järgmiselt. On mitu võimalust, mis saab olla esimene tähemärk sum tähtede järel.
-1) sumi järel on avanev sulg. Siis sum paneb enda alaindeksiks selle sulu sisu. Kui avanevat sulgu sulgeva sulu järel on kohe veel üks avanev sulg, siis selle sisu läheb ülaindeksiks.
-2) sumi järel on tühik. siis eeldab sum, et tahetakse kahte argumenti, mis on omavahel eraldatud tühikutega.
-
-*/
-//struct TekstArv TõlgiSum(const char* tekst)
+}

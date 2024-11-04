@@ -1,13 +1,17 @@
 #include <stdio.h>
 #include "Headers/Matatõlge.h"
 #include <Windows.h>
+#include <math.h>
 
 int main()
 {
     SetConsoleOutputCP(CP_UTF8);
-    char* tulemus = TõlgiMathMode("limxtoa 1/x = 0");
 
+    char* t1 = TõlgiMathMode("ftulxxx");
+    char* t2 = TõlgiMathMode("ftulxxy");
+    char* t3 = TõlgiMathMode("ftulyxx");
+    char* t4 = TõlgiMathMode("ftulyxy");
+    char* t5 = TõlgiMathMode("ftulabbcdddddddd");
 
-    //int tulemus = KasAvaldiseÜmberOnSulud("((x/22)");
-    printf("%s\n", tulemus);
+    printf("%s\n%s\n%s\n%s\n%s", t1, t2, t3, t4, t5);
 }

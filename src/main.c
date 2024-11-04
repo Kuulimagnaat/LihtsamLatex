@@ -94,9 +94,9 @@ int main()
                 {
                     if (i==0 && KasEsimesedTähed(&line[i], "mm "))
                     {
-                        i += 4;
+                        i += 3;
                         fprintf(output_file, "\\[ ");
-                        char* tõlgitav = LeiaTekstEnneTeksti(&line[i], " mm ");
+                        char* tõlgitav = LeiaTekstEnneTeksti(&line[i], " mm");
                         i += strlen(tõlgitav)-1; 
                         char* tõlge = TõlgiMathMode(tõlgitav);
                         free(tõlgitav);

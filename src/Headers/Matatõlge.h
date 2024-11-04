@@ -30,5 +30,9 @@ struct TekstArv TõlgiAste(const char* tekst);
 char* LeiaLugeja(const char* tekst);
 char* EemaldaEsimeneViimane(char* tekst);
 int KasAvaldiseÜmberOnSulud(const char* tekst);
-
+char* LeiaArgument(const char* tekst);
+char* LeiaLühemArgument(const char* tekst);
+char* KõrvutiolevadAstmeks(const char* tekst);
+char* LiidaTäht(char* eelmineMälu, char lisatav);
+char* LiidaArv(char* eelmineMälu, int lisatav);
 #endif
