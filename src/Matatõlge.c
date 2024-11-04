@@ -3,7 +3,7 @@
 #include <stdlib.h>
 #include "Headers/Matatõlge.h"
 #include <math.h>
-
+#include <ctype.h>
 
 // Funktsioon, mis kontorllib, kas antud teksti algus täpselt on sama, mis teine soovitud tekst. Tagastab 0 kui ei ole ja 1 kui on. Funktsiooni kasutusolukord: kui ollakse minemas tõlgitavas koodis üle tähtede, siis on vaja kontrollida, kas kättejõudnud kohas on mõne käsu nimi. Seda funktsiooni saab nimetatud olukorra tajumiseks kasutada.
 #define KasEsimesedTähedDebug 0
@@ -166,10 +166,11 @@ char* LiidaArv(char* eelmineMälu, int lisatav)
 
 
 // mingi list tuntud funktsioonidest
-unsigned int poolituskoht = 6;
-const char* math_functions[] = {"sin", "cos", "tan", "log", "ln", "sqrt", "fii", "roo", "alfa", "beeta", "epsilon", "delta", "to", "inf", "lim", NULL};
-const char* math_functions_tähendused[] = {"sin", "cos", "tan", "log", "ln", "sqrt", "varphi", "rho", "alpha", "beta", "varepsilon", "delta", "to", "infty", "lim", NULL};
+const char* math_functions[] = {"sin", "cos", "tan", "log", "ln", "sqrt", "lim", NULL};
+const char* math_functions_tähendused[] = {"sin", "cos", "tan", "log", "ln", "sqrt", "lim", NULL};
 
+const char* math_functions_replace[] = {"alfa", "beeta", "epsilon", "delta", "to", "inf", NULL};
+const char* math_functions_replace_tähendused[] = {"alpha", "beta", "varepsilon", "delta", "to", "infty", NULL};
 
 
 // duplikeerib antud stringi kuni n baidini (tagastab pointeri uuele stringile)
@@ -310,60 +311,57 @@ char* KõrvutiolevadAstmeks(const char* tekst)
 
 // Rekursiivselt tõlgime math moodi latexisse
 #define TõlgiMathModeDebug 1
-char* TõlgiMathMode(const char* expression)
-{
+char* TõlgiMathMode(const char* expression) {
     #if TõlgiMathModeDebug == 1
     printf("TõlgiMathMode\n");
     printf("  SISSE: %s\n", expression);
     #endif
-    //puts(expression);
-    char* result = malloc(1); // Tühi string
+
+    char* result = malloc(1); // Empty string
     result[0] = '\0';
-    
+
     int i = 0;
-    while (i < strlen(expression)) 
-    {
-        if (KasLugeja(&expression[i]) == 1)
-        {
+    while (i < strlen(expression)) {
+        // Check for a number or variable
+        if (KasLugeja(&expression[i]) == 1) {
             char* lugeja = LeiaLugeja(&expression[i]);
             int lugejaOnSulgudeta = 1;
             char* sulgudetaLugeja;
-            if (KasAvaldiseÜmberOnSulud(lugeja))
-            {
+
+            // Check if the reader has parentheses
+            if (KasAvaldiseÜmberOnSulud(lugeja)) {
                 lugejaOnSulgudeta = 0;
                 sulgudetaLugeja = EemaldaEsimeneViimane(lugeja);
-            }
-            // Siin kui sulgusid ei ole, mida eemaldada lugjealt enne selle tõlkimist, siis tahaksin panna sulgudetaLugeja väärtuseks sellesama lugeja mäluaadressi. See on probleemne, sest hiljem kui vabastatakse lugeja ja ss sulgudetaLugeja, ss vabastatakse sama mäluaadressi mälu 2 korda. Selle vältimiseks tegin muutuja lugejaOnSulgudeta, mis omab väärtust 0, kui lugeja on erinev sulgudeta lugejast ja 1, kui lugeja ja sulgudetaLugeja tekstid omavad sama mäluaadressi. Kui on 1, ss mälu vabastatakse ainult ühe korra.
-            else
-            {
+            } else {
                 sulgudetaLugeja = lugeja;
             }
-                
+
             char* lugejaTõlge = TõlgiMathMode(sulgudetaLugeja);
-            char* nimetaja = LeiaNimetaja(&expression[i+strlen(lugeja)+1]);
+            char* nimetaja = LeiaNimetaja(&expression[i + strlen(lugeja) + 1]);
             char* nimetajaTõlge = TõlgiMathMode(nimetaja);
+
             result = LiidaTekstid(result, "\\frac{");
             result = LiidaTekstid(result, lugejaTõlge);
             result = LiidaTekstid(result, "}{");
             result = LiidaTekstid(result, nimetajaTõlge);
             result = LiidaTekstid(result, "}");
-            i += strlen(lugeja)+1+strlen(nimetaja);
 
+            // Update the index
+            i += strlen(lugeja) + 1 + strlen(nimetaja);
+
+            // Free memory to prevent leaks
             free(lugeja);
-            //printf("Kas lugeja on sulgudeta: %d\n", lugejaOnSulgudeta);
-            // Kui lugejaOnSulgudeta on väärtusega 1, siis on lugeja ja sulgudetaLugeja samal mäluaadressil, mistõttu ei tohi sulgudetaLugjejat vabastada, sest ss vabastaks sama mälu kaks korda. SulgudetaLugeja tuleb vabastada ainult siis, kui lugejaOnSulgudeta väärtus on 0, st esialgne lugeja on kujul (xxx) ja sulgudetalugeja jaoks loodi uus mälu, kus on tekst kujul xxx. 
-            if (lugejaOnSulgudeta == 0)
-            {
+            if (lugejaOnSulgudeta == 0) {
                 free(sulgudetaLugeja);
             }
-            //printf("Result on järgmine: %s\n", result);
             free(nimetaja);
             free(lugejaTõlge);
             free(nimetajaTõlge);
             continue;
         }
-        if (expression[i] == '^')
-        {
+
+        // Check for exponent
+        if (expression[i] == '^') {
             struct TekstArv astmeTõlge = TõlgiAste(&expression[i]);
             result = LiidaTekstid(result, astmeTõlge.Tekst);
             free(astmeTõlge.Tekst);
@@ -371,122 +369,124 @@ char* TõlgiMathMode(const char* expression)
             continue;
         }
 
-        if (KasEsimesedTähed(&expression[i], "tul"))
-        {
+        // Check for 'tul' commands
+        if (KasEsimesedTähed(&expression[i], "tul")) {
             char* tõlge = malloc(1);
             tõlge[0] = '\0';
 
-            char* argument = LeiaLühemArgument(&expression[i+3]);
-            // argumendi xxy puhul peab tõlge olema '''_{xxy}
+            char* argument = LeiaLühemArgument(&expression[i + 3]);
+            // In the case of argument 'xxy', the translation must be '''_{xxy}
             char* alatekst = KõrvutiolevadAstmeks(argument);
-            for (unsigned int j = 0; j<strlen(argument); j++)
-            {
+            for (unsigned int j = 0; j < strlen(argument); j++) {
                 tõlge = LiidaTäht(tõlge, '\'');
             }
             tõlge = LiidaTekstid(tõlge, "_{");
             tõlge = LiidaTekstid(tõlge, alatekst);
             tõlge = LiidaTekstid(tõlge, "}");
 
-            i += 3+strlen(argument);
+            i += 3 + strlen(argument);
             result = LiidaTekstid(result, tõlge);
+
+            // Free allocated memory
             free(argument);
             free(alatekst);
             free(tõlge);
             continue;
         }
-        
-        
-        // Kontrollime kas on mõni tuntud käsk
+
+        // Check for known commands in one go
+        int func_index = -1;
         int func_len = 0;
-        int j = 0;
-        for (; math_functions[j] != NULL; j++) {
+        int is_replacement = 0; // Flag to check if it's a replacement command
+
+        // Check in math functions array
+        for (int j = 0; math_functions[j] != NULL; j++) {
             if (strncmp(&expression[i], math_functions[j], strlen(math_functions[j])) == 0) {
+                func_index = j;
                 func_len = strlen(math_functions[j]);
+                is_replacement = 0;
                 break;
             }
         }
-        
 
-        if (func_len != 0) {
-            //Leiame funktsiooni nime
-            //Kopeerime leitud funktsiooni nime, et siis saaksime seda kasutada kui eraldi "muutujat". Me ei taha modifitseerida algset *expression* stringi.
-            //Samuti saame selle eluaega ise määrata, st. vabastada, millal soovime
-            char* func_name = my_strndup(math_functions_tähendused[j], strlen(math_functions_tähendused[j]));
-
-            
-            // Lisame vajaliku latex süntaksi
-            // !!! Siin on mäluleke imo. muutuja func_name mälu vabastatakse, aga see mälu, mille eraldab sisemine append_str, ei saa kunagi vabastatud. See lic eraldatakse, mäluaadress antakse teisele appendstr funktsioonile, mis eraldab uut mälu, aga eelmist ei vabasta. Ainult kõige viimasena eraldatud mälu vabastatakse. !!!
-            char* latex_func_with_left;
-            if (j>=poolituskoht)
-            {
-                if (strcmp(func_name, "lim") == 0)
-                {
-
-                    char* inner_expression = my_strndup(&expression[i], strlen(&expression[i]));
-                    struct LimiTagastus tagastus = TõlgiLim(inner_expression); 
-
-                    latex_func_with_left = tagastus.Tõlge;
-                    i+=tagastus.TähtiLoeti;
-                }
-                else
-                {
-                    latex_func_with_left = append_str("\\", func_name);
+        // If not found in math functions, check in replacement array
+        if (func_index == -1) {
+            for (int j = 0; math_functions_replace[j] != NULL; j++) {
+                if (strncmp(&expression[i], math_functions_replace[j], strlen(math_functions_replace[j])) == 0) {
+                    func_index = j; // Keep the index for replacements
+                    func_len = strlen(math_functions_replace[j]);
+                    is_replacement = 1; // Found in replacements
+                    break;
                 }
             }
-            else{
-                latex_func_with_left = append_str("\\", func_name);
-                latex_func_with_left = append_str(latex_func_with_left, "\\left(");
-            }
+        }
 
-            //result = append_str(result, latex_func_with_left);
-            result = LiidaTekstid(result, latex_func_with_left);
-            if (strcmp(func_name, "lim") != 0)
-            {
+        // If a function or replacement is found
+        if (func_index != -1) {
+            char* func_name;
+
+            // Determine the function or replacement name
+            if (is_replacement) {
+                func_name = my_strndup(math_functions_replace_tähendused[func_index], strlen(math_functions_replace_tähendused[func_index]));
+                result = LiidaTekstid(result, append_str("\\", func_name));
                 i += func_len;
-            } // Liigume mööda antud käsust
-            free(func_name);
-            // Näpime seda argumenti sulgude vahel
-            if (expression[i] == '(') {
+            } else {
+                func_name = my_strndup(math_functions_tähendused[func_index], strlen(math_functions_tähendused[func_index]));
+                
+                // Handle standard math functions
+                if (strcmp(func_name, "lim") == 0) {
+                    char* inner_expression = my_strndup(&expression[i], strlen(&expression[i]));
+                    struct LimiTagastus tagastus = TõlgiLim(inner_expression);
+                    result = LiidaTekstid(result, tagastus.Tõlge);
+                    i += tagastus.TähtiLoeti; // Move index forward
+                    free(inner_expression); // Clean up
+                } else {
+                    // Add LaTeX function format
+                    result = LiidaTekstid(result, append_str("\\", append_str(func_name, "\\left(")));
+                    i += func_len; // Move past function
+                }
+            }
+
+            free(func_name); // Clean up allocated memory
+
+            // Check for parentheses if it's a regular function
+            if (!is_replacement && expression[i] == '(') {
+                puts("läks sisse");
                 int start = i + 1;
                 int paren_count = 1;
                 i++;
 
-                // Leiame sulud
                 while (expression[i] != '\0' && paren_count > 0) {
                     if (expression[i] == '(') paren_count++;
                     else if (expression[i] == ')') paren_count--;
                     i++;
                 }
 
-                // Leiame rekursiivselt sisu
+                // Process inner expression recursively
                 char* inner_expression = my_strndup(&expression[start], i - start - 1);
                 char* inner_latex = TõlgiMathMode(inner_expression);
-                free(inner_expression);
 
-                result = append_str(result, inner_latex);
-                free(inner_latex);
-
+                result = LiidaTekstid(result, inner_latex);
                 result = append_str(result, "\\right)");
+
+                free(inner_expression);
+                free(inner_latex);
             }
-           free(latex_func_with_left);
-        } 
-        
-        else 
-        {
-            // Kõik ülejäänud pask läheb tavaliselt
+        } else {
+            // Handle regular characters
             char* single_char = my_strndup(&expression[i], 1);
-            //printf("Resulti lisatakse tavaline täht %s.\n", single_char);
-            result = append_str(result, single_char);
+            result = LiidaTekstid(result, single_char);
             free(single_char);
             i++;
         }
     }
+
     #if TõlgiMathModeDebug == 1
     printf("  VÄLJA: %s\n", result);
     #endif
+
     return result;
 }
-
 
 
 char* LeiaTekstEnneTähte(const char* tekst, char täht)
