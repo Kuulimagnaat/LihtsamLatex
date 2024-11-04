@@ -66,41 +66,40 @@ void strip_txt_extension(char* filename) {
     }
 }
 
-int main()
-{   
+/* Function to retrieve the template name from config.txt */
+char* get_template_name(const char* config_path) {
+    FILE* config_file = fopen(config_path, "r");
+    if (config_file == NULL) {
+        perror("Unable to open config.txt in src directory");
+        return NULL;
+    }
+
+    char* line;
+    char* template_name = NULL;
+    while ((line = read_line(config_file)) != NULL) {
+        if (strncmp(line, "template =", 10) == 0) {
+            template_name = strdup(line + 11); // Extract template name after "template = "
+            free(line);
+            break;
+        }
+        free(line);
+    }
+    fclose(config_file);
+    return template_name;
+}
+
+int main() {
     SetConsoleOutputCP(CP_UTF8);
 
     char cwd[MAX_PATH_LENGTH];
     char exe_path[MAX_PATH_LENGTH];
     char exe_dir[MAX_PATH_LENGTH];
-    char txt_file_path[MAX_PATH_LENGTH];
 
-    // Get the current working directory
+    // Get the current working directory for main.txt
     if (_getcwd(cwd, sizeof(cwd)) == NULL) {
         perror("_getcwd() error");
         return EXIT_FAILURE;
     }
-
-    // Find the first .txt file in the current directory
-    if (!find_first_txt_file(txt_file_path)) {
-        printf("No .txt files found in the current directory.\n");
-        return EXIT_FAILURE;
-    }
-    
-    // Open the input .txt file for reading
-    FILE *file = fopen(txt_file_path, "r");
-    if (file == NULL) {
-        perror("Unable to open the .txt file found in the current directory");
-        return EXIT_FAILURE;
-    }
-
-    strip_txt_extension(txt_file_path);
-
-    // Create output filenames based on the .txt filename
-    char output_tex_file[MAX_PATH_LENGTH];
-    char output_pdf_file[MAX_PATH_LENGTH];
-    snprintf(output_tex_file, sizeof(output_tex_file), "%s.tex", txt_file_path);
-    snprintf(output_pdf_file, sizeof(output_pdf_file), "%s.pdf", txt_file_path);
 
     // Get the executable path for template.txt
     if (GetModuleFileName(NULL, exe_path, MAX_PATH_LENGTH) == 0) {
@@ -114,25 +113,69 @@ int main()
     if (last_backslash) {
         *last_backslash = '\0';  // Cut the path at the last backslash
     }
-    
-    // Construct full path to template.txt
-    char template_path[MAX_PATH_LENGTH];
-    snprintf(template_path, sizeof(template_path), "%s\\templates\\defaultTemplate.txt", exe_dir);
 
-    // Open the template file for reading from the executable's templates folder
-    FILE *template_file = fopen(template_path, "r");
-    if (template_file == NULL) {
-        perror("Unable to open defaultTemplate.txt in the executable's templates directory");
-        fclose(file);
+    // Construct full path to config.txt in the src folder
+    char config_path[MAX_PATH_LENGTH];
+    snprintf(config_path, sizeof(config_path), "%s\\src\\config.txt", exe_dir);
+
+    // Retrieve template name from config.txt
+    char* template_name = get_template_name(config_path);
+    if (!template_name) {
+        fprintf(stderr, "Error: Template name not specified in config.txt.\n");
         return EXIT_FAILURE;
     }
 
+    // Construct full path to the template file in the templates folder
+    char template_path[MAX_PATH_LENGTH];
+    snprintf(template_path, sizeof(template_path), "%s\\templates\\%s.txt", exe_dir, template_name);
+
+    // Open the specified template file
+    FILE* template_file = fopen(template_path, "r");
+    if (template_file == NULL) {
+        fprintf(stderr, "Unable to open template file: %s\n", template_path);
+        free(template_name);
+        return EXIT_FAILURE;
+    }
+
+    char main_txt_file[MAX_PATH_LENGTH];
+    if (!find_first_txt_file(main_txt_file)) {
+        fclose(template_file);
+        free(template_name);
+        return EXIT_FAILURE;
+    }
+
+    // Construct full path to the found .txt file
+    char main_path[MAX_PATH_LENGTH];
+    snprintf(main_path, sizeof(main_path), "%s\\%s", cwd, main_txt_file);
+
+    // Open the input .txt file for reading
+    FILE* file = fopen(main_path, "r");
+    if (file == NULL) {
+        perror("Unable to open the main .txt file in the current directory");
+        fclose(template_file);
+        free(template_name);
+        return EXIT_FAILURE;
+    }
+
+    // Strip the .txt extension from the found file to use for output naming
+    char output_base_name[MAX_PATH_LENGTH];
+    strncpy(output_base_name, main_txt_file, sizeof(output_base_name));
+    strip_txt_extension(output_base_name); // This will remove the .txt part
+
+    // Construct the output .tex and .pdf file names based on the found .txt file
+    char output_tex_path[MAX_PATH_LENGTH];
+    snprintf(output_tex_path, sizeof(output_tex_path), "%s\\%s.tex", cwd, output_base_name);
+    
+    char output_pdf_path[MAX_PATH_LENGTH];
+    snprintf(output_pdf_path, sizeof(output_pdf_path), "%s\\%s.pdf", cwd, output_base_name);
+
     // Open the output .tex file for writing
-    FILE *output_file = fopen(output_tex_file, "w");
+    FILE* output_file = fopen(output_tex_path, "w");
     if (output_file == NULL) {
-        perror("Error creating output .tex file");
+        perror("Error creating output.tex file");
         fclose(file);
         fclose(template_file);
+        free(template_name);
         return EXIT_FAILURE;
     }
 
@@ -195,11 +238,14 @@ int main()
 
     // Compile output.tex to a .pdf using pdflatex
     char compile_command[MAX_PATH_LENGTH];
-    snprintf(compile_command, sizeof(compile_command), "pdflatex %s", output_tex_file);
+    snprintf(compile_command, sizeof(compile_command), "pdflatex -output-directory=\"%s\" \"%s\"", cwd, output_tex_path);
     if (system(compile_command) != 0) {
         perror("Error compiling .tex file with pdflatex");
         return EXIT_FAILURE;
     }
+
+    // Free the template name memory
+    free(template_name);
 
     return 0;
 }
