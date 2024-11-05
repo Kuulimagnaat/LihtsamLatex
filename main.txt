@@ -1,14 +1,1 @@
-Leida võrrandiga mm z^2+xyz^3+x^2 y = -11 mm punkti mm (3,-1,1) mm ümbruses ilmutamata kujul määratud funktsiooni mm z=z(x,y) mm osatuletised mm ztulx (3,-1) mm ,  mm ztuly (3,-1) mm ja mm ztulxy (3,-1) mm .
-
-Kavatsen kasutada 3. peatüki teoreemi 2.3, mis annab piisavad tingimusi ilmutamata kujul mitme muutuja funktsiooni pideva tuletise leidumise ja selle soovitaval kujul avaldumise jaoks. Enne eelduste kontrollimist viin võrrandi kõik liikmed vasakule ja tähistan selle poole kolme muutuja funkstiooniga mm F mm . Siis kontrollin eeldusi.
-mm z^2+xyz^3 + x^2 y = -11 mm
-mm z^2+xyz^3+x^2 y+11=0 mm
-mm F(x,y,z) = 0 mm
-
-...
-
-Lisaks ütleb teoreem, et mm z(x_0, y_0) = z_0 mm , st ülesandes antud punkti mm (3,-1,1) mm puhul mm z(3,-1) = 1 mm . Seega kirjapandud osatuletiste valemitesse väärtuseid mm x=3 mm , mm y=-1 mm ja mm z(z,y)=1 mm asendades saab arvutada ülesandes nõutud funktsiooni mm z(x,y) mm osatuletiste väärtused punktis mm (x,y) mm .
-mm ztulx (3,-1) = -(Ftulx (3,-1,1))/(Ftulz (3,-1,1)) = (-1)*1^3+2*3*(-1)/2*1+4*3*(-1)*1^2 = 12/-10 = -6/5 . mm
-Nüüd tahan leida teist järku osatuletist mm ztulxy (3,-1) mm . Selles diferentseerin funktsiooni mm ztulx mm muutuja mm y mm järgi. Kirjutan välja funktsiooni mm ztulx mm ja tühistan selles lugeja ja nimetaja tähistega mm a mm ja mm b mm . Teen seda selleks, et hoida jagatise tuletise avaldist lühemana.
-
-babaammama testt
+mm 5 kord int mm

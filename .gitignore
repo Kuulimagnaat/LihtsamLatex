@@ -8,4 +8,8 @@ output/output.pdf
 .vscode/
 Materjalid/
 a.exe
-output/output.tex
+output/output.tex/
+*.aux
+*.log
+*.pdf
+*.tex

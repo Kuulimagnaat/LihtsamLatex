@@ -1,0 +1,12 @@
+\documentclass{article}
+\usepackage{amsfonts}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{amsthm}
+\usepackage[estonian]{babel}
+
+\usepackage[margin=5cm]{geometry}
+
+\begin{document}
+{{content}}
+\end{document}

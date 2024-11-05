@@ -43,4 +43,5 @@ char* LeiaLühemArgument(const char* tekst);
 char* KõrvutiolevadAstmeks(const char* tekst);
 char* LiidaTäht(char* eelmineMälu, char lisatav);
 char* LiidaArv(char* eelmineMälu, int lisatav);
+int kasnEelnevatOnTäht(unsigned int n, char täht);
 #endif

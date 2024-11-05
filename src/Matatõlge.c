@@ -346,6 +346,13 @@ char* KõrvutiolevadAstmeks(const char* tekst)
     return tõlge;
 }
 
+
+
+// Funktsioon on mõeldud kasutamiseks 
+int kasnEelnevatOnTäht(unsigned int n, char täht);
+
+
+
 // Rekursiivselt tõlgime math moodi latexisse
 #define TõlgiMathModeDebug 1
 char* TõlgiMathMode(const char* expression) {

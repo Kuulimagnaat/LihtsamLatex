@@ -5,3 +5,6 @@ epsilon -> varepsilon
 delta -> delta
 alfa -> alpha
 beeta -> beta
+to -> to
+inf -> infty 
+kord -> cdot
