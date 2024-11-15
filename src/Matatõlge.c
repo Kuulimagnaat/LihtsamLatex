@@ -233,6 +233,33 @@ char* my_strndup(const char* s, size_t n) {
 }
 
 
+/* Kasutaja on config.txt failis defineerinud käske. Iga käsu kirjutis tõlgitakse Käsu struktuuriks. Käsu struktuurid sisaldavad kõike vajalikku infot käsu kohta: käsu nimi, argumentide tüübid, argumentide nimed, definitsioon – täpsemalt kirjeldatud allpool. Kõigist config.txt failist saadud käsustructidest koostatakse nimekiri enne seda, kui peamine tälkimistsükkel käima läheb. Peamise tsükli käigus iga kord, kui liigutakse uuele tähele, siis käiakse üle loodud käsunimekirja ja kontrollitakse ega mõni käsk sellelt tähekohalt alga. Kui algab, siis kutsutakse välja TõlgiKäsk funktsioon, millele antakse avastatud käsu struct, et see teaks, kuidas õigesti tõlkida.
+1) Käsu nimi on see, mida kasutaja tahab lähtekoodis kijrutada, et oma käsku välja kutsuda. 
+2) Argumentide tüübid on nimekiri nii mitmest elemendist+1, kui palju kasutaja oma käsule definitsioonis andis. Kõige viimane element peab selles nimekrijas olema mingi negatiivne arv, märkimaks nimekirja lõppu. Ülejäänud elemendid saavad selles nimekirjas olla kas 0 või 1. 0 tähistab seda, kui järjekorras vastaval kohal olev argument on lühem: argumendi lõppu tähistab lähtekoodis tühik või suvaline tehtemärk. 1 tähistab seda, kui vastaval kohal olev argument on pikem: lähtekoodis lõpetab seda argumenti ainult tühik.
+3) Argumentide nimed on nimekiri kõigist argumentide tähistustest, mida kasutaja oma argumentidele andis, et neid siduda oma käsu deklaratsiooni ja definitsiooni vahel.
+4) Definitsioon on tekst, mis config.txt failis on -> märgi järel. See tekst on latexi kood, milles mõnes kohas on kasutaja argumentide tähist. */
+struct Käsk
+{
+    const char* käsunimi;
+    int* argumentideTüübid; // Selle nimekirja viimane element on mingi neg arv näitamaks nimekirja lõppu.
+    const char** argumentideNimed;
+    const char* definitsioon;
+};
+
+
+// Mõte on, et kui TõlgiMathMode funktsioonis tajutakse, et kättejõudnud kohal on mingi käsk, siis antakse sellesama sellele funktsioonile ja 
+char* TõlgiKäsk(const char* tekst, struct Käsk* käsk)
+{
+
+    for (unsigned int i=0; käsk->argumentideTüübid[i] >= 0; i++)
+    {
+        ;
+    }
+}
+
+
+
+
 
 // Kas antud string on listis olev funktsioon
 int is_math_function(const char* str) {

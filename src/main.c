@@ -208,7 +208,7 @@ int main() {
                     peabOlemaInlineMath = 0;
                 }
                 // Uut rida alustades sõltub edasine tegevus sellest, kas math mode on eelmisest reast jäänud lõpetamata ja ollakse mathmode'is või eiu ole math mode.
-                // Kui on math mode käimas ja ootab lõpetamist
+                // Kui on math mode eelmisest reast käimas ja ootab lõpetamist
                 if (onJubaMathMode)
                 {
                     fprintf(output_file, "\\\\");
