@@ -8,7 +8,7 @@ int main()
     SetConsoleOutputCP(CP_UTF8);
 
     char* t1 = TõlgiMathMode("ftulxxx");
-    char* t2 = TõlgiMathMode("ftulxxy");
+    char* t2 = TõlgiMathMode("ftulxxx");
     char* t3 = TõlgiMathMode("ftulyxx");
     char* t4 = TõlgiMathMode("ftulyxy");
     char* t5 = TõlgiMathMode("ftulabbcdddddddd");

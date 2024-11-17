@@ -241,19 +241,45 @@ char* my_strndup(const char* s, size_t n) {
 struct Käsk
 {
     const char* käsunimi;
-    int* argumentideTüübid; // Selle nimekirja viimane element on mingi neg arv näitamaks nimekirja lõppu.
-    const char** argumentideNimed;
+    int* argumentideTüübid; // Selle nimekirja viimane element olgu mingi negatiivne arv näitamaks nimekirja lõppu.
+    const char** argumentideNimed; // Selle nimekrija viiname element olgu NULL
     const char* definitsioon;
 };
 
 
-// Mõte on, et kui TõlgiMathMode funktsioonis tajutakse, et kättejõudnud kohal on mingi käsk, siis antakse sellesama sellele funktsioonile ja 
+
+
+
+
+
+// Kui TõlgiMathMode funktsioonis tajutakse, et kättejõudnud kohal on mingi käsk, siis seal kohas antakse selle koha aadress ja tajutud käsule vastav struct selele funtksiooile, et see saaks tõlkida seda kohta. 
 char* TõlgiKäsk(const char* tekst, struct Käsk* käsk)
 {
+    /* Teoreetiliselt command võib olla selline, et kaks argumenti pole järjest. Näiteks oleks definitsioon selline:
+    uuga(arg1)buuga(arg2) -> \frac{arg1}{arg2}
+    Sel juhul saaks lähtekoodis kirjutada niimoodi: uugaxbuuga4, millest saab \frac{x}{4}.
+    Kas frac on ainus omalaadne, kus üks argument on käsu enda nimest eespool? Oletame, et ei ole. Ss võiks vabalt ka mitu argumenti käsu enda nimest ettepoole panna, aga ss peaks lugema nii palju tulevikku, et aru saada, kas käesoleval kohal on mingi mitmeargumendilise käsu esimene argument.
+    // Ütleme, et ei tohi nii olla ja ütleme, et ei tohi isegi olla käsu definitsioonid sellised: uuga(arg1)buuga(arg2). Postuleerime, et kõik argumendid peavad olema kõige lõpus igal commandil ja loodame selle peale, et me ei taha tulevikus midagi muud fracilaadset programmi lisada. frac on ainus omalaadne.*/
 
-    for (unsigned int i=0; käsk->argumentideTüübid[i] >= 0; i++)
+    char** argumentideTõlked = käsk.;
+
+    // Nii mitu korda tuleb argumenti otsida.
+    unsigned i = strlen(käsk->käsunimi);
+    for (unsigned int j=0; käsk->argumentideTüübid[i] >= 0; )
     {
-        ;
+        char* argument = NULL;
+        if (käsk->argumentideTüübid[i] == 0)
+        {
+            argument = LeiaLühemArgument(tekst[i]);
+        }
+        else if (käsk->argumentideTüübid[i] == 1)
+        {
+            argument = LeiaArgument(tekst[i]);
+        }
+        char* argumendiTõlge = TõlgiMathMode(argument);
+        i += strlen(argument);
+        free(argument)
+
     }
 }
 
