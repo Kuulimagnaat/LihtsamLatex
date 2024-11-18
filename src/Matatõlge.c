@@ -176,10 +176,18 @@ int replacement_count = 0;
 
 // Function to trim whitespace from a string
 char* trim_whitespace(char* str) {
-    while (isspace(*str)) str++;
-    char* end = str + strlen(str) - 1;
-    while (end > str && isspace((unsigned char)*end)) end--;
-    *(end + 1) = '\0';
+    // Trim leading spaces
+    while (isspace((unsigned char)*str)) str++;  
+
+    // Find the last non-whitespace character
+    char* end = str + strlen(str) - 1;  
+
+    // Trim trailing spaces
+    while (end > str && isspace((unsigned char)*end)) end--;  
+
+    // Null-terminate the string after removing trailing spaces
+    *(end + 1) = '\0';  
+
     return str;
 }
 
@@ -245,8 +253,8 @@ void read_commands_from_config(const char* filepath, struct KäskList* käsk_lis
         char* right = arrow + 2;
 
         // Trim whitespace
-        while (*left == ' ') left++;
-        while (*right == ' ') right++;
+        left = trim_whitespace(left);
+        right = trim_whitespace(right);
 
         struct Käsk käsk = {0};
 

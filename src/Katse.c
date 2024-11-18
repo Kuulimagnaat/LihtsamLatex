@@ -8,18 +8,15 @@ struct KäskList käsk_list;
 
 int main() {
     SetConsoleOutputCP(CP_UTF8);
-    //init_käsk_list(&käsk_list);
-
-    char* tekst = "  uuga  ";
-    char* uus = trim_whitespace(tekst);
-    /*
+    init_käsk_list(&käsk_list);
+    
     const char* config_path = "src/config.txt";
     read_commands_from_config(config_path, &käsk_list);
 
     char* tekst = "epsilon";
     char* tulemus = TõlgiMathMode(tekst);
-    */
-    puts(uus);
+    
+    puts(tulemus);
 
     return 0;
 }
