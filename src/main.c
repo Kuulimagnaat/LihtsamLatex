@@ -7,40 +7,6 @@
 
 #define MAX_PATH_LENGTH 256
 
-/* Dynamic line reading function */
-char* read_line(FILE* file) {
-    char* line = malloc(256);
-    if (!line) {
-        perror("Memory allocation error :(");
-        exit(EXIT_FAILURE);
-    }
-
-    int capacity = 256;
-    int length = 0;
-    int ch;
-
-    while ((ch = fgetc(file)) != EOF && ch != '\n') {
-        if (length + 1 >= capacity) {
-            capacity *= 2;
-            char* new_line = realloc(line, capacity);
-            if (!new_line) {
-                free(line);
-                perror("Memory allocation error :(");
-                exit(EXIT_FAILURE);
-            }
-            line = new_line;
-        }
-        line[length++] = ch;
-    }
-
-    if (length == 0 && ch == EOF) {
-        free(line); // End of file, return NULL
-        return NULL;
-    }
-
-    line[length] = '\0'; // Null-terminate the string
-    return line;
-}
 
 /* Function to find the first .txt file in the current directory */
 int find_first_txt_file(char* txt_file_path) {

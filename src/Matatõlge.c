@@ -6,6 +6,43 @@
 #include <ctype.h>
 
 
+
+/* Dynamic line reading function */
+char* read_line(FILE* file) {
+    char* line = malloc(256);
+    if (!line) {
+        perror("Memory allocation error :(");
+        exit(EXIT_FAILURE);
+    }
+
+    int capacity = 256;
+    int length = 0;
+    int ch;
+
+    while ((ch = fgetc(file)) != EOF && ch != '\n') {
+        if (length + 1 >= capacity) {
+            capacity *= 2;
+            char* new_line = realloc(line, capacity);
+            if (!new_line) {
+                free(line);
+                perror("Memory allocation error :(");
+                exit(EXIT_FAILURE);
+            }
+            line = new_line;
+        }
+        line[length++] = ch;
+    }
+
+    if (length == 0 && ch == EOF) {
+        free(line); // End of file, return NULL
+        return NULL;
+    }
+
+    line[length] = '\0'; // Null-terminate the string
+    return line;
+}
+
+
 // Funktsioon, mis kontorllib, kas antud teksti algus täpselt on sama, mis teine soovitud tekst. Tagastab 0 kui ei ole ja 1 kui on. Funktsiooni kasutusolukord: kui ollakse minemas tõlgitavas koodis üle tähtede, siis on vaja kontrollida, kas kättejõudnud kohas on mõne käsu nimi. Seda funktsiooni saab nimetatud olukorra tajumiseks kasutada.
 #define KasEsimesedTähedDebug 0
 int KasEsimesedTähed(const char* tekstis, const char* tekst)
@@ -253,24 +290,24 @@ char* TõlgiKäsk(const char* tekst, struct Käsk* käsk)
 
     // Kõik argumendid selles nimekirjas ja hiljem see nimekiri ise on vaja vabastada.
     char** argumentideTõlked = malloc(käsk->argumentideKogus*sizeof(char*));
-
     unsigned int i = strlen(käsk->käsunimi);
     // Nii mitu korda tuleb argumenti otsida.
-    for (unsigned int j=0; j<käsk->argumentideKogus; )
+    for (unsigned int j=0; j<käsk->argumentideKogus; j++)
     {
         char* argument = NULL;
-        if (käsk->argumentideTüübid[i] == 0)
+        if (käsk->argumentideTüübid[j] == 0)
         {
             argument = LeiaLühemArgument(&tekst[i]);
         }
-        else if (käsk->argumentideTüübid[i] == 1)
+        else if (käsk->argumentideTüübid[j] == 1)
         {
             argument = LeiaArgument(&tekst[i]);
         }
         argumentideTõlked[j] = TõlgiMathMode(argument);
-        i += strlen(argument);
+        i += strlen(argument)+1;
         free(argument);
     }
+
     // Kui kood siia jõuab, on iga argumendi tõlge nimekirjas argumentideTõlked. Nüüd on vaja käia üle käsu structis oleva definitsiooni ja asendada muutujanimed vastavate tõlgetega. Saadav asi ongi käsu tõlge.
 
 
@@ -281,20 +318,26 @@ char* TõlgiKäsk(const char* tekst, struct Käsk* käsk)
     // Läheb üle definitsiooni tähtede
     for (unsigned int i = 0; käsk->definitsioon[i]!='\0';)
     {
+        puts(&(käsk->definitsioon[i]));
         // Läheb iga tähe puhul üle kõigi argumentide nimede
-        for (unsigned int j=0; j < käsk->argumentideKogus; j++)
+        unsigned int j=0;
+        for (; j < käsk->argumentideKogus; j++)
         {
             if (KasEsimesedTähed(&(käsk->definitsioon[i]), käsk->argumentideNimed[j]))
             {
                 LiidaTekstid(tõlge, argumentideTõlked[j]);
                 // Tuleb liita argumenditõlge kohal j tõlkele.
+                i+=strlen(käsk->argumentideNimed[j]);
+                break;
             }
-            else
-            {
-                // Tuleb liita definitsiooni täht tõlkele
-                char täht[2] = {käsk->definitsioon[i], '\0'};
-                LiidaTekstid(tõlge, täht);
-            }
+        }
+        // Kui ühtegi argumendinime ei leitud definitsioonis käesolevalt kohtalt, ss lisatakse tõlkesse üks täht.
+        if (j == käsk->argumentideKogus)
+        {
+            char täht[2] = {käsk->definitsioon[i], '\0'};
+            LiidaTekstid(tõlge, täht);
+
+            i++;
         }
     }
 
@@ -303,7 +346,7 @@ char* TõlgiKäsk(const char* tekst, struct Käsk* käsk)
         free(argumentideTõlked[i]);
     }
     free(argumentideTõlked);
-
+    puts(tõlge);
     return tõlge;
 }
 

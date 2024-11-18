@@ -17,7 +17,7 @@ int main()
         .käsunimi="murd"
     };
 
-    char* tekst = "a+b+murdx+2 3";
+    char* tekst = "murdx+2 3";
     char* tulemus = TõlgiKäsk(tekst, &käsk);
     printf("%s\n", tulemus);
 }
