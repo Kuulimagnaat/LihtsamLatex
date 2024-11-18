@@ -241,9 +241,10 @@ char* my_strndup(const char* s, size_t n) {
 struct Käsk
 {
     const char* käsunimi;
-    int* argumentideTüübid; // Selle nimekirja viimane element olgu mingi negatiivne arv näitamaks nimekirja lõppu.
-    const char** argumentideNimed; // Selle nimekrija viiname element olgu NULL
+    int* argumentideTüübid;
+    const char** argumentideNimed;
     const char* definitsioon;
+    unsigned int argumentideKogus;
 };
 
 
@@ -264,7 +265,7 @@ char* TõlgiKäsk(const char* tekst, struct Käsk* käsk)
     // Kõik argumendid selles nimekirjas ja hiljem see nimekiri ise on vaja vabastada.
     char** argumentideTõlked = malloc(käsk->argumentideKogus*sizeof(char*));
 
-    unsigned i = strlen(käsk->käsunimi);
+    unsigned int i = strlen(käsk->käsunimi);
     // Nii mitu korda tuleb argumenti otsida.
     for (unsigned int j=0; j<käsk->argumentideKogus; )
     {
