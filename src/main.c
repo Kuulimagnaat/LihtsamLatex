@@ -7,6 +7,8 @@
 
 #define MAX_PATH_LENGTH 256
 
+struct KäskList käsk_list;
+
 /* Function to find the first .txt file in the current directory */
 int find_first_txt_file(char* txt_file_path) {
     WIN32_FIND_DATA find_file_data;

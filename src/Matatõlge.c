@@ -7,40 +7,6 @@
 
 
 
-/* Dynamic line reading function */
-char* read_line(FILE* file) {
-    char* line = malloc(256);
-    if (!line) {
-        perror("Memory allocation error :(");
-        exit(EXIT_FAILURE);
-    }
-
-    int capacity = 256;
-    int length = 0;
-    int ch;
-
-    while ((ch = fgetc(file)) != EOF && ch != '\n') {
-        if (length + 1 >= capacity) {
-            capacity *= 2;
-            char* new_line = realloc(line, capacity);
-            if (!new_line) {
-                free(line);
-                perror("Memory allocation error :(");
-                exit(EXIT_FAILURE);
-            }
-            line = new_line;
-        }
-        line[length++] = ch;
-    }
-
-    if (length == 0 && ch == EOF) {
-        free(line); // End of file, return NULL
-        return NULL;
-    }
-
-    line[length] = '\0'; // Null-terminate the string
-    return line;
-}
 
 
 // Funktsioon, mis kontorllib, kas antud teksti algus täpselt on sama, mis teine soovitud tekst. Tagastab 0 kui ei ole ja 1 kui on. Funktsiooni kasutusolukord: kui ollakse minemas tõlgitavas koodis üle tähtede, siis on vaja kontrollida, kas kättejõudnud kohas on mõne käsu nimi. Seda funktsiooni saab nimetatud olukorra tajumiseks kasutada.
