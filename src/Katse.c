@@ -98,6 +98,7 @@ void read_commands_from_config(const char* filepath, struct KäskList* käsk_lis
         *arrow = '\0';
         char* left = line;
         char* right = arrow + 2;
+        puts(left);
 
         // Trim whitespace
         while (*left == ' ') left++;
@@ -105,63 +106,60 @@ void read_commands_from_config(const char* filepath, struct KäskList* käsk_lis
 
         struct Käsk käsk = {0};
 
-        // Parse the command name and arguments
-        char* open_paren = strchr(left, '(');
-
+        // Parse the command name and arguments from the left side
+        char* open_paren = strchr(left, '(');  // Find first '('
         if (open_paren) {
-            // Extract the command name
-            *open_paren = '\0';
+            // Extract the command name before the first '('
+            *open_paren = '\0'; // Null-terminate the command name
             käsk.käsunimi = strdup(left);
 
-            // Parse arguments inside parentheses
-            char* current = open_paren + 1;
+            // Now parse arguments
+            char* current = open_paren + 1; // Start after '('
             unsigned int arg_count = 0;
 
-            // Count arguments
             while (current && *current) {
-                char* close_paren = strchr(current, ')');
-                if (!close_paren) break;
+                char* close_paren = strchr(current, ')'); // Find closing ')'
+                if (!close_paren) break; // If no closing parenthesis, stop
 
+                // Null-terminate the argument name
+                *close_paren = '\0';
+
+                // Allocate memory and store the argument name
+                käsk.argumentideNimed = realloc(käsk.argumentideNimed, (arg_count + 1) * sizeof(char*));
+                käsk.argumentideNimed[arg_count] = strdup(current);
+
+                // Default argument type (can be customized later)
+                käsk.argumentideTüübid = realloc(käsk.argumentideTüübid, (arg_count + 1) * sizeof(int));
+                käsk.argumentideTüübid[arg_count] = 1; // Default type "long"
+
+                // Increment argument count
                 arg_count++;
-                current = strchr(close_paren + 1, '(');
+
+                // Move past the closing parenthesis and skip any spaces
+                current = close_paren + 2;
+                while (*current == ' ') {
+                    current++;
+                }
             }
 
-            // Allocate arrays for argument names and types
+            // Set the total argument count
             käsk.argumentideKogus = arg_count;
-            käsk.argumentideNimed = malloc(arg_count * sizeof(char*));
-            käsk.argumentideTüübid = malloc((arg_count + 1) * sizeof(int));
-
-            // Extract arguments
-            current = open_paren + 1;
-            unsigned int i = 0;
-            while (current && *current) {
-                char* close_paren = strchr(current, ')');
-                if (!close_paren) break;
-
-                *close_paren = '\0'; // Null-terminate the argument
-                käsk.argumentideNimed[i] = strdup(current);
-                käsk.argumentideTüübid[i] = 1; // Default type: long
-                i++;
-
-                current = strchr(close_paren + 1, '(');
-            }
-
-            käsk.argumentideTüübid[arg_count] = -1; // End marker for types
         } else {
             // No arguments, just the command name
             käsk.käsunimi = strdup(left);
             käsk.argumentideKogus = 0;
             käsk.argumentideNimed = NULL;
             käsk.argumentideTüübid = malloc(1 * sizeof(int));
-            käsk.argumentideTüübid[0] = -1;
+            käsk.argumentideTüübid[0] = -1; // No arguments
         }
 
-        // Set the definition (right-hand side)
+        // Set the definition (right-hand side of the "->")
         käsk.definitsioon = strdup(right);
 
-        // Add the command to the list
+        // Add the parsed command to the list
         add_käsk(käsk_list, käsk);
 
+        // Free the line buffer
         free(line);
     }
 
