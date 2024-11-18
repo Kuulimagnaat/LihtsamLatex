@@ -411,10 +411,6 @@ struct TekstArv TõlgiKäsk(const char* tekst, struct Käsk* käsk)
         i += strlen(argument)+1;
         free(argument);
     }
-    puts("ARGUMENTIDE TÕLKED!!!");
-    puts(argumentideTõlked[0]);
-    puts(argumentideTõlked[1]);
-    puts(argumentideTõlked[2]);
 
     unsigned int pikkus = i;
     // Kui kood siia jõuab, on iga argumendi tõlge nimekirjas argumentideTõlked. Nüüd on vaja käia üle käsu structis oleva definitsiooni ja asendada muutujanimed vastavate tõlgetega. Saadav asi ongi käsu tõlge.
@@ -734,9 +730,41 @@ char* TõlgiMathMode(const char* expression) {
         if (KasKäsk(&expression[i], &käsk_list, &func_index))
         {
             struct TekstArv käsuTagastus = TõlgiKäsk(&expression[i], &käsk_list.käsud[func_index]);
-            LiidaTekstid(result, käsuTagastus.Tekst);
-            free(käsuTagastus.Tekst);
+            puts("SIIN ON SAADUD TÜLGE.");
+            puts(käsuTagastus.Tekst);
+            result = LiidaTekstid(result, käsuTagastus.Tekst);
             i += käsuTagastus.Arv;
+
+            if (expression[i] == '(') {
+                puts("läks sisse");
+                int start = i + 1;
+                int paren_count = 1;
+                i++;
+
+                while (expression[i] != '\0' && paren_count > 0) {
+                    if (expression[i] == '(') paren_count++;
+                    else if (expression[i] == ')') paren_count--;
+                    i++;
+                }
+
+                // Process inner expression recursively
+                char* inner_expression = my_strndup(&expression[start], i - start - 1);
+                char* inner_latex = TõlgiMathMode(inner_expression);
+
+                result = LiidaTekstid(result, inner_latex);
+                result = append_str(result, "\\right)");
+
+                free(inner_expression);
+                free(inner_latex);
+            }
+
+            free(käsuTagastus.Tekst);
+        } else {
+            // Handle regular characters
+            char* single_char = my_strndup(&expression[i], 1);
+            result = LiidaTekstid(result, single_char);
+            free(single_char);
+            i++;
         }
 
         /*
@@ -761,7 +789,7 @@ char* TõlgiMathMode(const char* expression) {
                 }
             }
         }
-        */
+        
         // If a function or replacement is found
         if (func_index != -1) {
             char* func_name;
@@ -790,8 +818,7 @@ char* TõlgiMathMode(const char* expression) {
 
             free(func_name); // Clean up allocated memory
 
-            // Check for parentheses if it's a regular function
-            if (!is_replacement && expression[i] == '(') {
+            if (expression[i] == '(') {
                 puts("läks sisse");
                 int start = i + 1;
                 int paren_count = 1;
@@ -819,7 +846,7 @@ char* TõlgiMathMode(const char* expression) {
             result = LiidaTekstid(result, single_char);
             free(single_char);
             i++;
-        }
+        }*/
     }
 
     #if TõlgiMathModeDebug == 1

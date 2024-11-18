@@ -14,11 +14,10 @@ int main() {
     const char* config_path = "src/config.txt";
     read_commands_from_config(config_path, &käsk_list);
 
-    char* tekst = "limx=3 45 a/b";
-    struct TekstArv tulemus = TõlgiKäsk(tekst, &käsk_list.käsud[0]);
-    //char* tulemus = TõlgiMathMode(tekst);
+    char* tekst = "4*limxtoinf 4 50";
+    char* tulemus = TõlgiMathMode(tekst);
     
-    puts(tulemus.Tekst);
+    puts(tulemus);
 
     return 0;
 }

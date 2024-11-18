@@ -1,4 +1,7 @@
 fracTüüp = SVEN
 template = SVEN
 
-lim(uug)(ka)(buug) -> lim_{uug}\cdot{ka_{buug}}
+lim(uug)(ka)(buug) -> \lim_{uug}\cdot{ka_{buug}}
+sin(kabuug) -> \sin{kabuug}
+to -> \to
+inf -> \infty
