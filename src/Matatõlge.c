@@ -5,6 +5,7 @@
 #include <math.h>
 #include <ctype.h>
 
+
 // Funktsioon, mis kontorllib, kas antud teksti algus täpselt on sama, mis teine soovitud tekst. Tagastab 0 kui ei ole ja 1 kui on. Funktsiooni kasutusolukord: kui ollakse minemas tõlgitavas koodis üle tähtede, siis on vaja kontrollida, kas kättejõudnud kohas on mõne käsu nimi. Seda funktsiooni saab nimetatud olukorra tajumiseks kasutada.
 #define KasEsimesedTähedDebug 0
 int KasEsimesedTähed(const char* tekstis, const char* tekst)
@@ -233,19 +234,7 @@ char* my_strndup(const char* s, size_t n) {
 }
 
 
-/* Kasutaja on config.txt failis defineerinud käske. Iga käsu kirjutis tõlgitakse Käsu struktuuriks. Käsu struktuurid sisaldavad kõike vajalikku infot käsu kohta: käsu nimi, argumentide tüübid, argumentide nimed, definitsioon – täpsemalt kirjeldatud allpool. Kõigist config.txt failist saadud käsustructidest koostatakse nimekiri enne seda, kui peamine tälkimistsükkel käima läheb. Peamise tsükli käigus iga kord, kui liigutakse uuele tähele, siis käiakse üle loodud käsunimekirja ja kontrollitakse ega mõni käsk sellelt tähekohalt alga. Kui algab, siis kutsutakse välja TõlgiKäsk funktsioon, millele antakse avastatud käsu struct, et see teaks, kuidas õigesti tõlkida.
-1) Käsu nimi on see, mida kasutaja tahab lähtekoodis kijrutada, et oma käsku välja kutsuda. 
-2) Argumentide tüübid on nimekiri nii mitmest elemendist+1, kui palju kasutaja oma käsule definitsioonis andis. Kõige viimane element peab selles nimekrijas olema mingi negatiivne arv, märkimaks nimekirja lõppu. Ülejäänud elemendid saavad selles nimekirjas olla kas 0 või 1. 0 tähistab seda, kui järjekorras vastaval kohal olev argument on lühem: argumendi lõppu tähistab lähtekoodis tühik või suvaline tehtemärk. 1 tähistab seda, kui vastaval kohal olev argument on pikem: lähtekoodis lõpetab seda argumenti ainult tühik.
-3) Argumentide nimed on nimekiri kõigist argumentide tähistustest, mida kasutaja oma argumentidele andis, et neid siduda oma käsu deklaratsiooni ja definitsiooni vahel.
-4) Definitsioon on tekst, mis config.txt failis on -> märgi järel. See tekst on latexi kood, milles mõnes kohas on kasutaja argumentide tähist. */
-struct Käsk
-{
-    const char* käsunimi;
-    int* argumentideTüübid;
-    const char** argumentideNimed;
-    const char* definitsioon;
-    unsigned int argumentideKogus;
-};
+
 
 
 
@@ -272,11 +261,11 @@ char* TõlgiKäsk(const char* tekst, struct Käsk* käsk)
         char* argument = NULL;
         if (käsk->argumentideTüübid[i] == 0)
         {
-            argument = LeiaLühemArgument(tekst[i]);
+            argument = LeiaLühemArgument(&tekst[i]);
         }
         else if (käsk->argumentideTüübid[i] == 1)
         {
-            argument = LeiaArgument(tekst[i]);
+            argument = LeiaArgument(&tekst[i]);
         }
         argumentideTõlked[j] = TõlgiMathMode(argument);
         i += strlen(argument);
@@ -288,14 +277,34 @@ char* TõlgiKäsk(const char* tekst, struct Käsk* käsk)
     char* tõlge = malloc(1);
     tõlge[0] = '\0';
     
-    unsigned int i = 0;
-    for (unsigned int j = 0;käsk->definitsioon[i]!='\0';)
-    {
-        if (&(käsk->definitsioon[j]))
-        {
 
+    // Läheb üle definitsiooni tähtede
+    for (unsigned int i = 0; käsk->definitsioon[i]!='\0';)
+    {
+        // Läheb iga tähe puhul üle kõigi argumentide nimede
+        for (unsigned int j=0; j < käsk->argumentideKogus; j++)
+        {
+            if (KasEsimesedTähed(&(käsk->definitsioon[i]), käsk->argumentideNimed[j]))
+            {
+                LiidaTekstid(tõlge, argumentideTõlked[j]);
+                // Tuleb liita argumenditõlge kohal j tõlkele.
+            }
+            else
+            {
+                // Tuleb liita definitsiooni täht tõlkele
+                char täht[2] = {käsk->definitsioon[i], '\0'};
+                LiidaTekstid(tõlge, täht);
+            }
         }
     }
+
+    for (unsigned int i =0; i < käsk->argumentideKogus; i++)
+    {
+        free(argumentideTõlked[i]);
+    }
+    free(argumentideTõlked);
+
+    return tõlge;
 }
 
 
