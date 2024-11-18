@@ -261,11 +261,12 @@ char* TõlgiKäsk(const char* tekst, struct Käsk* käsk)
     Kas frac on ainus omalaadne, kus üks argument on käsu enda nimest eespool? Oletame, et ei ole. Ss võiks vabalt ka mitu argumenti käsu enda nimest ettepoole panna, aga ss peaks lugema nii palju tulevikku, et aru saada, kas käesoleval kohal on mingi mitmeargumendilise käsu esimene argument.
     // Ütleme, et ei tohi nii olla ja ütleme, et ei tohi isegi olla käsu definitsioonid sellised: uuga(arg1)buuga(arg2). Postuleerime, et kõik argumendid peavad olema kõige lõpus igal commandil ja loodame selle peale, et me ei taha tulevikus midagi muud fracilaadset programmi lisada. frac on ainus omalaadne.*/
 
-    char** argumentideTõlked = käsk.;
+    // Kõik argumendid selles nimekirjas ja hiljem see nimekiri ise on vaja vabastada.
+    char** argumentideTõlked = malloc(käsk->argumentideKogus*sizeof(char*));
 
-    // Nii mitu korda tuleb argumenti otsida.
     unsigned i = strlen(käsk->käsunimi);
-    for (unsigned int j=0; käsk->argumentideTüübid[i] >= 0; )
+    // Nii mitu korda tuleb argumenti otsida.
+    for (unsigned int j=0; j<käsk->argumentideKogus; )
     {
         char* argument = NULL;
         if (käsk->argumentideTüübid[i] == 0)
@@ -276,10 +277,23 @@ char* TõlgiKäsk(const char* tekst, struct Käsk* käsk)
         {
             argument = LeiaArgument(tekst[i]);
         }
-        char* argumendiTõlge = TõlgiMathMode(argument);
+        argumentideTõlked[j] = TõlgiMathMode(argument);
         i += strlen(argument);
-        free(argument)
+        free(argument);
+    }
+    // Kui kood siia jõuab, on iga argumendi tõlge nimekirjas argumentideTõlked. Nüüd on vaja käia üle käsu structis oleva definitsiooni ja asendada muutujanimed vastavate tõlgetega. Saadav asi ongi käsu tõlge.
 
+
+    char* tõlge = malloc(1);
+    tõlge[0] = '\0';
+    
+    unsigned int i = 0;
+    for (unsigned int j = 0;käsk->definitsioon[i]!='\0';)
+    {
+        if (&(käsk->definitsioon[j]))
+        {
+
+        }
     }
 }
 
