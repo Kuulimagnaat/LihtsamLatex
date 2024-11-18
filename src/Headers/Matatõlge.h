@@ -29,7 +29,12 @@ struct Käsk
     unsigned int argumentideKogus;
 };
 
-
+// A dynamic array of Käsk structures
+struct KäskList {
+    struct Käsk* käsud;   // Array of Käsk
+    size_t count;         // Number of commands
+    size_t capacity;      // Array capacity
+};
 
 #define MAX_REPLACEMENTS 100 
 
@@ -39,7 +44,7 @@ extern int replacement_count;
 
 int load_replacements(const char* config_path);
 
-//char* read_line(FILE* file);
+char* read_line(FILE* file);
 int KasEsimesedTähed(const char* tekstis, const char* tekst);
 char* LeiaSuluSisu(const char* tekst);
 char* LiidaTekstid(char* eelmineMälu, const char* lisatav);

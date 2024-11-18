@@ -6,7 +6,5 @@ delta -> delta
 alfa -> alpha
 beeta -> beta
 to -> to
-inf -> infty 
-kord -> cdot
-lim(hui) -> lim_{hui}\cdot   limx+5 -> lim_{x+5}
-^[hui1] -> 
+inf -> infty
+lim(uug)(ka)(buug) -> lim_{uug}\cdot{ka_{buug}}
