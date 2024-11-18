@@ -1,23 +1,23 @@
 #include <stdio.h>
 #include "Headers/Matatõlge.h"
 #include <Windows.h>
+#include <string.h>
+#include <stdlib.h>
 
-int main()
-{
+struct KäskList käsk_list;
+
+int main() {
     SetConsoleOutputCP(CP_UTF8);
+    init_käsk_list(&käsk_list);
+    
 
-    const char* argNim[] = {"uuga", "buuga"};
-    int argTüü[] = {1,1};
-    struct Käsk käsk = 
-    {
-        .argumentideKogus=2,
-        .argumentideNimed=argNim,
-        .argumentideTüübid=argTüü,
-        .definitsioon="\\frac{uuga}{buuga}",
-        .käsunimi="murd"
-    };
+    const char* config_path = "src/config.txt";
+    read_commands_from_config(config_path, &käsk_list);
 
-    char* tekst = "murdx+2 3";
-    char* tulemus = TõlgiKäsk(tekst, &käsk);
-    printf("%s\n", tulemus);
+    char* tekst = "4*limxtoinf 4 50";
+    char* tulemus = TõlgiMathMode(tekst);
+    
+    puts(tulemus);
+
+    return 0;
 }

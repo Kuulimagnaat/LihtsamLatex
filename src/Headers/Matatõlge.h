@@ -30,6 +30,19 @@ struct Käsk
 };
 
 
+// A dynamic array of Käsk structures
+struct KäskList {
+    struct Käsk* käsud;   // Array of Käsk
+    size_t count;         // Number of commands
+    size_t capacity;      // Array capacity
+};
+
+extern struct KäskList käsk_list;
+
+void read_commands_from_config(const char* filepath, struct KäskList* käsk_list);
+void add_käsk(struct KäskList* list, struct Käsk käsk);
+void free_käsk_list(struct KäskList* list);
+void init_käsk_list(struct KäskList* list);
 
 #define MAX_REPLACEMENTS 100 
 
@@ -39,7 +52,7 @@ extern int replacement_count;
 
 int load_replacements(const char* config_path);
 
-//char* read_line(FILE* file);
+char* read_line(FILE* file);
 int KasEsimesedTähed(const char* tekstis, const char* tekst);
 char* LeiaSuluSisu(const char* tekst);
 char* LiidaTekstid(char* eelmineMälu, const char* lisatav);
@@ -62,6 +75,7 @@ char* KõrvutiolevadAstmeks(const char* tekst);
 char* LiidaTäht(char* eelmineMälu, char lisatav);
 char* LiidaArv(char* eelmineMälu, int lisatav);
 int kasnEelnevatOnTäht(unsigned int n, char täht);
-char* TõlgiKäsk(const char* tekst, struct Käsk* käsk);
-char* read_line(FILE* file);
+struct TekstArv TõlgiKäsk(const char* tekst, struct Käsk* käsk);
+char* trim_whitespace(char* str);
+
 #endif

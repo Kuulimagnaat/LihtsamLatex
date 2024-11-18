@@ -13,3 +13,6 @@ output/output.tex/
 *.log
 *.pdf
 *.tex
+main.synctex.gz
+main.fdb_latexmk
+main.fls
