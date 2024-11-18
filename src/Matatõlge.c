@@ -382,13 +382,14 @@ char* my_strndup(const char* s, size_t n) {
 // Kui TõlgiMathMode funktsioonis tajutakse, et kättejõudnud kohal on mingi käsk, siis seal kohas antakse selle koha aadress ja tajutud käsule vastav struct selele funtksiooile, et see saaks tõlkida seda kohta. 
 struct TekstArv TõlgiKäsk(const char* tekst, struct Käsk* käsk)
 {
-    /* Teoreetiliselt command võib olla selline, et kaks argumenti pole järjest. Näiteks oleks definitsioon selline:
+    /*
+    Teoreetiliselt command võib olla selline, et kaks argumenti pole järjest. Näiteks oleks definitsioon selline:
     uuga(arg1)buuga(arg2) -> \frac{arg1}{arg2}
     Sel juhul saaks lähtekoodis kirjutada niimoodi: uugaxbuuga4, millest saab \frac{x}{4}.
     Kas frac on ainus omalaadne, kus üks argument on käsu enda nimest eespool? Oletame, et ei ole. Ss võiks vabalt ka mitu argumenti käsu enda nimest ettepoole panna, aga ss peaks lugema nii palju tulevikku, et aru saada, kas käesoleval kohal on mingi mitmeargumendilise käsu esimene argument.
-    // Ütleme, et ei tohi nii olla ja ütleme, et ei tohi isegi olla käsu definitsioonid sellised: uuga(arg1)buuga(arg2). Postuleerime, et kõik argumendid peavad olema kõige lõpus igal commandil ja loodame selle peale, et me ei taha tulevikus midagi muud fracilaadset programmi lisada. frac on ainus omalaadne.*/
+    // Ütleme, et ei tohi nii olla ja ütleme, et ei tohi isegi olla käsu definitsioonid sellised: uuga(arg1)buuga(arg2). Postuleerime, et kõik argumendid peavad olema kõige lõpus igal commandil ja loodame selle peale, et me ei taha tulevikus midagi muud fracilaadset programmi lisada. frac on ainus omalaadne.
 
-    // Kõik argumendid selles nimekirjas ja hiljem see nimekiri ise on vaja vabastada.
+    // Kõik argumendid selles nimekirjas ja hiljem see nimekiri ise on vaja vabastada.*/
     char** argumentideTõlked = malloc(käsk->argumentideKogus*sizeof(char*));
     unsigned int i = strlen(käsk->käsunimi);
     // Nii mitu korda tuleb argumenti otsida.
@@ -426,8 +427,6 @@ struct TekstArv TõlgiKäsk(const char* tekst, struct Käsk* käsk)
     // Läheb üle definitsiooni tähtede
     for (unsigned int i = 0; käsk->definitsioon[i]!='\0';)
     {
-        printf("%d\n", i);
-        puts(&(käsk->definitsioon[i]));
         // Läheb iga tähe puhul üle kõigi argumentide nimede (need, mis definitsioonist loeti)
         unsigned int j=0;
         for (; j < käsk->argumentideKogus; j++)
@@ -461,6 +460,7 @@ struct TekstArv TõlgiKäsk(const char* tekst, struct Käsk* käsk)
 
     return tagastus;
 }
+
 
 
 
