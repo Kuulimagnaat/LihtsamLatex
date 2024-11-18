@@ -10,13 +10,15 @@ int main() {
     SetConsoleOutputCP(CP_UTF8);
     init_käsk_list(&käsk_list);
     
+
     const char* config_path = "src/config.txt";
     read_commands_from_config(config_path, &käsk_list);
 
-    char* tekst = "epsilon";
-    char* tulemus = TõlgiMathMode(tekst);
+    char* tekst = "limx=3 45 a/b";
+    struct TekstArv tulemus = TõlgiKäsk(tekst, &käsk_list.käsud[0]);
+    //char* tulemus = TõlgiMathMode(tekst);
     
-    puts(tulemus);
+    puts(tulemus.Tekst);
 
     return 0;
 }

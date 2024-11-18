@@ -1,10 +1,4 @@
 fracTüüp = SVEN
 template = SVEN
 
-epsilon -> varepsilon
-delta -> delta
-alfa -> alpha
-beeta -> beta
-to -> to
-inf -> infty
 lim(uug)(ka)(buug) -> lim_{uug}\cdot{ka_{buug}}

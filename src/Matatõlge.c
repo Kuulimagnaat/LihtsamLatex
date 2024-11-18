@@ -380,7 +380,7 @@ char* my_strndup(const char* s, size_t n) {
 
 
 // Kui TõlgiMathMode funktsioonis tajutakse, et kättejõudnud kohal on mingi käsk, siis seal kohas antakse selle koha aadress ja tajutud käsule vastav struct selele funtksiooile, et see saaks tõlkida seda kohta. 
-char* TõlgiKäsk(const char* tekst, struct Käsk* käsk)
+struct TekstArv TõlgiKäsk(const char* tekst, struct Käsk* käsk)
 {
     /* Teoreetiliselt command võib olla selline, et kaks argumenti pole järjest. Näiteks oleks definitsioon selline:
     uuga(arg1)buuga(arg2) -> \frac{arg1}{arg2}
@@ -390,24 +390,32 @@ char* TõlgiKäsk(const char* tekst, struct Käsk* käsk)
 
     // Kõik argumendid selles nimekirjas ja hiljem see nimekiri ise on vaja vabastada.
     char** argumentideTõlked = malloc(käsk->argumentideKogus*sizeof(char*));
-
     unsigned int i = strlen(käsk->käsunimi);
     // Nii mitu korda tuleb argumenti otsida.
-    for (unsigned int j=0; j<käsk->argumentideKogus; )
+    for (unsigned int j=0; j<käsk->argumentideKogus; j++)
     {
+        //puts("Kood jõudis siia!");
         char* argument = NULL;
-        if (käsk->argumentideTüübid[i] == 0)
+        printf("Argumentide tüüp: %d", käsk->argumentideTüübid[j]);
+        if (käsk->argumentideTüübid[j] == 0)
         {
+            //puts("Kood jõudis siia");
             argument = LeiaLühemArgument(&tekst[i]);
         }
-        else if (käsk->argumentideTüübid[i] == 1)
+        else if (käsk->argumentideTüübid[j] == 1)
         {
             argument = LeiaArgument(&tekst[i]);
         }
         argumentideTõlked[j] = TõlgiMathMode(argument);
-        i += strlen(argument);
+        i += strlen(argument)+1;
         free(argument);
     }
+    puts("ARGUMENTIDE TÕLKED!!!");
+    puts(argumentideTõlked[0]);
+    puts(argumentideTõlked[1]);
+    puts(argumentideTõlked[2]);
+
+    unsigned int pikkus = i;
     // Kui kood siia jõuab, on iga argumendi tõlge nimekirjas argumentideTõlked. Nüüd on vaja käia üle käsu structis oleva definitsiooni ja asendada muutujanimed vastavate tõlgetega. Saadav asi ongi käsu tõlge.
 
 
@@ -418,20 +426,28 @@ char* TõlgiKäsk(const char* tekst, struct Käsk* käsk)
     // Läheb üle definitsiooni tähtede
     for (unsigned int i = 0; käsk->definitsioon[i]!='\0';)
     {
-        // Läheb iga tähe puhul üle kõigi argumentide nimede
-        for (unsigned int j=0; j < käsk->argumentideKogus; j++)
+        printf("%d\n", i);
+        puts(&(käsk->definitsioon[i]));
+        // Läheb iga tähe puhul üle kõigi argumentide nimede (need, mis definitsioonist loeti)
+        unsigned int j=0;
+        for (; j < käsk->argumentideKogus; j++)
         {
+            puts(&(käsk->definitsioon[i]));
+            puts(käsk->argumentideNimed[j]);
             if (KasEsimesedTähed(&(käsk->definitsioon[i]), käsk->argumentideNimed[j]))
             {
+                i += strlen(käsk->argumentideNimed[j]);
                 LiidaTekstid(tõlge, argumentideTõlked[j]);
                 // Tuleb liita argumenditõlge kohal j tõlkele.
+                break;
             }
-            else
-            {
-                // Tuleb liita definitsiooni täht tõlkele
-                char täht[2] = {käsk->definitsioon[i], '\0'};
-                LiidaTekstid(tõlge, täht);
-            }
+        }
+        if (j == käsk->argumentideKogus)
+        {
+            // Tuleb liita definitsiooni täht tõlkele
+            char täht[2] = {käsk->definitsioon[i], '\0'};
+            LiidaTekstid(tõlge, täht);
+            i++;
         }
     }
 
@@ -440,8 +456,10 @@ char* TõlgiKäsk(const char* tekst, struct Käsk* käsk)
         free(argumentideTõlked[i]);
     }
     free(argumentideTõlked);
+    
+    struct TekstArv tagastus = {.Arv=pikkus, .Tekst=tõlge};
 
-    return tõlge;
+    return tagastus;
 }
 
 
@@ -610,7 +628,7 @@ int KasKäsk(const char* tekst, struct KäskList* käsuNimek, int* indeks)
     printf("  SISSE: %s, %d\n", tekst, *indeks);
     for (unsigned int i = 0; i<käsuNimek->count; i++)
     {
-        printf("\"%s\"", käsuNimek->käsud[i].käsunimi);
+        //printf("\"%s\"", käsuNimek->käsud[i].käsunimi);
         if (KasEsimesedTähed(tekst, käsuNimek->käsud[i].käsunimi))
         {
             *indeks = i;
@@ -715,8 +733,10 @@ char* TõlgiMathMode(const char* expression) {
 
         if (KasKäsk(&expression[i], &käsk_list, &func_index))
         {
-            char* käsuTõlge = TõlgiKäsk(&expression[i], &käsk_list.käsud[func_index]);
-            puts(käsuTõlge);
+            struct TekstArv käsuTagastus = TõlgiKäsk(&expression[i], &käsk_list.käsud[func_index]);
+            LiidaTekstid(result, käsuTagastus.Tekst);
+            free(käsuTagastus.Tekst);
+            i += käsuTagastus.Arv;
         }
 
         /*
