@@ -10,7 +10,7 @@ int main() {
     SetConsoleOutputCP(CP_UTF8);
     //init_käsk_list(&käsk_list);
 
-    char* tekst = "  uuga  ";
+    char* tekst = " uuga  ";
     char* uus = trim_whitespace(tekst);
     /*
     const char* config_path = "src/config.txt";
