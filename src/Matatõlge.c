@@ -435,9 +435,9 @@ struct TekstArv TõlgiKäsk(const char* tekst, struct Käsk* käsk)
             puts(käsk->argumentideNimed[j]);
             if (KasEsimesedTähed(&(käsk->definitsioon[i]), käsk->argumentideNimed[j]))
             {
-                i += strlen(käsk->argumentideNimed[j]);
-                LiidaTekstid(tõlge, argumentideTõlked[j]);
+                tõlge = LiidaTekstid(tõlge, argumentideTõlked[j]);
                 // Tuleb liita argumenditõlge kohal j tõlkele.
+                i += strlen(käsk->argumentideNimed[j]);
                 break;
             }
         }
@@ -445,8 +445,8 @@ struct TekstArv TõlgiKäsk(const char* tekst, struct Käsk* käsk)
         {
             // Tuleb liita definitsiooni täht tõlkele
             char täht[2] = {käsk->definitsioon[i], '\0'};
-            LiidaTekstid(tõlge, täht);
-            i++;
+            tõlge = LiidaTekstid(tõlge, täht);
+            i++;            
         }
     }
 
