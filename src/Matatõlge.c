@@ -176,7 +176,7 @@ int replacement_count = 0;
 
 // Function to trim whitespace from a string
 char* trim_whitespace(char* str) {
-    while (isspace((unsigned char)*str)) str++;
+    while (isspace(*str)) str++;
     char* end = str + strlen(str) - 1;
     while (end > str && isspace((unsigned char)*end)) end--;
     *(end + 1) = '\0';
@@ -516,6 +516,44 @@ int KasAvaldiseÜmberOnSulud(const char* tekst)
 }
 
 
+
+/* Dynamic line reading function */
+char* read_line(FILE* file) {
+    char* line = malloc(256);
+    if (!line) {
+        perror("Memory allocation error :(");
+        exit(EXIT_FAILURE);
+    }
+
+    int capacity = 256;
+    int length = 0;
+    int ch;
+
+    while ((ch = fgetc(file)) != EOF && ch != '\n') {
+        if (length + 1 >= capacity) {
+            capacity *= 2;
+            char* new_line = realloc(line, capacity);
+            if (!new_line) {
+                free(line);
+                perror("Memory allocation error :(");
+                exit(EXIT_FAILURE);
+            }
+            line = new_line;
+        }
+        line[length++] = ch;
+    }
+
+    if (length == 0 && ch == EOF) {
+        free(line); // End of file, return NULL
+        return NULL;
+    }
+
+    line[length] = '\0'; // Null-terminate the string
+    return line;
+}
+
+
+
 // Funktsioon, mis on mõeldud funktsiooni tul argumendi lihtsustamiseks. See peab kaks kõrvutiolevat sama tähte asendama selle tähe ruuduga, kolm kõrvutiolevat sama tähte selle tähe kuubiga jne. Näiteks xxxyy -> x^{3}y^{2} ja xxyxy -> x^{2}yxy
 char* KõrvutiolevadAstmeks(const char* tekst)
 {
@@ -557,6 +595,24 @@ char* KõrvutiolevadAstmeks(const char* tekst)
 // Funktsioon on mõeldud kasutamiseks 
 int kasnEelnevatOnTäht(unsigned int n, char täht);
 
+
+int KasKäsk(const char* tekst, struct KäskList* käsuNimek, int* indeks)
+{
+    printf("KasKäsk\n");
+    printf("  SISSE: %s, %d\n", tekst, *indeks);
+    for (unsigned int i = 0; i<käsuNimek->count; i++)
+    {
+        printf("\"%s\"", käsuNimek->käsud[i].käsunimi);
+        if (KasEsimesedTähed(tekst, käsuNimek->käsud[i].käsunimi))
+        {
+            *indeks = i;
+            printf("  VÄLJA: 1\n");
+            return 1;
+        }
+    }
+    printf("  VÄLJA: 0\n");
+    return 0;
+}
 
 
 // Rekursiivselt tõlgime math moodi latexisse
@@ -649,6 +705,13 @@ char* TõlgiMathMode(const char* expression) {
         int func_len = 0;
         int is_replacement = 0; // Flag to check if it's a replacement command
 
+        if (KasKäsk(&expression[i], &käsk_list, &func_index))
+        {
+            char* käsuTõlge = TõlgiKäsk(&expression[i], &käsk_list.käsud[func_index]);
+            puts(käsuTõlge);
+        }
+
+        /*
         // Check in math functions array
         for (int j = 0; math_functions[j] != NULL; j++) {
             if (strncmp(&expression[i], math_functions[j], strlen(math_functions[j])) == 0) {
@@ -670,7 +733,7 @@ char* TõlgiMathMode(const char* expression) {
                 }
             }
         }
-
+        */
         // If a function or replacement is found
         if (func_index != -1) {
             char* func_name;

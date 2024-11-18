@@ -29,12 +29,15 @@ struct Käsk
     unsigned int argumentideKogus;
 };
 
+
 // A dynamic array of Käsk structures
 struct KäskList {
     struct Käsk* käsud;   // Array of Käsk
     size_t count;         // Number of commands
     size_t capacity;      // Array capacity
 };
+
+extern struct KäskList käsk_list;
 
 void read_commands_from_config(const char* filepath, struct KäskList* käsk_list);
 void add_käsk(struct KäskList* list, struct Käsk käsk);
@@ -73,4 +76,6 @@ char* LiidaTäht(char* eelmineMälu, char lisatav);
 char* LiidaArv(char* eelmineMälu, int lisatav);
 int kasnEelnevatOnTäht(unsigned int n, char täht);
 char* TõlgiKäsk(const char* tekst, struct Käsk* käsk);
+char* trim_whitespace(char* str);
+
 #endif
