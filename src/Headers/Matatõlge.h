@@ -36,6 +36,11 @@ struct KäskList {
     size_t capacity;      // Array capacity
 };
 
+void read_commands_from_config(const char* filepath, struct KäskList* käsk_list);
+void add_käsk(struct KäskList* list, struct Käsk käsk);
+void free_käsk_list(struct KäskList* list);
+void init_käsk_list(struct KäskList* list);
+
 #define MAX_REPLACEMENTS 100 
 
 extern const char* math_functions_replace[MAX_REPLACEMENTS];

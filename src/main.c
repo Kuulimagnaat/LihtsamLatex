@@ -132,12 +132,10 @@ int main() {
         return EXIT_FAILURE;
     }
 
-    // Load user-defined replacements
-    if (load_replacements(config_path) != 0) {
-        fprintf(stderr, "Error loading replacements from config.txt.\n");
-        free(template_name);
-        return EXIT_FAILURE;
-    }
+    // Load custom user-defined commands
+    struct KäskList käsk_list;
+    init_käsk_list(&käsk_list);
+    read_commands_from_config(config_path, &käsk_list);
 
     // Construct full path to the template file in the templates folder
     char template_path[MAX_PATH_LENGTH];
@@ -346,6 +344,7 @@ int main() {
     // Free the template name memory
     free(template_name);
     free_replacements();
+    free_käsk_list(&käsk_list);
 
     return 0;
 }
