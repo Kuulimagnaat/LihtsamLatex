@@ -228,6 +228,110 @@ void add_käsk(struct KäskList* list, struct Käsk käsk) {
     list->käsud[list->count++] = käsk;
 }
 
+
+
+void loeConfigistKeskkonnad(const char* filepath, struct KeskkonnaNimekiri* keskkonnaNimek)
+{
+    FILE* file = fopen(filepath, "r");
+    if (!file) 
+    {
+        perror("Unable to open config file");
+        exit(EXIT_FAILURE);
+    }
+
+
+
+
+    char* line;
+    while ((line = read_line(file)) != NULL) 
+    {
+        // Skip empty lines or comments
+        if (line[0] == '\0' || line[0] == '#')
+        {
+            free(line);
+            continue;
+        }
+
+        char* arrow = strstr(line, "->");
+        if (!arrow) {
+            fprintf(stderr, "Invalid line in config file: %s\n", line);
+            free(line);
+            continue;
+        }
+
+        // Split the line into the left and right parts
+        *arrow = '\0';
+        char* left = line;
+        char* right = arrow + 2;
+
+        // Trim whitespace
+        left = trim_whitespace(left);
+        right = trim_whitespace(right);
+
+        struct Käsk käsk = {0};
+
+        // Parse the command name and arguments from the left side
+        char* open_paren = strchr(left, '(');  // Find first '('
+        if (open_paren) {
+            // Extract the command name before the first '('
+            *open_paren = '\0'; // Null-terminate the command name
+            käsk.käsunimi = strdup(left);
+
+            // Now parse arguments
+            char* current = open_paren + 1; // Start after '('
+            unsigned int arg_count = 0;
+
+            while (current && *current) {
+                char* close_paren = strchr(current, ')'); // Find closing ')'
+                if (!close_paren) break; // If no closing parenthesis, stop
+
+                // Null-terminate the argument name
+                *close_paren = '\0';
+
+                // Allocate memory and store the argument name
+                käsk.argumentideNimed = realloc(käsk.argumentideNimed, (arg_count + 1) * sizeof(char*));
+                käsk.argumentideNimed[arg_count] = strdup(current);
+
+                // Default argument type (can be customized later)
+                käsk.argumentideTüübid = realloc(käsk.argumentideTüübid, (arg_count + 1) * sizeof(int));
+                käsk.argumentideTüübid[arg_count] = 1; // Default type "long"
+
+                // Increment argument count
+                arg_count++;
+
+                // Move past the closing parenthesis and skip any spaces
+                current = close_paren + 2;
+                while (*current == ' ') {
+                    current++;
+                }
+            }
+
+            // Set the total argument count
+            käsk.argumentideKogus = arg_count;
+        } else {
+            // No arguments, just the command name
+            käsk.käsunimi = strdup(left);
+            käsk.argumentideKogus = 0;
+            käsk.argumentideNimed = NULL;
+            käsk.argumentideTüübid = malloc(1 * sizeof(int));
+            käsk.argumentideTüübid[0] = -1; // No arguments
+        }
+
+        // Set the definition (right-hand side of the "->")
+        käsk.definitsioon = strdup(right);
+
+        // Add the parsed command to the list
+        add_käsk(käsk_list, käsk);
+
+        // Free the line buffer
+        free(line);
+    }
+
+    fclose(file);
+}
+
+
+
 void read_commands_from_config(const char* filepath, struct KäskList* käsk_list) {
     FILE* file = fopen(filepath, "r");
     if (!file) {
@@ -688,15 +792,6 @@ char* TõlgiMathMode(const char* expression) {
             free(nimetaja);
             free(lugejaTõlge);
             free(nimetajaTõlge);
-            continue;
-        }
-
-        // Check for exponent
-        if (expression[i] == '^') {
-            struct TekstArv astmeTõlge = TõlgiAste(&expression[i]);
-            result = LiidaTekstid(result, astmeTõlge.Tekst);
-            free(astmeTõlge.Tekst);
-            i += astmeTõlge.Arv;
             continue;
         }
 

@@ -5,3 +5,19 @@ lim(uug)(ka)(buug) -> \lim_{uug}\cdot{ka_{buug}}
 sin(kabuug) -> \sin{kabuug}
 to -> \to
 inf -> \infty
+^(lmao) -> ^{lmao}
+
+keskkond
+ALGUSETÄHIS = nummerda
+ALGUSELATEX = \begin{enumerate}
+IGAREAALGUSESSE = \item
+LÕPUTÄHIS = nummerdalõpp
+LÕPULATEX = \end{enumerate}
+
+keskkond
+ALGUSETÄHIS = maatriks
+ALGUSELATEX = \begin{pmatrix}
+ASENDATEKST(   )( & )
+IGAREALÕPPU = \\
+LÕPUTÄHIS = maatrikslõpp
+LÕPULATEX = \end{pmatrix}
