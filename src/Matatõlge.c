@@ -229,7 +229,7 @@ void add_käsk(struct KäskList* list, struct Käsk käsk) {
 }
 
 
-
+/*
 void loeConfigistKeskkonnad(const char* filepath, struct KeskkonnaNimekiri* keskkonnaNimek)
 {
     FILE* file = fopen(filepath, "r");
@@ -241,26 +241,18 @@ void loeConfigistKeskkonnad(const char* filepath, struct KeskkonnaNimekiri* kesk
 
 
 
-
     char* line;
     while ((line = read_line(file)) != NULL) 
     {
-        // Skip empty lines or comments
-        if (line[0] == '\0' || line[0] == '#')
+        int onKeskkonnaLugemine = 0;
+        // Igal real, kui ei ole kohe alguses "keskkond", siis lic edasi minna järgmisele reale. Kõik, millest hoolitakse on see, mis on "keskkonna" taga.
+        if (!KasEsimesedTähed(line, "keskkond"))
         {
-            free(line);
             continue;
         }
+        // Kui kood jõuab siia, ss järelikult on käesoleval real esimene sõna "keskkond".
 
-        char* arrow = strstr(line, "->");
-        if (!arrow) {
-            fprintf(stderr, "Invalid line in config file: %s\n", line);
-            free(line);
-            continue;
-        }
 
-        // Split the line into the left and right parts
-        *arrow = '\0';
         char* left = line;
         char* right = arrow + 2;
 
@@ -329,7 +321,7 @@ void loeConfigistKeskkonnad(const char* filepath, struct KeskkonnaNimekiri* kesk
 
     fclose(file);
 }
-
+*/
 
 
 void read_commands_from_config(const char* filepath, struct KäskList* käsk_list) {
@@ -661,13 +653,12 @@ char* read_line(FILE* file) {
     while ((ch = fgetc(file)) != EOF && ch != '\n') {
         if (length + 1 >= capacity) {
             capacity *= 2;
-            char* new_line = realloc(line, capacity);
-            if (!new_line) {
+            char* line = realloc(line, capacity);
+            if (!line) {
                 free(line);
                 perror("Memory allocation error :(");
                 exit(EXIT_FAILURE);
             }
-            line = new_line;
         }
         line[length++] = ch;
     }
@@ -828,13 +819,10 @@ char* TõlgiMathMode(const char* expression) {
         if (KasKäsk(&expression[i], &käsk_list, &func_index))
         {
             struct TekstArv käsuTagastus = TõlgiKäsk(&expression[i], &käsk_list.käsud[func_index]);
-            puts("SIIN ON SAADUD TÜLGE.");
-            puts(käsuTagastus.Tekst);
             result = LiidaTekstid(result, käsuTagastus.Tekst);
             i += käsuTagastus.Arv;
 
             if (expression[i] == '(') {
-                puts("läks sisse");
                 int start = i + 1;
                 int paren_count = 1;
                 i++;

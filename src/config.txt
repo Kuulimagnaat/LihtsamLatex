@@ -1,11 +1,19 @@
 fracTüüp = SVEN
 template = SVEN
 
-lim(uug)(ka)(buug) -> \lim_{uug}\cdot{ka_{buug}}
+lim(uugh) -> \lim_{uugh}
 sin(kabuug) -> \sin{kabuug}
+
+minufunc(a1)(a2)(a5)(uuga)(a7) -> \frac{\lim_{a1\to\infty}f(a2)}{a5\cdot uuga}+a7
 to -> \to
-inf -> \infty
+inf -> \infty 
+alga -> \alfpha
+epsilon -> \varepsilon
+delta -> \delta
 ^(lmao) -> ^{lmao}
+osah -> \subset
+rr -> \mathbb R
+sqrt(asd) -> \sqrt{asd}
 
 keskkond
 ALGUSETÄHIS = nummerda
@@ -21,3 +29,10 @@ ASENDATEKST(   )( & )
 IGAREALÕPPU = \\
 LÕPUTÄHIS = maatrikslõpp
 LÕPULATEX = \end{pmatrix}
+
+keskkond
+ALGUSETÄHIS = süsteem
+ALGUSELATEX = \begin{cases}
+IGAREALÕPPU = \\
+LÕPUTÄHIS = süsteemilõpp
+LÕPULATEX = \end{cases}

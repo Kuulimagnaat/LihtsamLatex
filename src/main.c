@@ -9,6 +9,8 @@
 
 struct KäskList käsk_list;
 
+//struct KeskkonnaNimekiri keskkonnaNimek;
+
 /* Function to find the first .txt file in the current directory */
 int find_first_txt_file(char* txt_file_path) {
     WIN32_FIND_DATA find_file_data;
@@ -102,6 +104,7 @@ int main() {
     // Load custom user-defined commands
     init_käsk_list(&käsk_list);
     read_commands_from_config(config_path, &käsk_list);
+    //loeConfigistKeskkonnad(config_path, &keskkonnaNimek);
 
     // Construct full path to the template file in the templates folder
     char template_path[MAX_PATH_LENGTH];
@@ -301,7 +304,7 @@ int main() {
 
     // Compile output.tex to a .pdf using pdflatex
     char compile_command[MAX_PATH_LENGTH];
-    snprintf(compile_command, sizeof(compile_command), "pdflatex -output-directory=\"%s\" \"%s\"", cwd, output_tex_path);
+    snprintf(compile_command, sizeof(compile_command), "pdflatex -quiet -output-directory=\"%s\" \"%s\"", cwd, output_tex_path);
     if (system(compile_command) != 0) {
         perror("Error compiling .tex file with pdflatex");
         return EXIT_FAILURE;

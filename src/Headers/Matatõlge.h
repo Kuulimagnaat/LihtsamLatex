@@ -30,6 +30,7 @@ struct Käsk
 };
 
 
+
 // A dynamic array of Käsk structures
 struct KäskList {
     struct Käsk* käsud;   // Array of Käsk
@@ -38,6 +39,36 @@ struct KäskList {
 };
 
 extern struct KäskList käsk_list;
+
+
+struct TekstTekst
+{
+    const char* Tekst1;
+    const char* Tekst2;
+};
+
+
+struct Keskkond
+{
+    const char* alguseTähis;
+    const char* alguseLatex;
+    const char* igaReaAlgusesse; 
+    struct TekstTekst* tekstJaAsendus;
+    const char* igaReaLõppu;
+    const char* lõpuTähis;
+    const char* lõpuLatex;
+};
+
+
+struct KeskkonnaNimekiri
+{
+    struct Keskkond* keskkonnad;
+    size_t count;
+};
+
+
+
+
 
 void read_commands_from_config(const char* filepath, struct KäskList* käsk_list);
 void add_käsk(struct KäskList* list, struct Käsk käsk);

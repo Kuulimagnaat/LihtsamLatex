@@ -2,10 +2,9 @@
 \usepackage{amsfonts}
 \usepackage{amsmath}
 \usepackage{amssymb}
-\usepackage{amsthm}
 \usepackage[estonian]{babel}
-
-\usepackage[margin=5cm]{geometry}
+\usepackage{parskip}
+\usepackage[margin=2cm]{geometry}
 
 \begin{document}
 {{content}}
