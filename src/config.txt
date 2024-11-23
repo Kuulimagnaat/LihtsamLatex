@@ -14,6 +14,8 @@ delta -> \delta
 osah -> \subset
 rr -> \mathbb R
 sqrt(asd) -> \sqrt{asd}
+kord -> \cdot
+int -> \int
 
 keskkond
 ALGUSETÄHIS = nummerda

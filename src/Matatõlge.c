@@ -56,7 +56,7 @@ int KasEsimesedTähed(const char* tekstis, const char* tekst)
 
 
 
-#define TõlgiAsteDebug 1
+#define TõlgiAsteDebug 0
 struct TekstArv TõlgiAste(const char* tekst)
 {
     #if TõlgiAsteDebug == 1
@@ -165,9 +165,9 @@ char* LiidaTekstid(char* eelmineMälu, const char* lisatav)
 {
     #if LiidaTekstidDebug == 1
     prindiTaane();
-    print("LiidaTekstid");
+    printf("LiidaTekstid\n");
     prindiTaane();
-    print("SISSE: %s, %s\n", eelmineMälu, lisatav);
+    printf("SISSE: \"%s\", \"%s\"\n", eelmineMälu, lisatav);
     rekursiooniTase += 1;
     #endif
     char* result = realloc(eelmineMälu, strlen(eelmineMälu) + strlen(lisatav) + 1);
@@ -180,7 +180,7 @@ char* LiidaTekstid(char* eelmineMälu, const char* lisatav)
     #if LiidaTekstidDebug == 1
     rekursiooniTase -= 1;
     prindiTaane();
-    printf("VÄLJA: %s", result);
+    printf("VÄLJA: %s\n", result);
     #endif
     return result;
 }
@@ -533,14 +533,15 @@ char* my_strndup(const char* s, size_t n) {
 
 
 // Kui TõlgiMathMode funktsioonis tajutakse, et kättejõudnud kohal on mingi käsk, siis seal kohas antakse selle koha aadress ja tajutud käsule vastav struct selele funtksiooile, et see saaks tõlkida seda kohta. 
-#define TõlgiKäskDebug 0
+#define TõlgiKäskDebug 1
 struct TekstArv TõlgiKäsk(const char* tekst, struct Käsk* käsk)
 {
     #if TõlgiKäskDebug == 1
     prindiTaane();
     printf("TõlgiKäsk\n");
     prindiTaane();
-    printf("SISSE: %s", )
+    printf("SISSE: %s\n", tekst);
+    rekursiooniTase += 1;
     #endif
     /*
     Teoreetiliselt command võib olla selline, et kaks argumenti pole järjest. Näiteks oleks definitsioon selline:
@@ -614,6 +615,11 @@ struct TekstArv TõlgiKäsk(const char* tekst, struct Käsk* käsk)
     
     struct TekstArv tagastus = {.Arv=pikkus, .Tekst=tõlge};
 
+    #if TõlgiKäskDebug == 1
+    rekursiooniTase -= 1;
+    prindiTaane();
+    printf("VÄLJA: %d, %s", tagastus.Arv, tagastus.Tekst );
+    #endif
     return tagastus;
 }
 
@@ -648,18 +654,23 @@ char* append_str(const char* a, const char* b) {
 #define EemaldaEsimeneViimaneDebug 0
 char* EemaldaEsimeneViimane(char* tekst)
 {
-#if EemaldaEsimeneViimaneDebug == 1
-    printf("EemaldaEsimeneViimane\n");
-    printf("  SISSE: %s.\n", tekst);
-#endif
+    #if EemaldaEsimeneViimaneDebug == 1
+    prindiTaane();
+    printf("TõlgiKäsk\n");
+    prindiTaane();
+    printf("SISSE: %s\n", tekst);
+    rekursiooniTase += 1;
+    #endif
     unsigned int l = strlen(tekst);
     char* lühem = malloc(l-1);
     memcpy(lühem, &tekst[1], l-2);
     lühem[l-2] = '\0';
 
-#if EemaldaEsimeneViimaneDebug == 1
-    printf("  VÄLJA: %s.\n", lühem);
-#endif
+    #if EemaldaEsimeneViimaneDebug == 1
+    rekursiooniTase -= 1;
+    prindiTaane();
+    printf("VÄLJA: %s\n", lühem);
+    #endif
 
     return lühem;
 }
@@ -671,13 +682,18 @@ char* EemaldaEsimeneViimane(char* tekst)
 int KasAvaldiseÜmberOnSulud(const char* tekst)
 {
     #if KasAvaldiseÜmberOnSuludDebug == 1
-    printf("KasAvaldiseÜmberOnSulud\n");
-    printf("  SISSE: %s\n", tekst);
+    prindiTaane();
+    printf("KasAvaldisePmberOnSulud\n");
+    prindiTaane();
+    printf("SISSE: %s\n", tekst);
+    rekursiooniTase += 1;
     #endif
     if (tekst[0] != '(')
     {
         #if KasAvaldiseÜmberOnSuludDebug == 1
-        printf("  VÄLJA: 0");
+        rekursiooniTase -= 1;
+        prindiTaane();
+        printf("VÄLJA: 0");
         #endif
         return 0;
     }
@@ -687,12 +703,16 @@ int KasAvaldiseÜmberOnSulud(const char* tekst)
     if (&tekst[strlen(sulusisu)+1] == &tekst[strlen(tekst)-1])
     {
         #if KasAvaldiseÜmberOnSuludDebug == 1
-        printf("  VÄLJA: 1");
+        rekursiooniTase -= 1;
+        prindiTaane();
+        printf("VÄLJA: 1");
         #endif
         return 1;
     }
     #if KasAvaldiseÜmberOnSuludDebug == 1
-    printf("  VÄLJA: 0");
+    rekursiooniTase -= 1;
+    prindiTaane();
+    printf("VÄLJA: 0");
     #endif
     return 0;
 }
@@ -735,13 +755,13 @@ char* read_line(FILE* file) {
 
 
 // Vahel on soov anda mingi käsu argumendiks mingi kaheargumendilise käsu väljakutse. Näiteks sqrtsumk=1 m f(x). Seal mõeldakse sqrt argumendiks sumk=1 m, aga loetakse ainult sumk=1, sest loetakse esimese tühikuni. See funktsioon üritab seda probleemi lahendada, et ei peaks igale poole sulgusid toppima ainult selle pärast, et meie programm muidu ei tööta.
-char* LeiaArgumentRekursiivselt(char* argumendiAlgus)
+/*char* LeiaArgumentRekursiivselt(char* argumendiAlgus)
 {
     for(unsigned int i=0; ; )
     {
-        KasKäsk()
+        KasKäsk();
     }
-}
+}*/
 
 
 // Funktsioon, mis on mõeldud funktsiooni tul argumendi lihtsustamiseks. See peab kaks kõrvutiolevat sama tähte asendama selle tähe ruuduga, kolm kõrvutiolevat sama tähte selle tähe kuubiga jne. Näiteks xxxyy -> x^{3}y^{2} ja xxyxy -> x^{2}yxy
@@ -808,29 +828,48 @@ int KasKäsk(const char* tekst, struct KäskList* käsuNimek, int* indeks)
 
 
 // Funkstioon uurib kas tegu on käsuga. Tagastab vastava käsu structi mäluaadressi kui on käsk ja NULL, kui ei ole käsk.
-#define KasKäskDebug 0
+#define KasKäskDebug 1
 struct Käsk* KasKäsk(const char* tekst)
 {
     #if KasKäskDebug == 1
-    printf(KasKäsk)
+    prindiTaane();
+    printf("KasKäsk\n");
+    prindiTaane();
+    printf("SISSE: %s\n", tekst);
+    rekursiooniTase += 1;
+    #endif
     for (unsigned int i = 0; i; i<käsk_list.count)
     {
         if (KasEsimesedTähed(tekst, käsk_list.käsud[i].käsunimi))
         {
+            #if KasKäskDebug == 1
+            rekursiooniTase -= 1;
+            prindiTaane();
+            printf("VÄLJA: käsustruktuur %s\n", käsk_list.käsud[i].käsunimi);
+            #endif
             // Operaatorid . ja [] on prioriteedilt enne mäluaadressivõtmisoperaatorit, seega sulge ei pea olema.
             return &käsk_list.käsud[i];
         }
     }
+    #if KasKäskDebug == 1
+    rekursiooniTase -= 1;
+    prindiTaane();
+    printf("VÄLJA: NULL\n");
+    #endif
     return NULL;
 }
 
 
 // Rekursiivselt tõlgime math moodi latexisse
 #define TõlgiMathModeDebug 1
-char* TõlgiMathMode(const char* expression) {
+char* TõlgiMathMode(const char* expression)
+{
     #if TõlgiMathModeDebug == 1
+    prindiTaane();
     printf("TõlgiMathMode\n");
-    printf("  SISSE: %s\n", expression);
+    prindiTaane();
+    printf("SISSE: %s\n", expression);
+    rekursiooniTase += 1;
     #endif
 
     char* result = malloc(1); // Empty string
@@ -1028,7 +1067,9 @@ char* TõlgiMathMode(const char* expression) {
     }
 
     #if TõlgiMathModeDebug == 1
-    printf("  VÄLJA: %s\n", result);
+    rekursiooniTase -= 1;
+    prindiTaane();
+    printf("VÄLJA: %s\n", result);
     #endif
 
     return result;
@@ -1131,12 +1172,15 @@ struct LimiTagastus TõlgiLim(char* tekst)
 
 
 
-#define LeiaNimetajaDebug 0
+#define LeiaNimetajaDebug 1
 char* LeiaNimetaja(const char* tekst) // sin(x)/sin(x + 4)abc     va(4 sin(x)x)/sin(x + 4)abc
 {
     #if LeiaNimetajaDebug == 1
+    prindiTaane();
     printf("LeiaNimetaja\n");
-    printf("  SISSE: %s.\n", tekst);
+    prindiTaane();
+    printf("SISSE: %s.\n", tekst);
+    rekursiooniTase+=1;
     #endif
     for (unsigned int i = 0; tekst[i]!='/';)
     {
@@ -1147,7 +1191,9 @@ char* LeiaNimetaja(const char* tekst) // sin(x)/sin(x + 4)abc     va(4 sin(x)x)/
             nimetajaMälu[i] = '\0';
 
             #if LeiaNimetajaDebug == 1
-            printf("  VÄLJA: %s.\n", nimetajaMälu);
+            rekursiooniTase-=1;
+            prindiTaane();
+            printf("VÄLJA: %s\n", nimetajaMälu);
             #endif
             return nimetajaMälu;
         }
@@ -1167,12 +1213,15 @@ char* LeiaNimetaja(const char* tekst) // sin(x)/sin(x + 4)abc     va(4 sin(x)x)/
 
 
 
-#define LeiaLugejaDebug 0
+#define LeiaLugejaDebug 1
 char* LeiaLugeja(const char* tekst)
 {
     #if LeiaLugejaDebug == 1
-    printf("LeiaLugeja\n");
-    printf("  SISSE: %s\n", tekst);
+    prindiTaane();
+    printf("Leiaugeja\n");
+    prindiTaane();
+    printf("SISSE: %s.\n", tekst);
+    rekursiooniTase+=1;
     #endif
 
     unsigned int i=0;
@@ -1192,33 +1241,42 @@ char* LeiaLugeja(const char* tekst)
     memcpy(lugeja, tekst, i+1);
     lugeja[i] = '\0';
     #if LeiaLugejaDebug == 1
-    printf("  VÄLJA: %s\n", lugeja);
+    rekursiooniTase-=1;
+    prindiTaane();
+    printf("VÄLJA: %s\n", lugeja);
     #endif
     return lugeja;
 }
 
 
 
-#define KasLugejaDebug 0
+#define KasLugejaDebug 1
 int KasLugeja(const char* tekst) // nin(x)/sin(x + 4)abc     va(4 sin(x)x)/sin(x + 4)abc
 {
     #if KasLugejaDebug == 1
-    puts("KasLugeja");
-    printf("  SISSE: %s\n", tekst);
+    prindiTaane();
+    printf("KasLugeja\n");
+    prindiTaane();
+    printf("SISSE: %s\n", tekst);
+    rekursiooniTase += 1;
     #endif
     for (unsigned int i = 0; tekst[i]!='/';)
     {
         if(tekst[i]=='\0')
         {
             #if KasLugejaDebug == 1
-            puts("  VÄLJA: 0");
+            rekursiooniTase-=1;
+            prindiTaane();
+            printf("VÄLJA: 0\n");
             #endif
             return 0;
         }
         else if (tekst[i] == ' ')
         {
             #if KasLugejaDebug == 1
-            puts("  VÄLJA: 0");
+            rekursiooniTase-=1;
+            prindiTaane();
+            printf("VÄLJA: 0\n");
             #endif
             return 0;
         }
@@ -1233,7 +1291,9 @@ int KasLugeja(const char* tekst) // nin(x)/sin(x + 4)abc     va(4 sin(x)x)/sin(x
         }
     }
     #if KasLugejaDebug == 1
-    puts("  VÄLJA: 1");
+    rekursiooniTase-=1;
+    prindiTaane();
+    printf("VÄLJA: 1\n");
     #endif
     return 1;
 }
@@ -1264,7 +1324,7 @@ char* LeiaArgument(const char* tekst)
             argument[i]='\0';
 
             #if LeiaArgumentDebug == 1
-            printf("  VÄLJA: %s\n", a.Tekst);
+            printf("  VÄLJA: %s\n", argument);
             #endif
             return argument;
         }
