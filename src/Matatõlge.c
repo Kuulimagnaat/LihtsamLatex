@@ -5,7 +5,18 @@
 #include <math.h>
 #include <ctype.h>
 
+// Muutuja, mis hoiab endas seda infot, kui sügaval rekursiooniga ollakse. Võimaldab printida sügavusele vastavalt tühkuid debug sõnumite ette, et oleks kenam.
+unsigned int rekursiooniTase;
+// See kui mitu tühikut on taande pikkus.
+unsigned int taandePikkus = 3;
 
+void prindiTaane()
+{
+    for (unsigned int i = 0; i<rekursiooniTase*taandePikkus; i++)
+    {
+        printf(" ");
+    } 
+}
 
 
 
@@ -14,8 +25,11 @@
 int KasEsimesedTähed(const char* tekstis, const char* tekst)
 {
     #if KasEsimesedTähedDebug == 1
-    puts("KasEsimesedTähed");
-    printf("  SISSE: %s, %s\n", tekstis, tekst);
+    prindiTaane();
+    printf("KasEsimesedTähed\n");
+    prindiTaane();
+    printf("SISSE: %s, %s\n", tekstis, tekst);
+    rekursiooniTase += 1;
     #endif
 
     unsigned int tähtiKontrollida = strlen(tekst);
@@ -24,14 +38,18 @@ int KasEsimesedTähed(const char* tekstis, const char* tekst)
         if (tekstis[i] != tekst[i])
         {
             #if KasEsimesedTähedDebug == 1
-            puts("  VÄLJA: 0");
+            rekursiooniTase -= 1;
+            prindiTaane();
+            printf("VÄLJA: 0\n");
             #endif
             return 0;
         }
     }
 
     #if KasEsimesedTähedDebug == 1
-    puts("  VÄLJA: 1");
+    rekursiooniTase -= 1;
+    prindiTaane();
+    printf("VÄLJA: 1\n");
     #endif
     return 1;
 }
@@ -42,8 +60,11 @@ int KasEsimesedTähed(const char* tekstis, const char* tekst)
 struct TekstArv TõlgiAste(const char* tekst)
 {
     #if TõlgiAsteDebug == 1
+    prindiTaane();
     printf("TõlgiAste\n");
-    printf("  SISSE: %s\n", tekst);
+    prindiTaane();
+    printf("SISSE: %s\n", tekst);
+    rekursiooniTase += 1;
     #endif
     char* argument = LeiaLühemArgument(&tekst[1]);
     unsigned int argumendiPikkus = strlen(argument);
@@ -69,7 +90,9 @@ struct TekstArv TõlgiAste(const char* tekst)
 
     struct TekstArv tagastus = {.Tekst = tõlge, .Arv = argumendiPikkus};
     #if TõlgiAsteDebug == 1
-    printf("  VÄLJA: %s, %d\n", tagastus.Tekst, tagastus.Arv);
+    rekursiooniTase -= 1;
+    prindiTaane();
+    printf("VÄLJA: %s, %d\n", tagastus.Tekst, tagastus.Arv);
     #endif
     return tagastus;
 }
@@ -82,8 +105,11 @@ struct TekstArv TõlgiAste(const char* tekst)
 char* LeiaSuluSisu(const char* tekst)
 {
     #if LeiaSuluSisuDebug == 1
-    puts("LeiaSuluSisu");
-    printf("  SISSE: %s\n", tekst);
+    prindiTaane();
+    printf("LeiaSuluSisu\n");
+    prindiTaane();
+    printf("SISSE: %s\n", tekst);
+    rekursiooniTase += 1;
     #endif
     unsigned int maht = 32;
     char* mälu = malloc(maht);
@@ -118,7 +144,9 @@ char* LeiaSuluSisu(const char* tekst)
             {
                 mälu[i] = '\0';
                 #if LeiaSuluSisuDebug == 1
-                printf("  VÄLJA: %s\n", mälu);
+                rekursiooniTase -= 1;
+                prindiTaane();
+                printf("VÄLJA: %s\n", mälu);
                 #endif
                 return mälu;
             }
@@ -132,8 +160,16 @@ char* LeiaSuluSisu(const char* tekst)
 
 
 // Abimeetod, mis appendib kaks stringi, kusjuures esimene nendest on dünaamiliselt eraldatud mälu.
+#define LiidaTekstidDebug 0
 char* LiidaTekstid(char* eelmineMälu, const char* lisatav)
 {
+    #if LiidaTekstidDebug == 1
+    prindiTaane();
+    print("LiidaTekstid");
+    prindiTaane();
+    print("SISSE: %s, %s\n", eelmineMälu, lisatav);
+    rekursiooniTase += 1;
+    #endif
     char* result = realloc(eelmineMälu, strlen(eelmineMälu) + strlen(lisatav) + 1);
     if (result == NULL)
     {
@@ -141,6 +177,11 @@ char* LiidaTekstid(char* eelmineMälu, const char* lisatav)
         exit(EXIT_FAILURE);
     }
     strcat(result, lisatav);
+    #if LiidaTekstidDebug == 1
+    rekursiooniTase -= 1;
+    prindiTaane();
+    printf("VÄLJA: %s", result);
+    #endif
     return result;
 }
 
@@ -178,7 +219,15 @@ const char* math_functions_replace_tähendused[MAX_REPLACEMENTS];
 int replacement_count = 0;
 
 // Function to trim whitespace from a string
+#define trim_whitespaceDebug 0
 char* trim_whitespace(char* str) {
+    #if trim_whitespaceDebug == 1
+    prindiTaane();
+    printf("trim_whitespace\n");
+    prindiTaane();
+    printf("SISSE: \"%s\"", str);
+    rekursiooniTase += 1;
+    #endif
     // Trim leading spaces
     while (isspace((unsigned char)*str)) str++;  
 
@@ -191,6 +240,11 @@ char* trim_whitespace(char* str) {
     // Null-terminate the string after removing trailing spaces
     *(end + 1) = '\0';  
 
+    #if trim_whitespaceDebug == 1
+    rekursiooniTase -= 1;
+    prindiTaane();
+    printf("VÄLJA: \"%s\"", str);
+    #endif
     return str;
 }
 
@@ -479,8 +533,15 @@ char* my_strndup(const char* s, size_t n) {
 
 
 // Kui TõlgiMathMode funktsioonis tajutakse, et kättejõudnud kohal on mingi käsk, siis seal kohas antakse selle koha aadress ja tajutud käsule vastav struct selele funtksiooile, et see saaks tõlkida seda kohta. 
+#define TõlgiKäskDebug 0
 struct TekstArv TõlgiKäsk(const char* tekst, struct Käsk* käsk)
 {
+    #if TõlgiKäskDebug == 1
+    prindiTaane();
+    printf("TõlgiKäsk\n");
+    prindiTaane();
+    printf("SISSE: %s", )
+    #endif
     /*
     Teoreetiliselt command võib olla selline, et kaks argumenti pole järjest. Näiteks oleks definitsioon selline:
     uuga(arg1)buuga(arg2) -> \frac{arg1}{arg2}
@@ -673,6 +734,15 @@ char* read_line(FILE* file) {
 }
 
 
+// Vahel on soov anda mingi käsu argumendiks mingi kaheargumendilise käsu väljakutse. Näiteks sqrtsumk=1 m f(x). Seal mõeldakse sqrt argumendiks sumk=1 m, aga loetakse ainult sumk=1, sest loetakse esimese tühikuni. See funktsioon üritab seda probleemi lahendada, et ei peaks igale poole sulgusid toppima ainult selle pärast, et meie programm muidu ei tööta.
+char* LeiaArgumentRekursiivselt(char* argumendiAlgus)
+{
+    for(unsigned int i=0; ; )
+    {
+        KasKäsk()
+    }
+}
+
 
 // Funktsioon, mis on mõeldud funktsiooni tul argumendi lihtsustamiseks. See peab kaks kõrvutiolevat sama tähte asendama selle tähe ruuduga, kolm kõrvutiolevat sama tähte selle tähe kuubiga jne. Näiteks xxxyy -> x^{3}y^{2} ja xxyxy -> x^{2}yxy
 char* KõrvutiolevadAstmeks(const char* tekst)
@@ -715,7 +785,8 @@ char* KõrvutiolevadAstmeks(const char* tekst)
 // Funktsioon on mõeldud kasutamiseks 
 int kasnEelnevatOnTäht(unsigned int n, char täht);
 
-
+/*
+// Funktsioon uurib, kas tegu on käsuga. Tagastab 1, kui on käsk, ja 0, kui ei ole käsk.
 int KasKäsk(const char* tekst, struct KäskList* käsuNimek, int* indeks)
 {
     printf("KasKäsk\n");
@@ -732,6 +803,25 @@ int KasKäsk(const char* tekst, struct KäskList* käsuNimek, int* indeks)
     }
     printf("  VÄLJA: 0\n");
     return 0;
+}
+*/
+
+
+// Funkstioon uurib kas tegu on käsuga. Tagastab vastava käsu structi mäluaadressi kui on käsk ja NULL, kui ei ole käsk.
+#define KasKäskDebug 0
+struct Käsk* KasKäsk(const char* tekst)
+{
+    #if KasKäskDebug == 1
+    printf(KasKäsk)
+    for (unsigned int i = 0; i; i<käsk_list.count)
+    {
+        if (KasEsimesedTähed(tekst, käsk_list.käsud[i].käsunimi))
+        {
+            // Operaatorid . ja [] on prioriteedilt enne mäluaadressivõtmisoperaatorit, seega sulge ei pea olema.
+            return &käsk_list.käsud[i];
+        }
+    }
+    return NULL;
 }
 
 
@@ -816,9 +906,11 @@ char* TõlgiMathMode(const char* expression) {
         int func_len = 0;
         int is_replacement = 0; // Flag to check if it's a replacement command
 
-        if (KasKäsk(&expression[i], &käsk_list, &func_index))
+        // käsk_list on globaalne ja KasKäsk annab vastava käsu aadressi sellest nimekirjast.
+        struct Käsk* käsk = KasKäsk(&expression[i]);
+        if (käsk != NULL)
         {
-            struct TekstArv käsuTagastus = TõlgiKäsk(&expression[i], &käsk_list.käsud[func_index]);
+            struct TekstArv käsuTagastus = TõlgiKäsk(&expression[i], käsk);
             result = LiidaTekstid(result, käsuTagastus.Tekst);
             i += käsuTagastus.Arv;
 
