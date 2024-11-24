@@ -38,7 +38,21 @@ struct KäskList {
     size_t capacity;      // Array capacity
 };
 
+struct Environment {
+    const char *name;        // Name of the environment
+    struct KäskList käsk_list; // List of Käsk structs associated with the environment
+    int body;                //If the environment has a body field
+    int nest;                //If the environment has a nest field
+    const char *beginDefine; // Content inside the \begin{}
+    const char *endDefine;   // Content inside the \end{}
+    const char *Content;     // Everything from \begin{} to \end{} (including)
+};
 
+void free_environment(struct Environment* env);
+void init_environment(struct Environment* env);
+void parse_environment(const char *config_line, struct Environment* env);
+void parse_flags_in_brackets(const char* config_line, struct Environment* env);
+void extract_between(const char *source, const char *start, const char *end, char *result, int max_len);
 
 struct TekstTekst
 {

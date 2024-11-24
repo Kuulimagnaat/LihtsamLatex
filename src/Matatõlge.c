@@ -20,6 +20,259 @@ void prindiTaane()
     } 
 }
 
+/* ENVIRONMENT ASJAD */
+// Function to extract a substring between two delimiters.
+// Leitud kusagilt internetist, sen mingi maagia aga töötab.
+void extract_between(const char *source, const char *start, const char *end, char *result, int max_len) {
+    const char *start_ptr = strstr(source, start);
+    if (!start_ptr) {
+        fprintf(stderr, "Error: Could not find '%s' in input.\n", start);
+        return;
+    }
+    start_ptr += strlen(start); // Move past the start delimiter
+
+    const char *end_ptr = strstr(start_ptr, end);
+    if (!end_ptr) {
+        fprintf(stderr, "Error: Could not find '%s' after '%s' in input.\n", end, start);
+        return;
+    }
+
+    int length = end_ptr - start_ptr;
+    if (length >= max_len) {
+        fprintf(stderr, "Error: Substring exceeds maximum length of %d characters.\n", max_len);
+        return;
+    }
+
+    strncpy(result, start_ptr, length);
+    result[length] = '\0';
+}
+
+// Function to parse flags from the part inside square brackets (that are not the subcommands)
+void parse_flags_in_brackets(const char* config_line, struct Environment* env) {
+    const char *start = strchr(config_line, '[');
+    const char *end = strchr(config_line, ']');
+    
+    if (start && end && end > start) {
+        // Extract the content inside the square brackets
+        char flags_part[end - start];  // Allocate space for the part inside []
+        strncpy(flags_part, start + 1, end - start - 1);  // Copy the content (without [ and ])
+        flags_part[end - start - 1] = '\0';  // Null-terminate the string
+        
+        // Trim any leading or trailing spaces
+        char* trimmed_flags = trim_whitespace(flags_part);
+
+        // Check if 'body' is present and set the flag accordingly
+        if (strstr(trimmed_flags, "body") != NULL) {
+            env->body = 1;
+        } else {
+            env->body = 0;
+        }
+
+        // Check if 'nest' is present and set the flag accordingly
+        if (strstr(trimmed_flags, "nest") != NULL) {
+            env->nest = 1;
+        } else {
+            env->nest = 0;
+        }
+    } else {
+        // If no square brackets, keep default values (both flags are 0)
+        env->body = 0;
+        env->nest = 0;
+    }
+}
+
+// Daddy function (does everything)
+void parse_environment(const char *config_line, struct Environment* env) {
+
+    /* GET THE CONTENT FIELD */
+    const char* begin_pos = strstr(config_line, "\\begin{");
+    const char* end_pos = strstr(config_line, "\\end{");
+
+    if (begin_pos && end_pos) {
+        const char* end_end_pos = strchr(end_pos, '}');
+        if (end_end_pos) {
+            // Extract the entire content from \begin{...} to the closing }
+            const char* content_start = begin_pos;
+            const char* content_end = end_end_pos + 1; // Include the final '}'
+
+            size_t content_len = content_end - content_start;
+            char* content = malloc(content_len + 1);
+            strncpy(content, content_start, content_len);
+            content[content_len] = '\0'; // Null-terminate
+            env->Content = content;
+        } else {
+            env->Content = NULL; // No valid ending found
+        }
+    } else {
+        env->Content = NULL; // Missing \begin{} or \end{}
+    }
+
+    /* GET THE ENVIRONMENT BEGIN AND END DEFINITIONS */
+    begin_pos = strstr(config_line, "\\begin{");
+    end_pos = strstr(config_line, "\\end{");
+
+    if (begin_pos && end_pos) {
+        // Extract the part inside \begin{}
+        begin_pos += 7;  // Skip over "\\begin{"
+        const char* begin_end_pos = strchr(begin_pos, '}');
+        if (begin_end_pos) {
+            size_t begin_len = begin_end_pos - begin_pos;
+            char* begin_content = malloc(begin_len + 1);
+            strncpy(begin_content, begin_pos, begin_len);
+            begin_content[begin_len] = '\0';
+            env->beginDefine = begin_content;
+        }
+
+        // Extract the part inside \end{}
+        end_pos += 5;  // Skip over "\\end{"
+        const char* end_end_pos = strchr(end_pos, '}');
+        if (end_end_pos) {
+            size_t end_len = end_end_pos - end_pos;
+            char* end_content = malloc(end_len + 1);
+            strncpy(end_content, end_pos, end_len);
+            end_content[end_len] = '\0';
+            env->endDefine = end_content;
+        }
+    }
+    
+    /* GET THE ENVIRONMENT NAME */
+    const char* start = strstr(config_line, "env(");
+    if (start) {
+        start += 4; // Move past 'env('
+        const char* end = strchr(start, ')');
+        if (end) {
+            size_t name_len = end - start;
+            char name[name_len + 1];
+            strncpy(name, start, name_len);
+            name[name_len] = '\0';  // Null-terminate the string
+            env->name = strdup(name); // Allocate and assign the environment name
+        }
+    }
+    
+    /* THE BODY, NEST DETECTION PART STARTS HERE */
+    parse_flags_in_brackets(config_line, env);
+
+    /* THE SUBCOMMAND DETECTION PART STARTS HERE */
+    const char *definitions_start = strchr(config_line, '|');
+    if (!definitions_start) {
+        printf("No subcommand definitions found.\n");
+        return;
+    }
+    definitions_start++; // Move past the '|'
+
+    int subcommand_count = 0;
+    const char *current_pos = definitions_start;
+
+    // Loop through each subcommand definition
+    while ((current_pos = strchr(current_pos, '(')) != NULL) {
+        const char *start_pos = current_pos + 1; // Skip the opening '('
+        int open_parens = 1;                    // Start with one open parenthesis
+
+        // Find the matching closing parenthesis for this subcommand
+        while (open_parens > 0) {
+            current_pos++;
+            if (*current_pos == '(') {
+                open_parens++; // Found another open parenthesis
+            } else if (*current_pos == ')') {
+                open_parens--; // Found a closing parenthesis
+            }
+        }
+
+        // Extract the full subcommand definition (excluding '(' and ')')
+        size_t def_length = current_pos - start_pos; // Exclude the closing ')'
+        char subcommand_def[def_length + 1];
+        strncpy(subcommand_def, start_pos, def_length);
+        subcommand_def[def_length] = '\0';
+
+        // Split the subcommand definition by "->"
+        char *arrow_pos = strstr(subcommand_def, "->");
+        if (!arrow_pos) {
+            printf("Error: Missing '->' in subcommand definition: %s\n", subcommand_def);
+            continue;
+        }
+
+        // Split into two parts
+        *arrow_pos = '\0'; // Terminate the first part
+        char *subcommand_name_and_args = subcommand_def;       // Part before '->'
+        char *latex_definition = arrow_pos + 2;               // Part after '->'
+
+        // Trim whitespace
+        subcommand_name_and_args = trim_whitespace(subcommand_name_and_args);
+        latex_definition = trim_whitespace(latex_definition);
+
+        // Extract command name (before the first '(')
+        const char *arg_start = strchr(subcommand_name_and_args, '(');
+        char command_name[50]; // Assuming command names are up to 49 characters
+        if (arg_start) {
+            size_t name_len = arg_start - subcommand_name_and_args;
+            strncpy(command_name, subcommand_name_and_args, name_len);
+            command_name[name_len] = '\0'; // Null-terminate
+        } else {
+            strcpy(command_name, subcommand_name_and_args); // No arguments, just copy the name
+        }
+
+        // Extract arguments from the left-hand side
+        const char *arg_pos = strchr(subcommand_name_and_args, '(');
+        int arg_count = 0;
+        char args[10][50]; // Assuming a maximum of 10 arguments, each up to 49 chars
+        while (arg_pos) {
+            arg_pos++; // Skip the opening '('
+            const char *arg_end = strchr(arg_pos, ')');
+            if (!arg_end) {
+                printf("Error: Unmatched parentheses in subcommand definition: %s\n", subcommand_name_and_args);
+                break;
+            }
+
+            size_t arg_len = arg_end - arg_pos;
+            strncpy(args[arg_count], arg_pos, arg_len);
+            args[arg_count][arg_len] = '\0'; // Null-terminate the argument
+            arg_count++;
+
+            // Look for the next argument
+            arg_pos = strchr(arg_end + 1, '(');
+        }
+
+        struct Käsk subcommand = {0};
+        subcommand.käsunimi = strdup(command_name);
+        subcommand.argumentideKogus = arg_count;
+        subcommand.definitsioon = strdup(latex_definition);
+
+        // Allocate and fill argument types (default to 1 for all arguments)
+        subcommand.argumentideTüübid = (int*)malloc(sizeof(int) * (arg_count + 1));
+        for (int i = 0; i < arg_count; i++) {
+            subcommand.argumentideTüübid[i] = 1;  // Default type is 1
+        }
+        subcommand.argumentideTüübid[arg_count] = -1;  // End marker
+
+        // Allocate and fill argument names
+        subcommand.argumentideNimed = (const char**)malloc(sizeof(const char*) * arg_count);
+        for (int i = 0; i < arg_count; i++) {
+            subcommand.argumentideNimed[i] = strdup(args[i]);
+        }
+
+        add_käsk(&(env->käsk_list), subcommand);
+
+        current_pos++; // Move past the current subcommand
+    }
+}
+
+// Initialize an Environment struct
+void init_environment(struct Environment* env) {
+    env->name = "DEFAULT (NAMING FAILED)"; // Set the environment name
+    env->body = 0;
+    env->nest = 0;
+    env->beginDefine = NULL;
+    env->endDefine = NULL;
+    env->Content = NULL;
+    init_käsk_list(&(env->käsk_list)); // Initialize the KäskList within the environment
+}
+
+// Free the memory used by an Environment struct
+void free_environment(struct Environment* env) {
+    free_käsk_list(&(env->käsk_list)); // Free the KäskList
+}
+
+
 
 
 // Funktsioon, mis kontorllib, kas antud teksti algus täpselt on sama, mis teine soovitud tekst. Tagastab 0 kui ei ole ja 1 kui on. Funktsiooni kasutusolukord: kui ollakse minemas tõlgitavas koodis üle tähtede, siis on vaja kontrollida, kas kättejõudnud kohas on mõne käsu nimi. Seda funktsiooni saab nimetatud olukorra tajumiseks kasutada.
