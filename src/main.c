@@ -283,7 +283,7 @@ int main() {
                                 }
                                 else
                                 {
-                                    fprintf(output_file, "\\]\n");
+                                    fprintf(output_file, "\\]");
                                 }
                                 onJubaMathMode = 0;
                             }
@@ -346,7 +346,7 @@ int main() {
                                     }
                                     else
                                     {
-                                        fprintf(output_file, "\n\\[");
+                                        fprintf(output_file, "\\[");
                                     }
                                     fprintf(output_file, "%s", tõlge);
                                     free(tõlge);
@@ -359,7 +359,7 @@ int main() {
                                         }
                                         else
                                         {
-                                            fprintf(output_file, "\\]\n");
+                                            fprintf(output_file, "\\]");
                                         }
                                     }
                                 }
@@ -377,6 +377,11 @@ int main() {
                                     fprintf(output_file, "%s", täht);
                                     i++;
                                 }
+                            }
+                            // Soov on panna rea lõppu uuereamärk, aga mitte siis, kui on math mode.
+                            if (onJubaMathMode == 0)
+                            {
+                                fprintf(output_file, "%s", "\n");
                             }
                         }
                     }

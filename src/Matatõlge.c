@@ -120,6 +120,7 @@ char* LeiaSuluSisu(const char* tekst)
         perror("Ei õnnestunud mälu eraldada :(");
         exit(EXIT_FAILURE);
     }
+
     //Sulutase algab arvust 1, sest otsitakse sulgu, mis viiks sulutaseme nulli.
     unsigned int sulutase = 1;
 
@@ -135,11 +136,11 @@ char* LeiaSuluSisu(const char* tekst)
                 exit(EXIT_FAILURE);
             }
         }
-        if (tekst[i] == '(')
+        if (tekst[i] == '(' || tekst[i] == '[' || tekst[i] == '{')
         {
             sulutase++;
         }
-        else if (tekst[i] == ')')
+        else if (tekst[i] == ')' || tekst[i] == ']' || tekst[i] == '}')
         {
             sulutase--;
             if (sulutase == 0)
