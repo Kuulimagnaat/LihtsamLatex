@@ -5,6 +5,8 @@
 #include <math.h>
 #include <ctype.h>
 
+extern struct KäskList käskList;
+
 // Muutuja, mis hoiab endas seda infot, kui sügaval rekursiooniga ollakse. Võimaldab printida sügavusele vastavalt tühkuid debug sõnumite ette, et oleks kenam.
 unsigned int rekursiooniTase;
 // See kui mitu tühikut on taande pikkus.
@@ -209,15 +211,6 @@ char* LiidaArv(char* eelmineMälu, int lisatav)
 }
 
 
-
-// mingi list tuntud funktsioonidest
-const char* math_functions[] = {"sin", "cos", "tan", "log", "ln", "sqrt", "lim", NULL};
-const char* math_functions_tähendused[] = {"sin", "cos", "tan", "log", "ln", "sqrt", "lim", NULL};
-
-const char* math_functions_replace[MAX_REPLACEMENTS];
-const char* math_functions_replace_tähendused[MAX_REPLACEMENTS];
-int replacement_count = 0;
-
 // Function to trim whitespace from a string
 #define trim_whitespaceDebug 0
 char* trim_whitespace(char* str) {
@@ -250,9 +243,9 @@ char* trim_whitespace(char* str) {
 
 // Initialize a KäskList
 void init_käsk_list(struct KäskList* list) {
-    list->käsud = malloc(10 * sizeof(struct Käsk)); // -> on sama mis (*list).käsud
+    list->käsud = malloc(1 * sizeof(struct Käsk)); // -> on sama mis (*list).käsud
     list->count = 0;
-    list->capacity = 10;
+    list->capacity = 1;
 }
 
 // Free the memory used by KäskList
@@ -270,7 +263,9 @@ void free_käsk_list(struct KäskList* list) {
 }
 
 // Add a Käsk to the list
-void add_käsk(struct KäskList* list, struct Käsk käsk) {
+void add_käsk(struct KäskList* list, struct Käsk käsk)
+{
+
     if (list->count >= list->capacity) {
         list->capacity *= 2;
         list->käsud = realloc(list->käsud, list->capacity * sizeof(struct Käsk));
@@ -387,6 +382,7 @@ void read_commands_from_config(const char* filepath, struct KäskList* käsk_lis
 
     char* line;
     while ((line = read_line(file)) != NULL) {
+        printf("Rida: %s\n", line);
         // Skip empty lines or comments
         if (line[0] == '\0' || line[0] == '#') {
             free(line);
@@ -399,16 +395,13 @@ void read_commands_from_config(const char* filepath, struct KäskList* käsk_lis
             free(line);
             continue;
         }
-
         // Split the line into the left and right parts
         *arrow = '\0';
         char* left = line;
         char* right = arrow + 2;
-
         // Trim whitespace
         left = trim_whitespace(left);
         right = trim_whitespace(right);
-
         struct Käsk käsk = {0};
 
         // Parse the command name and arguments from the left side
@@ -422,7 +415,10 @@ void read_commands_from_config(const char* filepath, struct KäskList* käsk_lis
             char* current = open_paren + 1; // Start after '('
             unsigned int arg_count = 0;
 
-            while (current && *current) {
+            
+         // while (current && *current) fucking abomination
+            while (*current != '\0')
+            {
                 char* close_paren = strchr(current, ')'); // Find closing ')'
                 if (!close_paren) break; // If no closing parenthesis, stop
 
@@ -432,6 +428,7 @@ void read_commands_from_config(const char* filepath, struct KäskList* käsk_lis
                 // Allocate memory and store the argument name
                 käsk.argumentideNimed = realloc(käsk.argumentideNimed, (arg_count + 1) * sizeof(char*));
                 käsk.argumentideNimed[arg_count] = strdup(current);
+                //puts(käsk.argumentideNimed[arg_count]);
 
                 // Default argument type (can be customized later)
                 käsk.argumentideTüübid = realloc(käsk.argumentideTüübid, (arg_count + 1) * sizeof(int));
@@ -454,13 +451,13 @@ void read_commands_from_config(const char* filepath, struct KäskList* käsk_lis
             käsk.käsunimi = strdup(left);
             käsk.argumentideKogus = 0;
             käsk.argumentideNimed = NULL;
-            käsk.argumentideTüübid = malloc(1 * sizeof(int));
-            käsk.argumentideTüübid[0] = -1; // No arguments
+            käsk.argumentideTüübid = NULL;
         }
 
         // Set the definition (right-hand side of the "->")
         käsk.definitsioon = strdup(right);
 
+        puts("KOOD SIIN!");
         // Add the parsed command to the list
         add_käsk(käsk_list, käsk);
 
@@ -471,37 +468,7 @@ void read_commands_from_config(const char* filepath, struct KäskList* käsk_lis
     fclose(file);
 }
 
-/*
-int load_replacements(const char* config_path) {
-    FILE* config_file = fopen(config_path, "r");
-    if (config_file == NULL) {
-        perror("Unable to open config.txt in src directory");
-        return -1;
-    }
 
-    char* line;
-    while ((line = read_line(config_file)) != NULL) {
-        // Check for lines with the replacement pattern
-        char* arrow = strstr(line, "->");
-        if (arrow) {
-            *arrow = '\0';  // Null-terminate the first part to isolate the command
-            char* command = trim_whitespace(line);  // This points to the command part
-             char* translation = trim_whitespace(arrow + 2);  // Move past the arrow to get the translation
-
-            if (replacement_count < MAX_REPLACEMENTS) {
-                math_functions_replace[replacement_count] = strdup(command);
-                math_functions_replace_tähendused[replacement_count] = strdup(translation);
-                replacement_count++;
-            } else {
-                fprintf(stderr, "Warning: Max replacement limit reached!\n");
-            }
-        }
-        free(line);
-    }
-    fclose(config_file);
-    return 0;  // Success
-}
-*/
 
 // duplikeerib antud stringi kuni n baidini (tagastab pointeri uuele stringile)
 char* my_strndup(const char* s, size_t n) {
@@ -522,13 +489,6 @@ char* my_strndup(const char* s, size_t n) {
     result[len] = '\0'; //Null-terminate
     return result;
 }
-
-
-
-
-
-
-
 
 
 
@@ -621,21 +581,6 @@ struct TekstArv TõlgiKäsk(const char* tekst, struct Käsk* käsk)
     printf("VÄLJA: %d, %s", tagastus.Arv, tagastus.Tekst );
     #endif
     return tagastus;
-}
-
-
-
-
-
-
-// Kas antud string on listis olev funktsioon
-int is_math_function(const char* str) {
-    for (int i = 0; math_functions[i] != NULL; i++) {
-        if (strncmp(str, math_functions[i], strlen(math_functions[i])) == 0) {
-            return strlen(math_functions[i]);
-        }
-    }
-    return 0;
 }
 
 
@@ -802,9 +747,6 @@ char* KõrvutiolevadAstmeks(const char* tekst)
 
 
 
-// Funktsioon on mõeldud kasutamiseks 
-int kasnEelnevatOnTäht(unsigned int n, char täht);
-
 /*
 // Funktsioon uurib, kas tegu on käsuga. Tagastab 1, kui on käsk, ja 0, kui ei ole käsk.
 int KasKäsk(const char* tekst, struct KäskList* käsuNimek, int* indeks)
@@ -827,6 +769,7 @@ int KasKäsk(const char* tekst, struct KäskList* käsuNimek, int* indeks)
 */
 
 
+
 // Funkstioon uurib kas tegu on käsuga. Tagastab vastava käsu structi mäluaadressi kui on käsk ja NULL, kui ei ole käsk.
 #define KasKäskDebug 1
 struct Käsk* KasKäsk(const char* tekst)
@@ -838,17 +781,18 @@ struct Käsk* KasKäsk(const char* tekst)
     printf("SISSE: %s\n", tekst);
     rekursiooniTase += 1;
     #endif
-    for (unsigned int i = 0; i; i<käsk_list.count)
+
+    for (unsigned int i = 0; i<käskList.count; i++)
     {
-        if (KasEsimesedTähed(tekst, käsk_list.käsud[i].käsunimi))
+        if (KasEsimesedTähed(tekst, käskList.käsud[i].käsunimi))
         {
             #if KasKäskDebug == 1
             rekursiooniTase -= 1;
             prindiTaane();
-            printf("VÄLJA: käsustruktuur %s\n", käsk_list.käsud[i].käsunimi);
+            printf("VÄLJA: käsustruktuur %s\n", käskList.käsud[i].käsunimi);
             #endif
             // Operaatorid . ja [] on prioriteedilt enne mäluaadressivõtmisoperaatorit, seega sulge ei pea olema.
-            return &käsk_list.käsud[i];
+            return &käskList.käsud[i];
         }
     }
     #if KasKäskDebug == 1
@@ -860,7 +804,8 @@ struct Käsk* KasKäsk(const char* tekst)
 }
 
 
-// Rekursiivselt tõlgime math moodi latexisse
+
+// Rekursiivselt tõlgime math moodi latexisse. Funktsionn võtab sisse teksti, mida hakata tõlkima ja nimekirja nendest käskudest, mida funktsioon saab tõlkimiseks kasutada.
 #define TõlgiMathModeDebug 1
 char* TõlgiMathMode(const char* expression)
 {
@@ -945,8 +890,9 @@ char* TõlgiMathMode(const char* expression)
         int func_len = 0;
         int is_replacement = 0; // Flag to check if it's a replacement command
 
-        // käsk_list on globaalne ja KasKäsk annab vastava käsu aadressi sellest nimekirjast.
+
         struct Käsk* käsk = KasKäsk(&expression[i]);
+        printf("KÄSU AADRES: %p\n", käsk);
         if (käsk != NULL)
         {
             struct TekstArv käsuTagastus = TõlgiKäsk(&expression[i], käsk);
@@ -983,87 +929,6 @@ char* TõlgiMathMode(const char* expression)
             free(single_char);
             i++;
         }
-
-        /*
-        // Check in math functions array
-        for (int j = 0; math_functions[j] != NULL; j++) {
-            if (strncmp(&expression[i], math_functions[j], strlen(math_functions[j])) == 0) {
-                func_index = j;
-                func_len = strlen(math_functions[j]);
-                is_replacement = 0;
-                break;
-            }
-        }
-
-        // If not found in math functions, check in replacement array
-        if (func_index == -1) {
-            for (int j = 0; math_functions_replace[j] != NULL; j++) {
-                if (strncmp(&expression[i], math_functions_replace[j], strlen(math_functions_replace[j])) == 0) {
-                    func_index = j; // Keep the index for replacements
-                    func_len = strlen(math_functions_replace[j]);
-                    is_replacement = 1; // Found in replacements
-                    break;
-                }
-            }
-        }
-        
-        // If a function or replacement is found
-        if (func_index != -1) {
-            char* func_name;
-
-            // Determine the function or replacement name
-            if (is_replacement) {
-                func_name = my_strndup(math_functions_replace_tähendused[func_index], strlen(math_functions_replace_tähendused[func_index]));
-                result = LiidaTekstid(result, append_str("\\", func_name));
-                i += func_len;
-            } else {
-                func_name = my_strndup(math_functions_tähendused[func_index], strlen(math_functions_tähendused[func_index]));
-                
-                // Handle standard math functions
-                if (strcmp(func_name, "lim") == 0) {
-                    char* inner_expression = my_strndup(&expression[i], strlen(&expression[i]));
-                    struct LimiTagastus tagastus = TõlgiLim(inner_expression);
-                    result = LiidaTekstid(result, tagastus.Tõlge);
-                    i += tagastus.TähtiLoeti; // Move index forward
-                    free(inner_expression); // Clean up
-                } else {
-                    // Add LaTeX function format
-                    result = LiidaTekstid(result, append_str("\\", append_str(func_name, "\\left(")));
-                    i += func_len; // Move past function
-                }
-            }
-
-            free(func_name); // Clean up allocated memory
-
-            if (expression[i] == '(') {
-                puts("läks sisse");
-                int start = i + 1;
-                int paren_count = 1;
-                i++;
-
-                while (expression[i] != '\0' && paren_count > 0) {
-                    if (expression[i] == '(') paren_count++;
-                    else if (expression[i] == ')') paren_count--;
-                    i++;
-                }
-
-                // Process inner expression recursively
-                char* inner_expression = my_strndup(&expression[start], i - start - 1);
-                char* inner_latex = TõlgiMathMode(inner_expression);
-
-                result = LiidaTekstid(result, inner_latex);
-                result = append_str(result, "\\right)");
-
-                free(inner_expression);
-                free(inner_latex);
-            }
-        } else {
-            // Handle regular characters
-            char* single_char = my_strndup(&expression[i], 1);
-            result = LiidaTekstid(result, single_char);
-            free(single_char);
-            i++;
-        }*/
     }
 
     #if TõlgiMathModeDebug == 1
@@ -1093,6 +958,7 @@ char* LeiaTekstEnneTähte(const char* tekst, char täht)
 
 
 
+/* Hakkab esimest argumenti algusest uurima ja otsib, ega mingil kohal alga teise argumendi tekst. Kui mingil kohal algab, ss eraldab mälu ja kopeerib sinna kogu teksti, mis eelnes sellele kohale. Mõeldud kasutamiseks kohtades, kus on vaja leida tekst enne sulgevat sulgu v tekst enne jagamismärki vms. */
 char* LeiaTekstEnneTeksti(const char* tekst, const char* teksti)
 {
     char* koht = strstr(tekst, teksti);

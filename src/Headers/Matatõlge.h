@@ -38,7 +38,6 @@ struct KäskList {
     size_t capacity;      // Array capacity
 };
 
-extern struct KäskList käsk_list;
 
 
 struct TekstTekst
@@ -46,6 +45,7 @@ struct TekstTekst
     const char* Tekst1;
     const char* Tekst2;
 };
+
 
 
 struct Keskkond
@@ -60,6 +60,7 @@ struct Keskkond
 };
 
 
+
 struct KeskkonnaNimekiri
 {
     struct Keskkond* keskkonnad;
@@ -68,27 +69,15 @@ struct KeskkonnaNimekiri
 
 
 
-
-
 void read_commands_from_config(const char* filepath, struct KäskList* käsk_list);
 void add_käsk(struct KäskList* list, struct Käsk käsk);
 void free_käsk_list(struct KäskList* list);
 void init_käsk_list(struct KäskList* list);
-
-#define MAX_REPLACEMENTS 100 
-
-extern const char* math_functions_replace[MAX_REPLACEMENTS];
-extern const char* math_functions_replace_tähendused[MAX_REPLACEMENTS];
-extern int replacement_count;
-
-int load_replacements(const char* config_path);
-
 char* read_line(FILE* file);
 int KasEsimesedTähed(const char* tekstis, const char* tekst);
 char* LeiaSuluSisu(const char* tekst);
 char* LiidaTekstid(char* eelmineMälu, const char* lisatav);
 char* my_strndup(const char* s, size_t n);
-int is_math_function(const char* str);
 char* append_str(const char* a, const char* b);
 char* TõlgiMathMode(const char* expression);
 char* LeiaTekstEnneTähte(const char* tekst, char täht);
@@ -105,7 +94,6 @@ char* LeiaLühemArgument(const char* tekst);
 char* KõrvutiolevadAstmeks(const char* tekst);
 char* LiidaTäht(char* eelmineMälu, char lisatav);
 char* LiidaArv(char* eelmineMälu, int lisatav);
-int kasnEelnevatOnTäht(unsigned int n, char täht);
 struct TekstArv TõlgiKäsk(const char* tekst, struct Käsk* käsk);
 char* trim_whitespace(char* str);
 
