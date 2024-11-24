@@ -14,7 +14,7 @@ delta -> \delta
 osah -> \subset
 rr -> \mathbb R
 sqrt(asd) -> \sqrt{asd}
-
+ 
 keskkond
 ALGUSETÄHIS = nummerda
 ALGUSELATEX = \begin{enumerate}
