@@ -48,6 +48,21 @@ struct Environment {
     const char *Content;     // Everything from \begin{} to \end{} (including)
 };
 
+// The global struct of all defined environments
+struct EnvironmentList {
+    struct Environment* environments; // Dynamic array of environments
+    size_t count;                     // Number of environments
+    size_t capacity;                  // Capacity of the array
+};
+
+void print_environment_info(struct Environment* env);
+
+void read_environments_from_config(const char* filepath, struct EnvironmentList* env_list);
+struct Environment* KasEnvironment(const char* tekst, struct EnvironmentList* environList);
+void free_environment_list(struct EnvironmentList* list);
+void add_environment(struct EnvironmentList* list, struct Environment env);
+void init_environment_list(struct EnvironmentList* list);
+
 void free_environment(struct Environment* env);
 void init_environment(struct Environment* env);
 void parse_environment(const char *config_line, struct Environment* env);

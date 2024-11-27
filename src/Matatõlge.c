@@ -6,6 +6,7 @@
 #include <ctype.h>
 
 extern struct KäskList käskList;
+extern struct EnvironmentList environList;
 
 // Muutuja, mis hoiab endas seda infot, kui sügaval rekursiooniga ollakse. Võimaldab printida sügavusele vastavalt tühkuid debug sõnumite ette, et oleks kenam.
 unsigned int rekursiooniTase;
@@ -1022,6 +1023,104 @@ int KasKäsk(const char* tekst, struct KäskList* käsuNimek, int* indeks)
 }
 */
 
+/* SOME MORE ENVIRONMENT METHODS (I COULDNT FIND THE ACTUAL SPOT) */
+void init_environment_list(struct EnvironmentList* list) {
+    list->environments = malloc(10 * sizeof(struct Environment));
+    if (!list->environments) {
+        perror("Failed to allocate memory for EnvironmentList");
+        exit(EXIT_FAILURE);
+    }
+    list->count = 0;
+    list->capacity = 10;
+}
+
+void add_environment(struct EnvironmentList* list, struct Environment env) {
+    if (list->count >= list->capacity) {
+        list->capacity *= 2;
+        list->environments = realloc(list->environments, list->capacity * sizeof(struct Environment));
+        if (!list->environments) {
+            perror("Failed to reallocate memory for EnvironmentList");
+            exit(EXIT_FAILURE);
+        }
+    }
+    list->environments[list->count++] = env;
+}
+
+void free_environment_list(struct EnvironmentList* list) {
+    for (size_t i = 0; i < list->count; i++) {
+        free_environment(&list->environments[i]); // See perse meetod mis ma ennem kirjutasin selle jaoks lols
+    }
+    free(list->environments);
+    list->environments = NULL;
+    list->count = 0;
+    list->capacity = 0;
+}
+
+
+struct Environment* KasEnvironment(const char* tekst, struct EnvironmentList* environList)
+{
+    for (size_t i = 0; i < environList->count; i++) {
+        if (KasEsimesedTähed(tekst, environList->environments[i].name)) {
+            return &environList->environments[i];
+        }
+    }
+}
+
+
+void read_environments_from_config(const char* filepath, struct EnvironmentList* env_list) {
+    FILE* file = fopen(filepath, "r");
+    if (!file) {
+        perror("Unable to open config file");
+        exit(EXIT_FAILURE);
+    }
+
+    char* line;
+    while ((line = read_line(file)) != NULL) {
+        // Skip empty line or kommentaarid yo
+        if (line[0] == '\0' || line[0] == '#') {
+            free(line);
+            continue;
+        }
+
+        // Eeldame, et "env" kasutame AINULT siis, kui defineerime uut keskkonda
+        if (strncmp(line, "env", 3) == 0) {
+            printf("Valid Environment Line: %s\n", line);
+            struct Environment env = {0}; // Initialize a new Environment struct
+            parse_environment(line, &env); // Use the existing parsing method
+            add_environment(env_list, env); // Add the parsed environment to the global list
+        }
+
+        free(line);
+    }
+
+    fclose(file);
+}
+
+// Prindib konkreetse keskkonna kõikvõimaliku info välja
+void print_environment_info(struct Environment* env) {
+    if (!env) {
+        printf("Invalid environment pointer.\n");
+        return;
+    }
+
+    printf("Environment Name: %s\n", env->name);
+    printf("Freeform Allowed? (Body): %d\n", env->body);
+    printf("Nesting Allowed? (Nest): %d\n", env->nest);
+    printf("Begin Define: %s\n", env->beginDefine ? env->beginDefine : "Not found");
+    printf("End Define: %s\n", env->endDefine ? env->endDefine : "Not found");
+    printf("Content: %s\n", env->Content ? env->Content : "Not found");
+
+    for (size_t i = 0; i < env->käsk_list.count; i++) {
+        printf("Subcommand %zu:\n", i + 1);
+        printf("  Name: %s\n", env->käsk_list.käsud[i].käsunimi);
+        printf("  LaTeX Definition: %s\n", env->käsk_list.käsud[i].definitsioon);
+        printf("  Argument Count: %u\n", env->käsk_list.käsud[i].argumentideKogus);
+
+        for (unsigned int j = 0; j < env->käsk_list.käsud[i].argumentideKogus; j++) {
+            printf("    Argument %u: %s (Type: %d)\n", j + 1, env->käsk_list.käsud[i].argumentideNimed[j], env->käsk_list.käsud[i].argumentideTüübid[j]);
+        }
+    }
+}
 
 
 // Funkstioon uurib kas tegu on käsuga. Tagastab vastava käsu structi mäluaadressi kui on käsk ja NULL, kui ei ole käsk.
