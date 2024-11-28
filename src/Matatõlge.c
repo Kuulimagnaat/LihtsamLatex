@@ -374,7 +374,8 @@ void loeConfigistKeskkonnad(const char* filepath, struct KeskkonnaNimekiri* kesk
 */
 
 
-void read_commands_from_config(const char* filepath, struct KäskList* käsk_list) {
+void read_commands_from_config(const char* filepath, struct KäskList* käsk_list)
+{
     FILE* file = fopen(filepath, "r");
     if (!file) {
         perror("Unable to open config file");
@@ -382,31 +383,86 @@ void read_commands_from_config(const char* filepath, struct KäskList* käsk_lis
     }
 
     char* line;
-    while ((line = read_line(file)) != NULL) {
-        printf("Rida: %s\n", line);
+    while ((line = read_line(file)) != NULL) 
+    {
         // Skip empty lines or comments
         if (line[0] == '\0' || line[0] == '#') {
             free(line);
             continue;
         }
 
-        char* arrow = strstr(line, "->");
-        if (!arrow) {
-            fprintf(stderr, "Invalid line in config file: %s\n", line);
+        char* NooleAsuk = strstr(line, "->");
+        if (NooleAsuk == NULL)
+        {
+            fprintf(stderr, "Noolt ei leitud: %s\n", line);
             free(line);
             continue;
         }
+        puts(line);
+        // Kui kood jõuab siiani, on teada, et sellel real on käsu definitsioon, st leidub ->.
         // Split the line into the left and right parts
-        *arrow = '\0';
-        char* left = line;
-        char* right = arrow + 2;
+        // Left ja right on dünaamiliselt eraldatud. Seesama mälu läheb loetava structi klassimuutujatesse, seega seda ei tohi siin vabastada.
+        char* left = LeiaTekstEnneTeksti(line, "->");
+        char* right = strdup(&line[strlen(left)+2]);
         // Trim whitespace
         left = trim_whitespace(left);
         right = trim_whitespace(right);
         struct Käsk käsk = {0};
 
+        käsk.definitsioon = right;
         // Parse the command name and arguments from the left side
-        char* open_paren = strchr(left, '(');  // Find first '('
+        // 5) Käsu nimi
+        if (strstr(left, "("))
+        {
+            puts("Kood siia!!!");
+            // Järelikult leiti argumendiga käsk, st tuleb käsu structis palju väärtusi määrata.
+            char* nimi = LeiaTekstEnneTeksti(left, "(");
+            puts(nimi);
+            käsk.käsunimi = nimi;
+            for (unsigned int i = strlen(nimi); i<strlen(left); )
+            {
+                // 1) Argumentide kogus
+                if (left[i] == '(' || left[i]=='[')
+                {
+                    char* argument = LeiaSuluSisu(&left[i+1]);
+                    puts(argument);
+                    // 1) Argumentide kogus
+                    käsk.argumentideKogus += 1;
+                    printf("ArgumentideKogus: %d", käsk.argumentideKogus);
+                    // 2) Argumentide nimed
+                    printf("ArgumentideNimed %p", käsk.argumentideNimed);
+                    käsk.argumentideNimed = realloc(käsk.argumentideNimed, käsk.argumentideKogus*sizeof(char*));
+                    käsk.argumentideNimed[käsk.argumentideKogus-1] = argument;
+                    puts("LMAO");
+                    // 3) Argumentide tüübid
+                    käsk.argumentideTüübid = realloc(käsk.argumentideTüübid, käsk.argumentideKogus*sizeof(char*));
+                    
+                    if (left[i] == '(')
+                    {
+                        käsk.argumentideTüübid[käsk.argumentideKogus-1] = 0;
+                    }
+                    else if (left[i] == '[')
+                    {
+                        käsk.argumentideTüübid[käsk.argumentideKogus-1] = 1;
+                    }
+                    i += strlen(argument);
+                }
+                else 
+                {
+                    i++;
+                }
+            }
+        }
+        else
+        {  
+            // Järelikult leiti käsk,  millel pole argumenti. Paljud väärtused käsu structis määratakse nulliks.
+            käsk.käsunimi = strdup(left);
+            käsk.argumentideKogus = 0;
+            käsk.argumentideNimed = NULL;
+            käsk.argumentideTüübid = NULL;
+        }
+
+        /* char* open_paren = strchr(left, '(');  // Find first '('
         if (open_paren) {
             // Extract the command name before the first '('
             *open_paren = '\0'; // Null-terminate the command name
@@ -454,11 +510,11 @@ void read_commands_from_config(const char* filepath, struct KäskList* käsk_lis
             käsk.argumentideNimed = NULL;
             käsk.argumentideTüübid = NULL;
         }
+        */
 
         // Set the definition (right-hand side of the "->")
-        käsk.definitsioon = strdup(right);
 
-        puts("KOOD SIIN!");
+        //puts("KOOD SIIN!");
         // Add the parsed command to the list
         add_käsk(käsk_list, käsk);
 

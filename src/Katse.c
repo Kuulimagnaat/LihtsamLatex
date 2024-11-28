@@ -14,6 +14,5 @@ int main() {
         puts(käskList.käsud[i].definitsioon);
     }
 
-    char* tulemus = TõlgiMathMode("limxtoinf f(x)");
     return 0;
 }

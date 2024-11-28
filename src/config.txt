@@ -12,7 +12,7 @@ rr -> \mathbb R
 sqrt(asd) -> \sqrt{asd}
 kord -> \cdot
 ffg(arg1)(uuga)(coop) -> \int_{0}^{\int_{arg1}^{uuga}}\frac1{coop}
-int -> \int
+int -> \intg
 lim(uugh) -> \lim_{uugh}
 sin(kabuug) -> \sin{kabuug}
 
