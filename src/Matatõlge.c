@@ -666,11 +666,24 @@ void read_commands_from_config(const char* filepath, struct KäskList* käsk_lis
         käsk.definitsioon = right;
         // Parse the command name and arguments from the left side
         // 5) Käsu nimi
-        if (strstr(left, "("))
+        if (strstr(left, "(") || strstr(left, "["))
         {
             puts("Kood siia!!!");
             // Järelikult leiti argumendiga käsk, st tuleb käsu structis palju väärtusi määrata.
-            char* nimi = LeiaTekstEnneTeksti(left, "(");
+            char* nimi = NULL;
+            char* t1 = LeiaTekstEnneTeksti(left, "(");
+            char* t2 = LeiaTekstEnneTeksti(left, "[");
+            if (strlen(t1)<strlen(t2))
+            {
+                nimi = t1;
+                free(t2);
+            }
+            else
+            {
+                nimi = t2;
+                free(t1);
+            }
+
             puts(nimi);
             käsk.käsunimi = nimi;
             for (unsigned int i = strlen(nimi); i<strlen(left); )
