@@ -1057,11 +1057,11 @@ void free_environment_list(struct EnvironmentList* list) {
 }
 
 
-struct Environment* KasEnvironment(const char* tekst, struct EnvironmentList* environList)
+struct Environment* KasEnvironment(const char* tekst)
 {
-    for (size_t i = 0; i < environList->count; i++) {
-        if (KasEsimesedTähed(tekst, environList->environments[i].name)) {
-            return &environList->environments[i];
+    for (size_t i = 0; i < environList.count; i++) {
+        if (KasEsimesedTähed(tekst, environList.environments[i].name)) {
+            return &environList.environments[i];
         }
     }
 }

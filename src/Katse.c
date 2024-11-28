@@ -9,7 +9,7 @@ int main() {
     SetConsoleOutputCP(CP_UTF8);
     
     TäidaEnvironmentList();
-    print_environment_info(&environList.environments[0]);
+    free_environment_list(&environList);
 
     return 0;
 }
