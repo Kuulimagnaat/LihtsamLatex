@@ -9,6 +9,7 @@
 #define MAX_PATH_LENGTH 256
 
 struct KäskList käskList;
+struct EnvironmentList environList;
 
 //struct KeskkonnaNimekiri keskkonnaNimek;
 
@@ -102,6 +103,12 @@ int main() {
     read_commands_from_config(config_path, &käskList);
     //loeConfigistKeskkonnad(config_path, &keskkonnaNimek);
 
+    // Eraldame kasutaja defineeritud keskkonnad.
+    init_environment_list(&environList);
+    read_environments_from_config(config_path, &environList);   
+
+    // Debugimiseks:
+    //print_environment_info(&environList.environments[0]);
 
     // config.txt failist eraldatakse template faili nimi, millest koostatakse aadress, mis viitab soovitavale template failile.
     char* template_name = get_template_name(config_path);

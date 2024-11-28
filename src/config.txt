@@ -1,5 +1,6 @@
 fracTüüp = SVEN
 template = SVEN
+
 minufunc(a1)(bee)(a5)(uuga)(a7) -> \frac{\lim_{a1\to\infty}f(bee)}{a5\cdot uuga}+a7
 to -> \to
 inf -> \infty
@@ -16,24 +17,4 @@ int -> \intg
 lim(uugh) -> \lim_{uugh}
 sin(kabuug) -> \sin{kabuug}
 
-keskkond
-ALGUSETÄHIS = nummerda
-ALGUSELATEX = \begin{enumerate}
-IGAREAALGUSESSE = \item
-LÕPUTÄHIS = nummerdalõpp
-LÕPULATEX = \end{enumerate}
-
-keskkond
-ALGUSETÄHIS = maatriks
-ALGUSELATEX = \begin{pmatrix}
-ASENDATEKST(   )( & )
-IGAREALÕPPU = \\
-LÕPUTÄHIS = maatrikslõpp
-LÕPULATEX = \end{pmatrix}
-
-keskkond
-ALGUSETÄHIS = süsteem
-ALGUSELATEX = \begin{cases}
-IGAREALÕPPU = \\
-LÕPUTÄHIS = süsteemilõpp
-LÕPULATEX = \end{cases}
+env(testenv) [body] -> \begin{test} #content \end{test}

@@ -1,0 +1,48 @@
+Kasutatavad flagid:
+body	                        The environment allows freeform content to be given aka no commands on some lines. If freeform content is given (aka no subcommand is used) and the environment doesnt support it, then an error should be given.
+args:N                          The environment OR subcommand takes N arguments. Can also be specified in terms of brackets (x)(y) for some n amount, in which case it searches for the given argument names "x", "y" to be replaced. Argument names default to arg1, arg2, .... if given as args:N.
+subcmds:{X, Y, ...}	            The environment includes subcommands.
+nest	                        The environment allows nesting of other environments or itself.
+end:Z                           The text to search for, when ending the environment in our code. If this argument is not given, then it searches for an empty line.
+
+Fancy Customizability Flags (FCF):
+pre:X                           Takes in some latex command and inserts it before the \begin declaration of the environment.
+validate: <argCount> <argType>  Validates some known environments against common mistakes, such as given argument counts for matrices or argument types (numerical, alphabetical, etc.)
+
+NB! Flags may be given in any order.
+NB! Meie koodis võib anda käskudele argumente sulgudega (.)(.)..., kuid need võib ka ära jätta ja eraldada tühikuga (sellisel juhul ei tohi olla liigseid tühikuid).
+
+The general environment definition, where every flag is used and two subcommands are defined:
+env(envName) [body, args:1, subcmds: {e, k}, nest, end:--] \begin[arg1]{matrix} #content \end{matrix} | (e(args:2) -> arg1 & arg2 \\) (k(uuga)(buuga) -> uuga^buuga)
+
+#########################################################
+Some in depth examples:
+
+Argumentideta keskkond:
+env(keskenda) [body] -> \begin{center} #content \end{center}
+
+Alamkäsuga keskkond:
+env(nummerda) [body, subcmds:{i, k}, nest] -> \begin{enumerate} #content \end{enumerate} (item(uuga) -> \item uuga) (k(bu) -> \bolditem bu)
+
+Kui on väike arv argumente alamkäsul:
+env(mat2) [subcmds:{row}, nest] -> \begin{matrix} #content \end{matrix} (row(uuga)(buuga) -> uuga & buuga \\)
+
+Siis saaks kasutada järgmiselt
+matrix
+row(12445)(a/b)
+
+Kui argumente on palju või tundmatu arv n tükki:
+Siinkohal defineerime mingisuguse üldise mustri kujul arg1 & arg2 & ... & argN
+env(matrix) [subcmds:{row}, nest] -> \begin{matrix} #content \end{matrix} (row(args:N) -> arg1 & arg2 & ... & argN \\)
+
+ning kui keskkond ise võtab argumendi, nt [|c|c|c|]:
+env(matrix) [args:1, subcmds:{row}, nest] -> \begin[arg1]{matrix} #content \end{matrix} (row(args:N) -> arg1 & arg2 & ... & argN \\)
+
+Kui alamkäsul on mitu argumenti:
+env(desc) [body, subcmds:{entry}] -> \begin{description} #content \end{description} (entry(args:2) -> \item[arg1] arg2)
+env(enum2) [subcmds: {e, k}] -> \begin{enumerate} #content \begin{enumerate} (e(args:3) -> arg1 \\ \item arg2 \\ arg3\\) (k(args:1) -> \\[arg1])
+
+Sellisel juhul
+
+enum2
+e(kakallwoaslw)(esimene item k(5mm))(kakakaslwsw)
