@@ -55,10 +55,12 @@ struct EnvironmentList {
     size_t capacity;                  // Capacity of the array
 };
 
+struct Käsk* KasKäsk(const char* tekst);
+
 void print_environment_info(struct Environment* env);
 
 void read_environments_from_config(const char* filepath, struct EnvironmentList* env_list);
-struct Environment* KasEnvironment(const char* tekst, struct EnvironmentList* environList);
+struct Environment* KasEnvironment(const char* tekst);
 void free_environment_list(struct EnvironmentList* list);
 void add_environment(struct EnvironmentList* list, struct Environment env);
 void init_environment_list(struct EnvironmentList* list);

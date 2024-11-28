@@ -9,7 +9,7 @@ int main() {
     SetConsoleOutputCP(CP_UTF8);
     
     TäidaEnvironmentList();
-    print_environment_info(&environList.environments[0]);
+    free_environment_list(&environList);
 
     TäidaKäskList();
     for (unsigned int i = 0; i<käskList.käsud[0].argumentideKogus; i++)
