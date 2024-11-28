@@ -186,7 +186,6 @@ int main() {
 
             init_käsk_list(&käskList);
             read_commands_from_config(config_path, &käskList);
-            //loeConfigistKeskkonnad(config_path, &keskkonnaNimek);
 
 
             // config.txt failist eraldatakse template faili nimi, millest koostatakse aadress, mis viitab soovitavale template failile.
