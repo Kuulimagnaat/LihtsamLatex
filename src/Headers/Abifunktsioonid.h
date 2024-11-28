@@ -5,6 +5,6 @@
 long int LeiaFailiSuurus(FILE* f);
 void TäidaKäskList();
 void TäidaEnvironmentList();
-long int findSize(char* file_name);
+long int findSize(const char* path);
 
 #endif

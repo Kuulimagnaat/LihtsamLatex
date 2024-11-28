@@ -95,24 +95,15 @@ void TäidaEnvironmentList()
     read_environments_from_config(config_path, &environList);
 }
 
-long int findSize(char* file_name) 
-{ 
-    // opening the file in read mode 
-    FILE* fp = fopen(file_name, "r"); 
-  
-    // checking if the file exist or not 
-    if (fp == NULL) { 
-        printf("File Not Found!\n"); 
-        return -1; 
-    } 
-  
-    fseek(fp, 0L, SEEK_END); 
-  
-    // calculating the size of the file 
-    long int res = ftell(fp); 
-  
-    // closing the file 
-    fclose(fp); 
-  
-    return res; 
-} 
+long int findSize(const char* path) {
+    FILE* file = fopen(path, "rb");
+    if (file == NULL) {
+        perror("Unable to open file to get size");
+        return -1;
+    }
+    fseek(file, 0, SEEK_END);  // Seek to end of file
+    long int size = ftell(file);  // Get file size
+    fclose(file);
+    return size;
+}
+ 

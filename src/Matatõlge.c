@@ -113,22 +113,20 @@ void parse_environment(const char *config_line, struct Environment* env) {
     end_pos = strstr(config_line, "\\end{");
 
     if (begin_pos && end_pos) {
-        // Extract the part inside \begin{}
-        begin_pos += 7;  // Skip over "\\begin{"
+        // Find the entire "\begin{...}" substring
         const char* begin_end_pos = strchr(begin_pos, '}');
         if (begin_end_pos) {
-            size_t begin_len = begin_end_pos - begin_pos;
+            size_t begin_len = begin_end_pos - begin_pos + 1; // Include the closing brace '}'
             char* begin_content = malloc(begin_len + 1);
             strncpy(begin_content, begin_pos, begin_len);
             begin_content[begin_len] = '\0';
             env->beginDefine = begin_content;
         }
 
-        // Extract the part inside \end{}
-        end_pos += 5;  // Skip over "\\end{"
+        // Find the entire "\end{...}" substring
         const char* end_end_pos = strchr(end_pos, '}');
         if (end_end_pos) {
-            size_t end_len = end_end_pos - end_pos;
+            size_t end_len = end_end_pos - end_pos + 1; // Include the closing brace '}'
             char* end_content = malloc(end_len + 1);
             strncpy(end_content, end_pos, end_len);
             end_content[end_len] = '\0';
@@ -246,7 +244,7 @@ void parse_environment(const char *config_line, struct Environment* env) {
         subcommand.argumentideTüübid[arg_count] = -1;  // End marker
 
         // Allocate and fill argument names
-        subcommand.argumentideNimed = (const char**)malloc(sizeof(const char*) * arg_count);
+        subcommand.argumentideNimed = malloc(sizeof(const char*) * arg_count);
         for (int i = 0; i < arg_count; i++) {
             subcommand.argumentideNimed[i] = strdup(args[i]);
         }
@@ -506,16 +504,32 @@ void init_käsk_list(struct KäskList* list) {
 // Free the memory used by KäskList
 void free_käsk_list(struct KäskList* list) {
     for (size_t i = 0; i < list->count; i++) {
-        free((char*)list->käsud[i].käsunimi);
-        free((char*)list->käsud[i].definitsioon);
-        free(list->käsud[i].argumentideTüübid);
-        for (unsigned int j = 0; j < list->käsud[i].argumentideKogus; j++) {
-            free((char*)list->käsud[i].argumentideNimed[j]);
+        // Safeguard against freeing NULL pointers
+        if (list->käsud[i].käsunimi) {
+            free((char*)list->käsud[i].käsunimi);
         }
-        free(list->käsud[i].argumentideNimed);
+        if (list->käsud[i].definitsioon) {
+            free((char*)list->käsud[i].definitsioon);
+        }
+        if (list->käsud[i].argumentideTüübid) {
+            free(list->käsud[i].argumentideTüübid);
+        }
+        if (list->käsud[i].argumentideNimed) {
+            for (unsigned int j = 0; j < list->käsud[i].argumentideKogus; j++) {
+                if (list->käsud[i].argumentideNimed[j]) {
+                    free((char*)list->käsud[i].argumentideNimed[j]);
+                }
+            }
+            free(list->käsud[i].argumentideNimed);
+        }
     }
+    
+    // Free the array of commands and reset the list
     free(list->käsud);
+    list->käsud = NULL;  // Avoid access after freeing
+    list->count = 0;  // Reset count to indicate the list is empty
 }
+
 
 // Add a Käsk to the list
 void add_käsk(struct KäskList* list, struct Käsk käsk)
@@ -1126,42 +1140,49 @@ struct Environment* KasEnvironment(const char* tekst)
             return &environList.environments[i];
         }
     }
+    return NULL;
 }
 
 struct Käsk* KasEnvironmentKäsk(const char* tekst, const struct Environment* env) {
     for (unsigned int i = 0; i < env->käsk_list.count; i++) {
         if (KasEsimesedTähed(tekst, env->käsk_list.käsud[i].käsunimi)) {
-        
             return &env->käsk_list.käsud[i];
         }
     }
     return NULL;
 }
 
-struct TekstArv TõlgiEnvironment(const struct Environment* env, FILE* input)
+int TõlgiEnvironment(const struct Environment* env, FILE* input, FILE* output_file)
 {
-    char* line;
+    int lines_processed = 0;
 
+    // Add the begin definition to the translation
+    fprintf(output_file, env->beginDefine);
+
+    // Translate the environment
+    char* line;
     while ((line = read_line(input)) != NULL) {
+        lines_processed++;        
         // Stop if we encounter an empty line
         if (line[0] == '\0') {
             printf("Empty line detected, ending environment.\n");
-            free(line);
             break;
         }
 
-        // Try to match a subcommand within the environment
-        struct Käsk* käsk = KasEnvironmentKäsk(line, env);
-        if (käsk) {
-            printf("Matched Subcommand: %s\n", käsk->käsunimi);
-            
-            // Siia paneme hiljem veel sitta
-        } else {
-            printf("No match for line: %s\n", line);
-        }
+        struct Käsk* subcmd = KasEnvironmentKäsk(line, env);
+        if (subcmd) {
+            printf("Matched Subcommand: %s\n", subcmd->käsunimi);
+            struct TekstArv käsuTagastus = TõlgiKäsk(line, subcmd); // Saame tagasi tekstarv structi
+            fprintf(output_file, käsuTagastus.Tekst);
 
-        free(line);
+        } else {
+            printf("Normal line: %s\n", line);
+            fprintf(output_file, line);
+        }
     }
+
+    fprintf(output_file, env->endDefine);
+    return lines_processed;
 }
 
 
@@ -1343,9 +1364,9 @@ char* TõlgiMathMode(const char* expression)
 
 
         struct Käsk* käsk = KasKäsk(&expression[i]);
-        printf("KÄSU AADRES: %p\n", käsk);
         if (käsk != NULL)
         {
+            puts("läheb siia");
             struct TekstArv käsuTagastus = TõlgiKäsk(&expression[i], käsk);
             result = LiidaTekstid(result, käsuTagastus.Tekst);
             i += käsuTagastus.Arv;
@@ -1375,9 +1396,12 @@ char* TõlgiMathMode(const char* expression)
             free(käsuTagastus.Tekst);
         } else {
             // Handle regular characters
-            char* single_char = my_strndup(&expression[i], 1);
-            result = LiidaTekstid(result, single_char);
-            free(single_char);
+            char* täht = malloc(2);
+            täht[0] = expression[i];
+            täht[1] = '\0';
+
+            result = LiidaTekstid(result, täht);
+            free(täht);
             i++;
         }
     }

@@ -22,10 +22,10 @@ struct TekstArv
 4) Definitsioon on tekst, mis config.txt failis on -> märgi järel. See tekst on latexi kood, milles mõnes kohas on kasutaja argumentide tähist. */
 struct Käsk
 {
-    const char* käsunimi;
+    char* käsunimi;
     int* argumentideTüübid;
-    const char** argumentideNimed;
-    const char* definitsioon;
+    char** argumentideNimed;
+    char* definitsioon;
     unsigned int argumentideKogus;
 };
 
@@ -39,13 +39,13 @@ struct KäskList {
 };
 
 struct Environment {
-    const char *name;        // Name of the environment
+    char *name;        // Name of the environment
     struct KäskList käsk_list; // List of Käsk structs associated with the environment
     int body;                //If the environment has a body field
     int nest;                //If the environment has a nest field
-    const char *beginDefine; // Content inside the \begin{}
-    const char *endDefine;   // Content inside the \end{}
-    const char *Content;     // Everything from \begin{} to \end{} (including)
+    char *beginDefine; // Content inside the \begin{}
+    char *endDefine;   // Content inside the \end{}
+    char *Content;     // Everything from \begin{} to \end{} (including)
 };
 
 // The global struct of all defined environments
@@ -56,12 +56,13 @@ struct EnvironmentList {
 };
 
 struct Käsk* KasKäsk(const char* tekst);
-struct TekstArv TõlgiEnvironment(const struct Environment* env, FILE* input);
+int TõlgiEnvironment(const struct Environment* env, FILE* input, FILE* output_file);
+struct Käsk* KasEnvironmentKäsk(const char* tekst, const struct Environment* env);
+struct Environment* KasEnvironment(const char* tekst);
 
 void print_environment_info(struct Environment* env);
 
 void read_environments_from_config(const char* filepath, struct EnvironmentList* env_list);
-struct Environment* KasEnvironment(const char* tekst);
 void free_environment_list(struct EnvironmentList* list);
 void add_environment(struct EnvironmentList* list, struct Environment env);
 void init_environment_list(struct EnvironmentList* list);
