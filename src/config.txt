@@ -7,7 +7,7 @@ inf -> \infty
 alga -> \alfpha
 epsilon -> \varepsilon
 delta -> \delta
-^(lmao) -> ^{lmao}
+^[lmao] -> ^{lmao}
 osah -> \subset
 rr -> \mathbb R
 sqrt(asd) -> \sqrt{asd}
