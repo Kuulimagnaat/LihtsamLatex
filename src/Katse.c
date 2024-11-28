@@ -12,10 +12,9 @@ int main() {
     free_environment_list(&environList);
 
     TäidaKäskList();
-    for (unsigned int i = 0; i<käskList.count; i++)
+    for (unsigned int i = 0; i<käskList.käsud[0].argumentideKogus; i++)
     {
-        puts(käskList.käsud[i].käsunimi);
-        puts(käskList.käsud[i].definitsioon);
+        printf("Tüüp %d: %d\n", i, käskList.käsud[0].argumentideTüübid[i]);
     }
 
     return 0;

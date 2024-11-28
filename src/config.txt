@@ -1,13 +1,13 @@
 fracTüüp = SVEN
 template = SVEN
 
-minufunc(a1)(bee)(a5)(uuga)(a7) -> \frac{\lim_{a1\to\infty}f(bee)}{a5\cdot uuga}+a7
+minufunc[a1][bee](a5)[uuga](a7) -> \frac{\lim_{a1\to\infty}f(bee)}{a5\cdot uuga}+a7
 to -> \to
 inf -> \infty
 alga -> \alfpha
 epsilon -> \varepsilon
 delta -> \delta
-^(lmao) -> ^{lmao}
+^[lmao] -> ^{lmao}
 osah -> \subset
 rr -> \mathbb R
 sqrt(asd) -> \sqrt{asd}

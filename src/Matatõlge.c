@@ -652,7 +652,6 @@ void read_commands_from_config(const char* filepath, struct KäskList* käsk_lis
             free(line);
             continue;
         }
-        puts(line);
         // Kui kood jõuab siiani, on teada, et sellel real on käsu definitsioon, st leidub ->.
         // Split the line into the left and right parts
         // Left ja right on dünaamiliselt eraldatud. Seesama mälu läheb loetava structi klassimuutujatesse, seega seda ei tohi siin vabastada.
@@ -666,12 +665,23 @@ void read_commands_from_config(const char* filepath, struct KäskList* käsk_lis
         käsk.definitsioon = right;
         // Parse the command name and arguments from the left side
         // 5) Käsu nimi
-        if (strstr(left, "("))
+        if (strstr(left, "(") || strstr(left, "["))
         {
-            puts("Kood siia!!!");
             // Järelikult leiti argumendiga käsk, st tuleb käsu structis palju väärtusi määrata.
-            char* nimi = LeiaTekstEnneTeksti(left, "(");
-            puts(nimi);
+            char* nimi = NULL;
+            char* t1 = LeiaTekstEnneTeksti(left, "(");
+            char* t2 = LeiaTekstEnneTeksti(left, "[");
+            if (strlen(t1)<strlen(t2))
+            {
+                nimi = t1;
+                free(t2);
+            }
+            else
+            {
+                nimi = t2;
+                free(t1);
+            }
+
             käsk.käsunimi = nimi;
             for (unsigned int i = strlen(nimi); i<strlen(left); )
             {
@@ -679,15 +689,11 @@ void read_commands_from_config(const char* filepath, struct KäskList* käsk_lis
                 if (left[i] == '(' || left[i]=='[')
                 {
                     char* argument = LeiaSuluSisu(&left[i+1]);
-                    puts(argument);
                     // 1) Argumentide kogus
                     käsk.argumentideKogus += 1;
-                    printf("ArgumentideKogus: %d", käsk.argumentideKogus);
                     // 2) Argumentide nimed
-                    printf("ArgumentideNimed %p", käsk.argumentideNimed);
                     käsk.argumentideNimed = realloc(käsk.argumentideNimed, käsk.argumentideKogus*sizeof(char*));
                     käsk.argumentideNimed[käsk.argumentideKogus-1] = argument;
-                    puts("LMAO");
                     // 3) Argumentide tüübid
                     käsk.argumentideTüübid = realloc(käsk.argumentideTüübid, käsk.argumentideKogus*sizeof(char*));
                     
