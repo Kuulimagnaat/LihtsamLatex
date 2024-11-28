@@ -150,9 +150,6 @@ int main() {
     {
         Sleep(300);
 
-
-
-
         long int uusSuurus = findSize(main_path);
         if (uusSuurus != vanaSuurus)
         {
@@ -267,6 +264,14 @@ int main() {
                     unsigned int onJubaMathMode = 0;
                     while ((line = read_line(file)) != NULL)
                     {
+                        /* CHECK IF ENVIRONMENT STARTS ON THIS LINE */
+                        struct Environment* env = KasEnvironment(line);
+                        if (env) {
+                            printf("Detected Environment: %s\n", env->name);
+                            TõlgiEnvironment(env, file);
+                        }
+
+
                         if (!onJubaMathMode) 
                         {
                             peabOlemaInlineMath = 0;

@@ -56,6 +56,7 @@ struct EnvironmentList {
 };
 
 struct Käsk* KasKäsk(const char* tekst);
+struct TekstArv TõlgiEnvironment(const struct Environment* env, FILE* input);
 
 void print_environment_info(struct Environment* env);
 

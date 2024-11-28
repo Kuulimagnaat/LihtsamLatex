@@ -1133,6 +1133,42 @@ struct Environment* KasEnvironment(const char* tekst)
     }
 }
 
+struct Käsk* KasEnvironmentKäsk(const char* tekst, const struct Environment* env) {
+    for (unsigned int i = 0; i < env->käsk_list.count; i++) {
+        if (KasEsimesedTähed(tekst, env->käsk_list.käsud[i].käsunimi)) {
+        
+            return &env->käsk_list.käsud[i];
+        }
+    }
+    return NULL;
+}
+
+struct TekstArv TõlgiEnvironment(const struct Environment* env, FILE* input)
+{
+    char* line;
+
+    while ((line = read_line(input)) != NULL) {
+        // Stop if we encounter an empty line
+        if (line[0] == '\0') {
+            printf("Empty line detected, ending environment.\n");
+            free(line);
+            break;
+        }
+
+        // Try to match a subcommand within the environment
+        struct Käsk* käsk = KasEnvironmentKäsk(line, env);
+        if (käsk) {
+            printf("Matched Subcommand: %s\n", käsk->käsunimi);
+            
+            // Siia paneme hiljem veel sitta
+        } else {
+            printf("No match for line: %s\n", line);
+        }
+
+        free(line);
+    }
+}
+
 
 void read_environments_from_config(const char* filepath, struct EnvironmentList* env_list) {
     FILE* file = fopen(filepath, "r");
