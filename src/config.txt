@@ -4,7 +4,7 @@ template = SVEN
 minufunc[a1][bee](a5)[uuga](a7) -> \frac{\lim_{a1\to\infty}f(bee)}{a5\cdot uuga}+a7
 to -> \to
 inf -> \infty
-alga -> \alfpha
+alfa -> \alpha
 epsilon -> \varepsilon
 delta -> \delta
 ^[lmao] -> ^{lmao}
@@ -13,7 +13,7 @@ rr -> \mathbb R
 sqrt(asd) -> \sqrt{asd}
 kord -> \cdot
 ffg(arg1)(uuga)(coop) -> \int_{0}^{\int_{arg1}^{uuga}}\frac1{coop}
-int -> \intg
+int -> \int
 lim(uugh) -> \lim_{uugh}
 sin(kabuug) -> \sin{kabuug}
 

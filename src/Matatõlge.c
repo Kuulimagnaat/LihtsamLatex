@@ -4,6 +4,7 @@
 #include "Headers/Matatõlge.h"
 #include <math.h>
 #include <ctype.h>
+#include "Headers/Abifunktsioonid.h"
 
 extern struct KäskList käskList;
 extern struct EnvironmentList environList;
@@ -466,7 +467,7 @@ char* LiidaArv(char* eelmineMälu, int lisatav)
 }
 
 
-// Function to trim whitespace from a string
+// Eraldab uut mälu, kuhu pannakse argumendiga antud tekst, millelt on eest ja tagant tühikud eemladatud. Tagastab selle mälu aadressi.
 #define trim_whitespaceDebug 0
 char* trim_whitespace(char* str) {
     #if trim_whitespaceDebug == 1
@@ -476,17 +477,18 @@ char* trim_whitespace(char* str) {
     printf("SISSE: \"%s\"", str);
     rekursiooniTase += 1;
     #endif
-    // Trim leading spaces
-    while (isspace((unsigned char)*str)) str++;  
 
-    // Find the last non-whitespace character
-    char* end = str + strlen(str) - 1;  
 
-    // Trim trailing spaces
-    while (end > str && isspace((unsigned char)*end)) end--;  
+    unsigned int algusindeks = 0;
+    for ( ; isspace(str[algusindeks]); algusindeks++ );
+    unsigned int lõpuindeks = strlen(str)-1;
+    for ( ; isspace(str[lõpuindeks]); lõpuindeks-- );
 
-    // Null-terminate the string after removing trailing spaces
-    *(end + 1) = '\0';  
+    char* tekst = malloc(lõpuindeks-algusindeks+2);
+    memcpy(tekst, &str[algusindeks], lõpuindeks-algusindeks+1);
+    tekst[lõpuindeks-algusindeks+1] = '\0';
+    return tekst;
+
 
     #if trim_whitespaceDebug == 1
     rekursiooniTase -= 1;
@@ -507,7 +509,9 @@ void init_käsk_list(struct KäskList* list) {
 void free_käsk_list(struct KäskList* list) {
     for (size_t i = 0; i < list->count; i++) {
         free((char*)list->käsud[i].käsunimi);
+        printf("%s\n", list->käsud[i].definitsioon);
         free((char*)list->käsud[i].definitsioon);
+        puts("KOOD SIIN!!!!");
         free(list->käsud[i].argumentideTüübid);
         for (unsigned int j = 0; j < list->käsud[i].argumentideKogus; j++) {
             free((char*)list->käsud[i].argumentideNimed[j]);
@@ -639,8 +643,9 @@ void read_commands_from_config(const char* filepath, struct KäskList* käsk_lis
     char* line;
     while ((line = read_line(file)) != NULL) 
     {
-        // Skip empty lines or comments
-        if (line[0] == '\0' || line[0] == '#') {
+        // Skip empty lines or comments and environment lines
+        if (line[0] == '\0' || line[0] == '#' || KasEsimesedTähed(line, "env"))
+        {
             free(line);
             continue;
         }
@@ -1236,7 +1241,26 @@ char* TõlgiMathMode(const char* expression)
     result[0] = '\0';
 
     int i = 0;
-    while (i < strlen(expression)) {
+    while (i < strlen(expression))
+    {
+        for (unsigned int i = 0 ; i<käskList.count; i++)
+        {
+            // Ei lasta tähtede erinevusi kontrollida, kui käsolev käsk on ainult 1 v kahe tähe pikkune. Nende puhul on ühetäheline erinevus liiga tõenäoline.
+            if (strlen(käskList.käsud[i].käsunimi)<= 2)
+            {
+                continue;
+            }
+            if (MitmeTäheVõrraErineb(käskList.käsud[i].käsunimi, &expression[i]) == 1)
+            {
+                printf("Leiti ainult ühe täheline erinevus. Käsk: %s, leitud koht: ", käskList.käsud[i].käsunimi);
+                for (unsigned int i = 0; i<strlen(käskList.käsud[i].käsunimi); i++)
+                {
+                    printf("%c", expression[i]);
+                }
+            }
+        }
+
+
         // Check for a number or variable
         if (KasLugeja(&expression[i]) == 1) {
             char* lugeja = LeiaLugeja(&expression[i]);
@@ -1244,10 +1268,13 @@ char* TõlgiMathMode(const char* expression)
             char* sulgudetaLugeja;
 
             // Check if the reader has parentheses
-            if (KasAvaldiseÜmberOnSulud(lugeja)) {
+            if (KasAvaldiseÜmberOnSulud(lugeja)) 
+            {
                 lugejaOnSulgudeta = 0;
                 sulgudetaLugeja = EemaldaEsimeneViimane(lugeja);
-            } else {
+            } 
+            else 
+            {
                 sulgudetaLugeja = lugeja;
             }
 
@@ -1266,7 +1293,8 @@ char* TõlgiMathMode(const char* expression)
 
             // Free memory to prevent leaks
             free(lugeja);
-            if (lugejaOnSulgudeta == 0) {
+            if (lugejaOnSulgudeta == 0)
+            {
                 free(sulgudetaLugeja);
             }
             free(nimetaja);
@@ -1276,14 +1304,16 @@ char* TõlgiMathMode(const char* expression)
         }
 
         // Check for 'tul' commands
-        if (KasEsimesedTähed(&expression[i], "tul")) {
+        if (KasEsimesedTähed(&expression[i], "tul"))
+        {
             char* tõlge = malloc(1);
             tõlge[0] = '\0';
 
             char* argument = LeiaLühemArgument(&expression[i + 3]);
             // In the case of argument 'xxy', the translation must be '''_{xxy}
             char* alatekst = KõrvutiolevadAstmeks(argument);
-            for (unsigned int j = 0; j < strlen(argument); j++) {
+            for (unsigned int j = 0; j < strlen(argument); j++)
+            {
                 tõlge = LiidaTäht(tõlge, '\'');
             }
             tõlge = LiidaTekstid(tõlge, "_{");
@@ -1314,12 +1344,14 @@ char* TõlgiMathMode(const char* expression)
             result = LiidaTekstid(result, käsuTagastus.Tekst);
             i += käsuTagastus.Arv;
 
-            if (expression[i] == '(') {
+            if (expression[i] == '(')
+            {
                 int start = i + 1;
                 int paren_count = 1;
                 i++;
 
-                while (expression[i] != '\0' && paren_count > 0) {
+                while (expression[i] != '\0' && paren_count > 0)
+                {
                     if (expression[i] == '(') paren_count++;
                     else if (expression[i] == ')') paren_count--;
                     i++;
@@ -1337,7 +1369,9 @@ char* TõlgiMathMode(const char* expression)
             }
 
             free(käsuTagastus.Tekst);
-        } else {
+        }
+        else 
+        {
             // Handle regular characters
             char* single_char = my_strndup(&expression[i], 1);
             result = LiidaTekstid(result, single_char);

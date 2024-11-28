@@ -104,8 +104,8 @@ int main() {
     //loeConfigistKeskkonnad(config_path, &keskkonnaNimek);
 
     // Eraldame kasutaja defineeritud keskkonnad.
-    init_environment_list(&environList);
-    read_environments_from_config(config_path, &environList);   
+    //init_environment_list(&environList);
+    //read_environments_from_config(config_path, &environList);   
 
     // Debugimiseks:
     //print_environment_info(&environList.environments[0]);
@@ -400,6 +400,7 @@ int main() {
                 free(line);
             }
 
+
             // Close all files
             fclose(file);
             fclose(template_file);
@@ -414,7 +415,13 @@ int main() {
 
             // Free the template name memory
             free(template_name);
+            for (unsigned int i = 0; i< käskList.count; i++)
+            {
+                printf("Käsunimi: %s\n", käskList.käsud[i].käsunimi);
+
+            }
             free_käsk_list(&käskList);
+            puts("KOOD SIIN!!!!");
         }
         vanaSuurus = uusSuurus;
     }

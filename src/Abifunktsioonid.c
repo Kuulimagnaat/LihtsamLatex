@@ -116,3 +116,21 @@ long int findSize(char* file_name)
   
     return res; 
 } 
+
+
+
+// Funktsioon, mis leiab kui mitme tähe võrra erineb teine tekst esimesest tekstist.
+unsigned int MitmeTäheVõrraErineb(const char* tekst1, const char* tekst2)
+{
+    unsigned int loendur = 0;
+    for (unsigned int i = 0; i<strlen(tekst1); i++)
+    {
+        if (tekst1[i] != tekst2[i])
+        {
+            loendur += 1;
+        }
+    }
+    return loendur;
+}
+
+

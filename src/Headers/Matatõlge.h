@@ -25,7 +25,7 @@ struct Käsk
     const char* käsunimi;
     int* argumentideTüübid;
     const char** argumentideNimed;
-    const char* definitsioon;
+    char* definitsioon;
     unsigned int argumentideKogus;
 };
 
