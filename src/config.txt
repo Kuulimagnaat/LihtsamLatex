@@ -17,4 +17,4 @@ int -> \intg
 lim(uugh) -> \lim_{uugh}
 sin(kabuug) -> \sin{kabuug}
 
-env(testenv) [body] -> \begin{test} #content \end{test}
+env(testenv) [body, subcmds:{k}] -> \begin{test} #content \end{test} | (k(arg1) -> \textbf{arg1})
