@@ -8,6 +8,7 @@
 
 extern struct KäskList käskList;
 extern struct EnvironmentList environList;
+extern unsigned int reanumber;
 
 // Muutuja, mis hoiab endas seda infot, kui sügaval rekursiooniga ollakse. Võimaldab printida sügavusele vastavalt tühkuid debug sõnumite ette, et oleks kenam.
 unsigned int rekursiooniTase;
@@ -509,9 +510,7 @@ void init_käsk_list(struct KäskList* list) {
 void free_käsk_list(struct KäskList* list) {
     for (size_t i = 0; i < list->count; i++) {
         free((char*)list->käsud[i].käsunimi);
-        printf("%s\n", list->käsud[i].definitsioon);
         free((char*)list->käsud[i].definitsioon);
-        puts("KOOD SIIN!!!!");
         free(list->käsud[i].argumentideTüübid);
         for (unsigned int j = 0; j < list->käsud[i].argumentideKogus; j++) {
             free((char*)list->käsud[i].argumentideNimed[j]);
@@ -653,7 +652,7 @@ void read_commands_from_config(const char* filepath, struct KäskList* käsk_lis
         char* NooleAsuk = strstr(line, "->");
         if (NooleAsuk == NULL)
         {
-            fprintf(stderr, "Noolt ei leitud: %s\n", line);
+            //fprintf(stderr, "Noolt ei leitud: %s\n", line);
             free(line);
             continue;
         }
@@ -815,7 +814,7 @@ char* my_strndup(const char* s, size_t n) {
 
 
 // Kui TõlgiMathMode funktsioonis tajutakse, et kättejõudnud kohal on mingi käsk, siis seal kohas antakse selle koha aadress ja tajutud käsule vastav struct selele funtksiooile, et see saaks tõlkida seda kohta. 
-#define TõlgiKäskDebug 1
+#define TõlgiKäskDebug 0
 struct TekstArv TõlgiKäsk(const char* tekst, struct Käsk* käsk)
 {
     #if TõlgiKäskDebug == 1
@@ -840,7 +839,6 @@ struct TekstArv TõlgiKäsk(const char* tekst, struct Käsk* käsk)
     {
         //puts("Kood jõudis siia!");
         char* argument = NULL;
-        printf("Argumentide tüüp: %d", käsk->argumentideTüübid[j]);
         if (käsk->argumentideTüübid[j] == 0)
         {
             //puts("Kood jõudis siia");
@@ -870,8 +868,6 @@ struct TekstArv TõlgiKäsk(const char* tekst, struct Käsk* käsk)
         unsigned int j=0;
         for (; j < käsk->argumentideKogus; j++)
         {
-            puts(&(käsk->definitsioon[i]));
-            puts(käsk->argumentideNimed[j]);
             if (KasEsimesedTähed(&(käsk->definitsioon[i]), käsk->argumentideNimed[j]))
             {
                 tõlge = LiidaTekstid(tõlge, argumentideTõlked[j]);
@@ -900,7 +896,7 @@ struct TekstArv TõlgiKäsk(const char* tekst, struct Käsk* käsk)
     #if TõlgiKäskDebug == 1
     rekursiooniTase -= 1;
     prindiTaane();
-    printf("VÄLJA: %d, %s", tagastus.Arv, tagastus.Tekst );
+    printf("VÄLJA: %d, %s\n", tagastus.Arv, tagastus.Tekst );
     #endif
     return tagastus;
 }
@@ -1227,7 +1223,7 @@ void print_environment_info(struct Environment* env) {
 
 
 // Funkstioon uurib kas tegu on käsuga. Tagastab vastava käsu structi mäluaadressi kui on käsk ja NULL, kui ei ole käsk.
-#define KasKäskDebug 1
+#define KasKäskDebug 0
 struct Käsk* KasKäsk(const char* tekst)
 {
     #if KasKäskDebug == 1
@@ -1279,22 +1275,27 @@ char* TõlgiMathMode(const char* expression)
     int i = 0;
     while (i < strlen(expression))
     {
-        for (unsigned int i = 0 ; i<käskList.count; i++)
+        /*
+        for (unsigned int j = 0 ; j<käskList.count; j++)
         {
             // Ei lasta tähtede erinevusi kontrollida, kui käsolev käsk on ainult 1 v kahe tähe pikkune. Nende puhul on ühetäheline erinevus liiga tõenäoline.
-            if (strlen(käskList.käsud[i].käsunimi)<= 2)
+            if (strlen(käskList.käsud[j].käsunimi)<= 2)
             {
                 continue;
             }
-            if (MitmeTäheVõrraErineb(käskList.käsud[i].käsunimi, &expression[i]) == 1)
+            if (MitmeTäheVõrraErineb(käskList.käsud[j].käsunimi, &expression[i]) == 1 && KasKäsk(&expression[i]) == 0)
             {
-                printf("Leiti ainult ühe täheline erinevus. Käsk: %s, leitud koht: ", käskList.käsud[i].käsunimi);
-                for (unsigned int i = 0; i<strlen(käskList.käsud[i].käsunimi); i++)
+                prindiTaane();
+                printf("Rida %d\n", reanumber);
+                printf("Leiti ainult ühe täheline erinevus. Käsk: %s, leitud koht: ", käskList.käsud[j].käsunimi);
+                for (unsigned int k = 0; k<strlen(käskList.käsud[j].käsunimi); k++)
                 {
-                    printf("%c", expression[i]);
+                    printf("%c", expression[i+k]);
                 }
+                printf("\n");
             }
         }
+        */
 
 
         // Check for a number or variable
@@ -1373,7 +1374,6 @@ char* TõlgiMathMode(const char* expression)
 
 
         struct Käsk* käsk = KasKäsk(&expression[i]);
-        printf("KÄSU AADRES: %p\n", käsk);
         if (käsk != NULL)
         {
             struct TekstArv käsuTagastus = TõlgiKäsk(&expression[i], käsk);
@@ -1523,7 +1523,7 @@ struct LimiTagastus TõlgiLim(char* tekst)
 
 
 
-#define LeiaNimetajaDebug 1
+#define LeiaNimetajaDebug 0
 char* LeiaNimetaja(const char* tekst) // sin(x)/sin(x + 4)abc     va(4 sin(x)x)/sin(x + 4)abc
 {
     #if LeiaNimetajaDebug == 1
@@ -1564,7 +1564,7 @@ char* LeiaNimetaja(const char* tekst) // sin(x)/sin(x + 4)abc     va(4 sin(x)x)/
 
 
 
-#define LeiaLugejaDebug 1
+#define LeiaLugejaDebug 0
 char* LeiaLugeja(const char* tekst)
 {
     #if LeiaLugejaDebug == 1
@@ -1601,7 +1601,7 @@ char* LeiaLugeja(const char* tekst)
 
 
 
-#define KasLugejaDebug 1
+#define KasLugejaDebug 0
 int KasLugeja(const char* tekst) // nin(x)/sin(x + 4)abc     va(4 sin(x)x)/sin(x + 4)abc
 {
     #if KasLugejaDebug == 1

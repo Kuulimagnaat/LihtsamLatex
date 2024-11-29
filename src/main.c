@@ -10,6 +10,7 @@
 
 struct KäskList käskList;
 struct EnvironmentList environList;
+unsigned int reanumber = 1;
 
 //struct KeskkonnaNimekiri keskkonnaNimek;
 
@@ -263,6 +264,7 @@ int main() {
                     unsigned int onJubaMathMode = 0;
                     while ((line = read_line(file)) != NULL)
                     {
+                        printf("rida %d: %s\n", reanumber, line);
                         /* CHECK IF ENVIRONMENT STARTS ON THIS LINE */
                         struct Environment* env = KasEnvironment(line);
                         if (env) {
@@ -395,6 +397,8 @@ int main() {
                                 fprintf(output_file, "%s", "\n");
                             }
                         }
+                        // puts("Reanumbrit kasvatati.");
+                        reanumber += 1;
                     }
                 }
                 else {
@@ -419,13 +423,8 @@ int main() {
 
             // Free the template name memory
             free(template_name);
-            for (unsigned int i = 0; i< käskList.count; i++)
-            {
-                printf("Käsunimi: %s\n", käskList.käsud[i].käsunimi);
 
-            }
             free_käsk_list(&käskList);
-            puts("KOOD SIIN!!!!");
         }
         vanaSuurus = uusSuurus;
     }

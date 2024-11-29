@@ -8,8 +8,8 @@ struct EnvironmentList environList;
 int main() {
     SetConsoleOutputCP(CP_UTF8);
     
-    char* tulemus = trim_whitespace("  Uuga buuga   ");
-    printf("\"%s\"", tulemus);
+    int tulemus = MitmeTäheVõrraErineb("lim", "liaxtoinf");
+    printf("%d", tulemus);
 
     return 0;
 }
