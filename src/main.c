@@ -64,6 +64,8 @@ char* get_template_name(const char* config_path) {
     return template_name;
 }
 
+    // ...\luuga\duuga\kasutajafailinimi.txt
+    char main_path[MAX_PATH_LENGTH];
 
 
 int main() {
@@ -79,8 +81,6 @@ int main() {
     char config_path[MAX_PATH_LENGTH];
     // ...\uuga\buuga\src\templatefailinimi.txt
     char template_path[MAX_PATH_LENGTH];
-    // ...\luuga\duuga\kasutajafailinimi.txt
-    char main_path[MAX_PATH_LENGTH];
 
 
     // Get the current working directory for main.txt. Seda asukohta on vaja selleks, et sellel aadressil asuvat kasutaja kirjutatavat lähtekoodifaili avada.
@@ -102,17 +102,9 @@ int main() {
         *last_backslash = '\0';  // Cut the path at the last backslash
     }
 
-    // Koostatakse programmi exe faili aadressi abil aadress, kus asub config.txt. Seejärel sealt eraldatakse kasutaja defineeritud käsud, mida hakatakse hoidma KäskListi objektis.
+    // Koostatakse programmi exe faili aadressi abil aadress, kus asub config.txt. 
     snprintf(config_path, sizeof(config_path), "%s\\src\\config.txt", exe_dir);
 
-
-    init_käsk_list(&käskList);
-    read_commands_from_config(config_path, &käskList);
-    //loeConfigistKeskkonnad(config_path, &keskkonnaNimek);
-
-    // Eraldame kasutaja defineeritud keskkonnad.
-    //init_environment_list(&environList);
-    //read_environments_from_config(config_path, &environList);   
 
     // Debugimiseks:
     //print_environment_info(&environList.environments[0]);
@@ -127,18 +119,9 @@ int main() {
     // Construct full path to the template file in the templates folder
     snprintf(template_path, sizeof(template_path), "%s\\templates\\%s.txt", exe_dir, template_name);
 
-    // Open the specified template file
-    FILE* template_file = fopen(template_path, "r");
-    if (template_file == NULL) {
-        fprintf(stderr, "Unable to open template file: %s\n", template_path);
-        free(template_name);
-        return EXIT_FAILURE;
-    }
-
     // Otsitakse funktsiooni abil working directoryst esimene tekstifail, mis on see, kust loetakse kasutaja krijtuatud latexiks tõlgitavat teksti.
     char main_txt_file[MAX_PATH_LENGTH];
     if (!find_first_txt_file(main_txt_file)) {
-        fclose(template_file);
         free(template_name);
         return EXIT_FAILURE;
     }
@@ -148,7 +131,7 @@ int main() {
 
 
     long int vanaSuurus = 0;
-    long int uusSuurus = findSize(main_path);
+    long int uusSuurus = 0;
     while (1)
     {
         Sleep(300);

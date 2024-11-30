@@ -1255,8 +1255,7 @@ struct Käsk* KasKäsk(const char* tekst)
     return NULL;
 }
 
-
-
+extern char main_path[256];
 // Rekursiivselt tõlgime math moodi latexisse. Funktsionn võtab sisse teksti, mida hakata tõlkima ja nimekirja nendest käskudest, mida funktsioon saab tõlkimiseks kasutada.
 #define TõlgiMathModeDebug 1
 char* TõlgiMathMode(const char* expression)
@@ -1269,13 +1268,15 @@ char* TõlgiMathMode(const char* expression)
     rekursiooniTase += 1;
     #endif
 
+    printf("Main_path tõlgimathmodes: %s\n", main_path);
+
     char* result = malloc(1); // Empty string
     result[0] = '\0';
 
     int i = 0;
     while (i < strlen(expression))
     {
-        /*
+        
         for (unsigned int j = 0 ; j<käskList.count; j++)
         {
             // Ei lasta tähtede erinevusi kontrollida, kui käsolev käsk on ainult 1 v kahe tähe pikkune. Nende puhul on ühetäheline erinevus liiga tõenäoline.
@@ -1293,9 +1294,23 @@ char* TõlgiMathMode(const char* expression)
                     printf("%c", expression[i+k]);
                 }
                 printf("\n");
+
+
+
+                // Open the input .txt file for reading
+                FILE* file = fopen(main_path, "r");
+                if (file == NULL) 
+                {
+                    perror("Unable to open the main .txt file in the current directory");
+                }
+                char* line; // Pointer for the line
+                while ((line = read_line(file)) != NULL)
+                {
+                    printf("Rida tõlgimathmodest: %s\n", line);
+                }
             }
         }
-        */
+        
 
 
         // Check for a number or variable
