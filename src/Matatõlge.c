@@ -5,10 +5,11 @@
 #include <math.h>
 #include <ctype.h>
 #include "Headers/Abifunktsioonid.h"
+#include "Windows.h"
 
 extern struct KäskList käskList;
 extern struct EnvironmentList environList;
-extern unsigned int reanumber;
+extern int reanumber;
 
 // Muutuja, mis hoiab endas seda infot, kui sügaval rekursiooniga ollakse. Võimaldab printida sügavusele vastavalt tühkuid debug sõnumite ette, et oleks kenam.
 unsigned int rekursiooniTase;
@@ -22,6 +23,28 @@ void prindiTaane()
         printf(" ");
     } 
 }
+
+
+void prindiVärviga(char* tekst, char* värv)
+{
+    HANDLE hStdout = GetStdHandle(STD_OUTPUT_HANDLE);
+    DWORD dwMode = 0;
+    GetConsoleMode(hStdout, &dwMode);
+    dwMode |= ENABLE_VIRTUAL_TERMINAL_PROCESSING;
+    SetConsoleMode(hStdout, dwMode);
+    if (värv == "roheline")
+    {
+        printf("\033[1;32m");
+        printf("%s", tekst);
+    }
+    else if (värv == "punane")
+    {
+        printf("\033[31m");
+        printf("%s", tekst);
+    }
+    printf("\033[0m");
+}
+
 
 /* ENVIRONMENT ASJAD */
 // Function to extract a substring between two delimiters.
@@ -1257,7 +1280,7 @@ struct Käsk* KasKäsk(const char* tekst)
 
 extern char main_path[256];
 // Rekursiivselt tõlgime math moodi latexisse. Funktsionn võtab sisse teksti, mida hakata tõlkima ja nimekirja nendest käskudest, mida funktsioon saab tõlkimiseks kasutada.
-#define TõlgiMathModeDebug 1
+#define TõlgiMathModeDebug 0
 char* TõlgiMathMode(const char* expression)
 {
     #if TõlgiMathModeDebug == 1
@@ -1268,7 +1291,7 @@ char* TõlgiMathMode(const char* expression)
     rekursiooniTase += 1;
     #endif
 
-    printf("Main_path tõlgimathmodes: %s\n", main_path);
+    //printf("Main_path tõlgimathmodes: %s\n", main_path);
 
     char* result = malloc(1); // Empty string
     result[0] = '\0';
@@ -1287,27 +1310,40 @@ char* TõlgiMathMode(const char* expression)
             if (MitmeTäheVõrraErineb(käskList.käsud[j].käsunimi, &expression[i]) == 1 && KasKäsk(&expression[i]) == 0)
             {
                 prindiTaane();
-                printf("Rida %d\n", reanumber);
-                printf("Leiti ainult ühe täheline erinevus. Käsk: %s, leitud koht: ", käskList.käsud[j].käsunimi);
-                for (unsigned int k = 0; k<strlen(käskList.käsud[j].käsunimi); k++)
-                {
-                    printf("%c", expression[i+k]);
-                }
-                printf("\n");
+                unsigned int veapikkus = strlen(käskList.käsud[j].käsunimi);
+                char* viga = malloc(veapikkus+1);
+                strncpy(viga, &expression[i], veapikkus);
+                
+                printf("\nLeiti ainult ühe täheline erinevus.\nArvatatav viga: %s, mida tõenäoliselt mõeldi: %s.\n", viga ,käskList.käsud[j].käsunimi);
 
-
-
-                // Open the input .txt file for reading
+                int mituRidaEtte = 1; 
+                int mituRidaTaha = 1; 
                 FILE* file = fopen(main_path, "r");
-                if (file == NULL) 
+                char* line;
+                for (int k = 0; k<=reanumber+mituRidaTaha-1; k++)
                 {
-                    perror("Unable to open the main .txt file in the current directory");
+                    line = read_line(file);
+                    if (k >= reanumber-1-mituRidaEtte)
+                    {
+                        // Kui on veaga rida
+                        if (k == reanumber-1)
+                        {
+                            char* enneViga = LeiaTekstEnneTeksti(line, viga);
+                            printf("  %d: ", k+1);
+                            printf(enneViga);
+                            prindiVärviga(viga, "punane");
+                            printf(&line[strlen(enneViga)+veapikkus]);
+                            printf("\n");
+                            free(enneViga);
+                        }
+                        // Eelnevate ja järgnevate ridade printimine on ilma mingi vormistuseta ns.
+                        else
+                        {
+                            printf("  %d: %s\n", k+1, line);
+                        }
+                    }
                 }
-                char* line; // Pointer for the line
-                while ((line = read_line(file)) != NULL)
-                {
-                    printf("Rida tõlgimathmodest: %s\n", line);
-                }
+                puts("");
             }
         }
         

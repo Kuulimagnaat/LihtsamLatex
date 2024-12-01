@@ -10,7 +10,7 @@
 
 struct KäskList käskList;
 struct EnvironmentList environList;
-unsigned int reanumber = 1;
+int reanumber = 1;
 
 //struct KeskkonnaNimekiri keskkonnaNimek;
 
@@ -211,7 +211,6 @@ int main() {
                     unsigned int onJubaMathMode = 0;
                     while ((line = read_line(file)) != NULL)
                     {
-                        printf("rida %d: %s\n", reanumber, line);
                         /* CHECK IF ENVIRONMENT STARTS ON THIS LINE */
                         struct Environment* env = KasEnvironment(line);
                         if (env) {
