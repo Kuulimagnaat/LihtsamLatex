@@ -837,7 +837,7 @@ char* my_strndup(const char* s, size_t n) {
 
 
 // Kui TõlgiMathMode funktsioonis tajutakse, et kättejõudnud kohal on mingi käsk, siis seal kohas antakse selle koha aadress ja tajutud käsule vastav struct selele funtksiooile, et see saaks tõlkida seda kohta. 
-#define TõlgiKäskDebug 0
+#define TõlgiKäskDebug 1
 struct TekstArv TõlgiKäsk(const char* tekst, struct Käsk* käsk)
 {
     #if TõlgiKäskDebug == 1
@@ -1280,7 +1280,7 @@ struct Käsk* KasKäsk(const char* tekst)
 
 extern char main_path[256];
 // Rekursiivselt tõlgime math moodi latexisse. Funktsionn võtab sisse teksti, mida hakata tõlkima ja nimekirja nendest käskudest, mida funktsioon saab tõlkimiseks kasutada.
-#define TõlgiMathModeDebug 0
+#define TõlgiMathModeDebug 1
 char* TõlgiMathMode(const char* expression)
 {
     #if TõlgiMathModeDebug == 1
@@ -1418,12 +1418,8 @@ char* TõlgiMathMode(const char* expression)
             continue;
         }
 
-        // Check for known commands in one go
-        int func_index = -1;
-        int func_len = 0;
-        int is_replacement = 0; // Flag to check if it's a replacement command
 
-
+        // Check for known commands
         struct Käsk* käsk = KasKäsk(&expression[i]);
         if (käsk != NULL)
         {
@@ -1431,32 +1427,9 @@ char* TõlgiMathMode(const char* expression)
             result = LiidaTekstid(result, käsuTagastus.Tekst);
             i += käsuTagastus.Arv;
 
-            if (expression[i] == '(')
-            {
-                int start = i + 1;
-                int paren_count = 1;
-                i++;
-
-                while (expression[i] != '\0' && paren_count > 0)
-                {
-                    if (expression[i] == '(') paren_count++;
-                    else if (expression[i] == ')') paren_count--;
-                    i++;
-                }
-
-                // Process inner expression recursively
-                char* inner_expression = my_strndup(&expression[start], i - start - 1);
-                char* inner_latex = TõlgiMathMode(inner_expression);
-
-                result = LiidaTekstid(result, inner_latex);
-                result = append_str(result, "\\right)");
-
-                free(inner_expression);
-                free(inner_latex);
-            }
-
             free(käsuTagastus.Tekst);
         }
+
         else 
         {
             // Handle regular characters
@@ -1615,7 +1588,7 @@ char* LeiaNimetaja(const char* tekst) // sin(x)/sin(x + 4)abc     va(4 sin(x)x)/
 
 
 
-#define LeiaLugejaDebug 0
+#define LeiaLugejaDebug 1
 char* LeiaLugeja(const char* tekst)
 {
     #if LeiaLugejaDebug == 1
@@ -1652,7 +1625,7 @@ char* LeiaLugeja(const char* tekst)
 
 
 
-#define KasLugejaDebug 0
+#define KasLugejaDebug 1
 int KasLugeja(const char* tekst) // nin(x)/sin(x + 4)abc     va(4 sin(x)x)/sin(x + 4)abc
 {
     #if KasLugejaDebug == 1
@@ -1688,7 +1661,9 @@ int KasLugeja(const char* tekst) // nin(x)/sin(x + 4)abc     va(4 sin(x)x)/sin(x
             unsigned int pikkus = strlen(sulusisu);
             free(sulusisu);
             i += pikkus+2;
-        } else {
+        }
+        else
+        {
             i++;
         }
     }
