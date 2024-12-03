@@ -43,6 +43,7 @@ struct Environment {
     struct KäskList käsk_list; // List of Käsk structs associated with the environment
     int body;                //If the environment has a body field
     int nest;                //If the environment has a nest field
+    int multiline;
     const char *beginDefine; // Content inside the \begin{}
     const char *endDefine;   // Content inside the \end{}
     const char *Content;     // Everything from \begin{} to \end{} (including)

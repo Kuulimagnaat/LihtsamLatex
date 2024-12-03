@@ -95,6 +95,8 @@ void parse_flags_in_brackets(const char* config_line, struct Environment* env) {
                 env->body = 1;
             } else if (strcmp(token, "nest") == 0) {
                 env->nest = 1;
+            } else if (strcmp(token, "multiline") == 0) {
+                env->multiline = 1;
             } else if (strncmp(token, "end:{", 5) == 0) {
                 // Extract the value inside end:{...}
                 const char* end_start = strchr(token, '{');
@@ -117,6 +119,7 @@ void parse_flags_in_brackets(const char* config_line, struct Environment* env) {
         // If no square brackets, keep default values (both flags are 0)
         env->body = 0;
         env->nest = 0;
+        env->multiline = 0;
         env->endText = NULL;
     }
 }
@@ -307,6 +310,7 @@ void init_environment(struct Environment* env) {
     env->name = "DEFAULT (NAMING FAILED)"; // Set the environment name
     env->body = 0;
     env->nest = 0;
+    env->multiline = 0;
     env->beginDefine = NULL;
     env->endDefine = NULL;
     env->Content = NULL;

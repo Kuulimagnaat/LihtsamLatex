@@ -1,9 +1,15 @@
+Idee mõtleja, dokumendi kirjastus: Sven
+
 Kasutatavad flagid:
 body	                        The environment allows freeform content to be given aka no commands on some lines. If freeform content is given (aka no subcommand is used) and the environment doesnt support it, then an error should be given.
 args:N                          The environment OR subcommand takes N arguments. Can also be specified in terms of brackets (x)(y) for some n amount, in which case it searches for the given argument names "x", "y" to be replaced. Argument names default to arg1, arg2, .... if given as args:N.
 subcmds:{X, Y, ...}	            The environment includes subcommands.
 nest	                        The environment allows nesting of other environments or itself.
-end:{Z}                           The text to search for, when ending the environment in our code.
+multiline                       The environment allows for multiline usage of its subcommands.
+
+Mandatory flags:
+end:{Z}                         The text to search for, when ending the environment in our code.
+
 
 Fancy Customizability Flags (FCF):
 pre:X                           Takes in some latex command and inserts it before the \begin declaration of the environment.
