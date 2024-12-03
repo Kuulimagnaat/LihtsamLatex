@@ -752,11 +752,11 @@ void read_commands_from_config(const char* filepath, struct KäskList* käsk_lis
                     
                     if (left[i] == '(')
                     {
-                        käsk.argumentideTüübid[käsk.argumentideKogus-1] = 0;
+                        käsk.argumentideTüübid[käsk.argumentideKogus-1] = 1;
                     }
                     else if (left[i] == '[')
                     {
-                        käsk.argumentideTüübid[käsk.argumentideKogus-1] = 1;
+                        käsk.argumentideTüübid[käsk.argumentideKogus-1] = 0;
                     }
                     i += strlen(argument);
                 }
@@ -892,13 +892,15 @@ struct TekstArv TõlgiKäsk(const char* tekst, struct Käsk* käsk)
         {
             //puts("Kood jõudis siia");
             argument = LeiaLühemArgument(&tekst[i]);
+            i += strlen(argument);
         }
         else if (käsk->argumentideTüübid[j] == 1)
         {
             argument = LeiaArgument(&tekst[i]);
+            i += strlen(argument)+1;
         }
         argumentideTõlked[j] = TõlgiMathMode(argument);
-        i += strlen(argument)+1;
+        
         free(argument);
     }
 
@@ -1283,12 +1285,13 @@ void print_environment_info(struct Environment* env) {
 
 
 // Funkstioon uurib kas tegu on käsuga. Tagastab vastava käsu structi mäluaadressi kui on käsk ja NULL, kui ei ole käsk.
-#define KasKäskDebug 0
+#define KasKäskDebug 1
 struct Käsk* KasKäsk(const char* tekst)
 {
     #if KasKäskDebug == 1
     prindiTaane();
-    printf("KasKäsk\n");
+    prindiVärviga("KasKäsk\n", "roheline");
+    //printf("KasKäsk\n");
     prindiTaane();
     printf("SISSE: %s\n", tekst);
     rekursiooniTase += 1;
@@ -1318,6 +1321,7 @@ struct Käsk* KasKäsk(const char* tekst)
 extern char main_path[256];
 // Rekursiivselt tõlgime math moodi latexisse. Funktsionn võtab sisse teksti, mida hakata tõlkima ja nimekirja nendest käskudest, mida funktsioon saab tõlkimiseks kasutada.
 #define TõlgiMathModeDebug 1
+#define VigadestTeatamine 0
 char* TõlgiMathMode(const char* expression)
 {
     #if TõlgiMathModeDebug == 1
@@ -1336,7 +1340,7 @@ char* TõlgiMathMode(const char* expression)
     int i = 0;
     while (i < strlen(expression))
     {
-
+        #if VigadestTeatamine == 1
         for (unsigned int j = 0 ; j<käskList.count; j++)
         {
             // Ei lasta tähtede erinevusi kontrollida, kui käsolev käsk on ainult 1 v kahe tähe pikkune. Nende puhul on ühetäheline erinevus liiga tõenäoline.
@@ -1383,7 +1387,7 @@ char* TõlgiMathMode(const char* expression)
                 puts("");
             }
         }
-        
+        #endif
 
 
         // Kontrollib kas tegu on lugejaga.
@@ -1446,8 +1450,6 @@ char* TõlgiMathMode(const char* expression)
             result = LiidaTekstid(result, "\\right)");
             i+=1;
         }
-
-
         if (expression[i] == '[')
         {
             result = LiidaTekstid(result, "\\left[");
@@ -1465,7 +1467,6 @@ char* TõlgiMathMode(const char* expression)
             result = LiidaTekstid(result, "\\right]");
             i+=1;
         }
-
         if (expression[i] == '{')
         {
             result = LiidaTekstid(result, "\\left\\{");
@@ -1772,12 +1773,15 @@ int KasLugeja(const char* tekst) // nin(x)/sin(x + 4)abc     va(4 sin(x)x)/sin(x
 
 
 // Argumendi võtmine käib nii, et tagastatakse tekst enne esimest tühikut välja arvatud juhul kui see tühik on mingite sulgude sees. See ei ole aga ainus viis argumenti võtta, sest näitekst astmed tahavad veidi teistsugust argumendivõtmist. Teksti ax^2+bx+c peab tõlgendama nii, et ax^(2)+bx+c, mitte ax^(2+bx+c) nagu esimene variant tõlgendaks. Seega on olemas kaks argumendivõtmise funtksiooni. Üks on tavaline LeiaArgument, teine on LeiaLühemArgument selline, mis lõpetab argumendivõtu mitte ainult tühiku peale vaid ka tehete +-* peale. Jagamismärki selles nimekirjas pole, sest jagamise argumendid selgitatakse välja enne astmete omi, mistõttu jagamismärki ei tule kunagi astme argumendi otsimisel ette.
-#define LeiaArgumentDebug 0
+#define LeiaArgumentDebug 1
 char* LeiaArgument(const char* tekst)
 {
     #if LeiaArgumentDebug == 1
-    printf("LeiaArgument\n");
-    printf("  SISSE: %s\n", tekst);
+    prindiTaane();
+    prindiVärviga("LeiaArgument\n", "roheline");
+    prindiTaane();
+    printf("SISSE: %s\n", tekst);
+    rekursiooniTase += 1;
     #endif
     for (unsigned int i=0; ; )
     {
@@ -1794,8 +1798,11 @@ char* LeiaArgument(const char* tekst)
             memcpy(argument, tekst, i);
             argument[i]='\0';
 
+
             #if LeiaArgumentDebug == 1
-            printf("  VÄLJA: %s\n", argument);
+            rekursiooniTase-=1;
+            prindiTaane();
+            printf("VÄLJA: %s\n", argument);
             #endif
             return argument;
         }
@@ -1804,12 +1811,15 @@ char* LeiaArgument(const char* tekst)
 }
 
 // Identne eelmise funktsooniga, lic argumendi võtmise lõpetamise tingimusi on rohkem.
-#define LeiaLühemArgumentDebug 0
+#define LeiaLühemArgumentDebug 1
 char* LeiaLühemArgument(const char* tekst)
 {
     #if LeiaLühemArgumentDebug == 1
-    printf("LeiaLühemArgument\n");
-    printf("  SISSE: %s\n", tekst);
+    prindiTaane();
+    prindiVärviga("LeiaLühemArgument\n", "roheline");
+    prindiTaane();
+    printf("SISSE: %s\n", tekst);
+    rekursiooniTase += 1;
     #endif
     for (unsigned int i=0; ; )
     {
@@ -1820,14 +1830,16 @@ char* LeiaLühemArgument(const char* tekst)
             free(sulusisu);
             continue;
         }
-        if  (tekst[i] == '+' || tekst[i] == '-' || tekst[i] == '*' || tekst[i] == ' ' || tekst[i]=='\0')
+        if  (tekst[i] == '+' || tekst[i] == '-' || tekst[i] == '*' || tekst[i] == ' ' || tekst[i] == '=' || tekst[i]=='\0')
         {
             char* argument = malloc(i+1);
             memcpy(argument, tekst, i);
             argument[i]='\0';
 
             #if LeiaLühemArgumentDebug == 1
-            printf("  VÄLJA: %s\n", argument);
+            rekursiooniTase-=1;
+            prindiTaane();
+            printf("VÄLJA: %s\n", argument);
             #endif
             return argument;
         }

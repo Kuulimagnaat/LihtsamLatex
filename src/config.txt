@@ -1,22 +1,19 @@
-fracTüüp = SVEN
 template = KAAREL
 
-minufunc[a1][bee](a5)[uuga](a7) -> \frac{\lim_{a1\to\infty}f(bee)}{a5\cdot uuga}+a7
+^[lmao] -> ^{lmao}
 to -> \to
 inf -> \infty
 alfa -> \alpha
 epsilon -> \varepsilon
 delta -> \delta
-^[lmao] -> ^{lmao}
-osah -> \subset
-rr -> \mathbb R
+RR -> \mathbb R
 sqrt(asd) -> \sqrt{asd}
 kord -> \cdot
-ffg(arg1)(uuga)(coop) -> \int_{0}^{\int_{arg1}^{uuga}}\frac1{coop}
 int -> \int
 lim(uugh) -> \lim_{uugh}
 sin(kabuug) -> \sin{kabuug}
 sum(al)(ül) -> \sum_{al}^{ül}
 pi -> \pi
+in -> \in
 
 env(enum) [body, subcmds:{it}] -> \begin{enumerate} #content \end{enumerate} | (it(arg1) -> \item arg1)
