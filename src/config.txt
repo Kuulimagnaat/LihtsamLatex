@@ -18,4 +18,4 @@ in -> \in
 tilde(täht) -> \tilde{täht}
 vahe -> \quad
 
-env(testenv) [body, subcmds:{k}] -> \begin{test} #content \end{test} | (k(arg1) -> \textbf{arg1})
+env(enum) [body, subcmds:{it}] -> \begin{enumerate} #content \end{enumerate} | (it(arg1) -> \item arg1)

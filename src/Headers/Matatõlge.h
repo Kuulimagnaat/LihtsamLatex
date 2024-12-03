@@ -56,7 +56,7 @@ struct EnvironmentList {
 };
 
 struct Käsk* KasKäsk(const char* tekst);
-struct TekstArv TõlgiEnvironment(const struct Environment* env, FILE* input);
+int TõlgiEnvironment(const struct Environment* env, FILE* input, FILE* output_file);
 
 void print_environment_info(struct Environment* env);
 
@@ -102,7 +102,7 @@ struct KeskkonnaNimekiri
 
 
 void read_commands_from_config(const char* filepath, struct KäskList* käsk_list);
-void add_käsk(struct KäskList* list, struct Käsk käsk);
+void add_käsk(struct KäskList* list, struct Käsk subcommand);
 void free_käsk_list(struct KäskList* list);
 void init_käsk_list(struct KäskList* list);
 char* read_line(FILE* file);

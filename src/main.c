@@ -166,6 +166,8 @@ int main() {
             init_käsk_list(&käskList);
             read_commands_from_config(config_path, &käskList);
 
+            init_environment_list(&environList);
+            read_environments_from_config(config_path, &environList);
 
             // config.txt failist eraldatakse template faili nimi, millest koostatakse aadress, mis viitab soovitavale template failile.
             char* template_name = get_template_name(config_path);
@@ -226,6 +228,7 @@ int main() {
             }
 
             char* line; // Pointer for the line
+            int skip_lines = 0;
             while ((line = read_line(template_file)) != NULL) {
                 // Check if the line contains a placeholder for content
                 if (strcmp(line, "{{content}}") == 0) {
@@ -235,14 +238,25 @@ int main() {
                     unsigned int onJubaMathMode = 0;
                     while ((line = read_line(file)) != NULL)
                     {
-                        /* CHECK IF ENVIRONMENT STARTS ON THIS LINE */
-                        struct Environment* env = KasEnvironment(line);
-                        if (env) {
-                            printf("Detected Environment: %s\n", env->name);
-                            TõlgiEnvironment(env, file);
+                        if (skip_lines > 0) {
+                            // Manually skip the remaining lines
+                            puts("skipped a line");
+                            skip_lines--;
+                            continue;
                         }
 
+                        /* CHECK IF ENVIRONMENT STARTS ON THIS LINE */
+                        
+                        struct Environment* env = KasEnvironment(line);
+                        
+                        if (env) {
+                            printf("Detected Environment: %s\n", env->name);
+                            skip_lines = TõlgiEnvironment(env, file, output_file) - 1;
+                            puts("parsed environment too");
+                            continue;
+                        }
 
+                        puts("jätkame lugemisega");
                         if (!onJubaMathMode) 
                         {
                             peabOlemaInlineMath = 0;
@@ -393,7 +407,8 @@ int main() {
 
             // Free the template name memory
             free(template_name);
-
+            
+            free_environment_list(&environList);
             free_käsk_list(&käskList);
         }
     }
