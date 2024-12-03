@@ -15,5 +15,7 @@ sin(kabuug) -> \sin{kabuug}
 sum(al)(ül) -> \sum_{al}^{ül}
 pi -> \pi
 in -> \in
+tilde(täht) -> \tilde{täht}
+vahe -> \quad
 
 env(testenv) [body, subcmds:{k}] -> \begin{test} #content \end{test} | (k(arg1) -> \textbf{arg1})
