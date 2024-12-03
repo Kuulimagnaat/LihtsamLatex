@@ -14,13 +14,17 @@ extern int reanumber;
 // Muutuja, mis hoiab endas seda infot, kui sügaval rekursiooniga ollakse. Võimaldab printida sügavusele vastavalt tühkuid debug sõnumite ette, et oleks kenam.
 unsigned int rekursiooniTase;
 // See kui mitu tühikut on taande pikkus.
-unsigned int taandePikkus = 3;
+unsigned int taandePikkus = 4;
 
 void prindiTaane()
 {
-    for (unsigned int i = 0; i<rekursiooniTase*taandePikkus; i++)
+    for (unsigned int i = 0; i<rekursiooniTase; i++)
     {
-        printf(" ");
+        printf("|");
+        for(unsigned int j = 0; j<taandePikkus-1; j++)
+        {
+            printf(" ");
+        }
     } 
 }
 
@@ -1417,7 +1421,17 @@ char* TõlgiMathMode(const char* expression)
             }
 
             char* lugejaTõlge = TõlgiMathMode(sulgudetaLugeja);
-            char* nimetaja = LeiaNimetaja(&expression[i + strlen(lugeja) + 1]);
+            char* nimetaja = LeiaArgument(&expression[i + strlen(lugeja) + 1]);
+            
+            i += strlen(nimetaja);
+            if (KasAvaldiseÜmberOnSulud(nimetaja))
+            {
+                char* sulgudeta = EemaldaEsimeneViimane(nimetaja);
+                puts("SULGUDETA!");
+                puts(sulgudeta);
+                free(nimetaja);
+                nimetaja = sulgudeta;
+            }
             char* nimetajaTõlge = TõlgiMathMode(nimetaja);
 
             result = LiidaTekstid(result, "\\frac{");
@@ -1427,7 +1441,7 @@ char* TõlgiMathMode(const char* expression)
             result = LiidaTekstid(result, "}");
 
             // Update the index
-            i += strlen(lugeja) + 1 + strlen(nimetaja);
+            i += strlen(lugeja) + 1;
 
             // Free memory to prevent leaks
             free(lugeja);
