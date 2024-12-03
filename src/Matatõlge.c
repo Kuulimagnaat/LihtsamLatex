@@ -1299,7 +1299,7 @@ char* TõlgiMathMode(const char* expression)
     int i = 0;
     while (i < strlen(expression))
     {
-        
+
         for (unsigned int j = 0 ; j<käskList.count; j++)
         {
             // Ei lasta tähtede erinevusi kontrollida, kui käsolev käsk on ainult 1 v kahe tähe pikkune. Nende puhul on ühetäheline erinevus liiga tõenäoline.
@@ -1349,7 +1349,7 @@ char* TõlgiMathMode(const char* expression)
         
 
 
-        // Check for a number or variable
+        // Kontrollib kas tegu on lugejaga.
         if (KasLugeja(&expression[i]) == 1) {
             char* lugeja = LeiaLugeja(&expression[i]);
             int lugejaOnSulgudeta = 1;
@@ -1390,6 +1390,26 @@ char* TõlgiMathMode(const char* expression)
             free(nimetajaTõlge);
             continue;
         }
+
+
+        if (expression[i] == '(')
+        {
+            result = LiidaTekstid(result, "\\left(");
+            i += 1;
+
+            char* suluSisu = LeiaSuluSisu(&expression[i]);
+            i += strlen(suluSisu);
+
+            char* suluSisuTõlge = TõlgiMathMode(suluSisu);
+            free(suluSisu);
+            
+            result = LiidaTekstid(result, suluSisuTõlge);
+            free(suluSisuTõlge);
+
+            result = LiidaTekstid(result, "\\right)");
+            i+=1;
+        }
+
 
         // Check for 'tul' commands
         if (KasEsimesedTähed(&expression[i], "tul"))
