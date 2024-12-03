@@ -8,8 +8,9 @@ struct EnvironmentList environList;
 int main() {
     SetConsoleOutputCP(CP_UTF8);
     
-    char esialgne[] = "uugabuuga";
-    char* tulemus = EemaldaEsimeneViimane(esialgne);
-    printf("\"%s\"", tulemus);
-    return 0;
+    TäidaEnvironmentList();
+
+    print_environment_info(&environList.environments[0]);
+
+    free_environment_list(&environList);
 }

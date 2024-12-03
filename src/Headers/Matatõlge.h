@@ -46,6 +46,7 @@ struct Environment {
     const char *beginDefine; // Content inside the \begin{}
     const char *endDefine;   // Content inside the \end{}
     const char *Content;     // Everything from \begin{} to \end{} (including)
+    const char *endText;     // The text we search for in our source code to end the env.
 };
 
 // The global struct of all defined environments

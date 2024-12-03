@@ -91,23 +91,37 @@ void parse_flags_in_brackets(const char* config_line, struct Environment* env) {
         // Trim any leading or trailing spaces
         char* trimmed_flags = trim_whitespace(flags_part);
 
-        // Check if 'body' is present and set the flag accordingly
-        if (strstr(trimmed_flags, "body") != NULL) {
-            env->body = 1;
-        } else {
-            env->body = 0;
+        char* token = strtok(trimmed_flags, ",");
+        while (token != NULL) {
+            token = trim_whitespace(token);
+
+            if (strcmp(token, "body") == 0) {
+                env->body = 1;
+            } else if (strcmp(token, "nest") == 0) {
+                env->nest = 1;
+            } else if (strncmp(token, "end:{", 5) == 0) {
+                // Extract the value inside end:{...}
+                const char* end_start = strchr(token, '{');
+                const char* end_end = strchr(token, '}');
+                if (end_start && end_end && end_end > end_start) {
+                    size_t length = end_end - end_start - 1;
+
+                    char temp[length + 1];
+                    strncpy(temp, end_start + 1, length);
+                    temp[length] = '\0'; // Null-terminate the string
+
+                    env->endText = strdup(temp);
+                }
+            }
+
+            token = strtok(NULL, ",");
         }
 
-        // Check if 'nest' is present and set the flag accordingly
-        if (strstr(trimmed_flags, "nest") != NULL) {
-            env->nest = 1;
-        } else {
-            env->nest = 0;
-        }
     } else {
         // If no square brackets, keep default values (both flags are 0)
         env->body = 0;
         env->nest = 0;
+        env->endText = NULL;
     }
 }
 
@@ -137,7 +151,6 @@ void parse_environment(const char *config_line, struct Environment* env) {
         env->Content = NULL; // Missing \begin{} or \end{}
     }
     
-
     // GET THE ENVIRONMENT BEGIN AND END DEFINITIONS
     begin_pos = strstr(config_line, "\\begin{");
     end_pos = strstr(config_line, "\\end{");
@@ -178,7 +191,7 @@ void parse_environment(const char *config_line, struct Environment* env) {
         }
     }
     
-    // THE BODY, NEST DETECTION PART STARTS HERE
+    // THE BODY, NEST DETECTION PART AND OTHER STARTS HERE
     parse_flags_in_brackets(config_line, env);
 
     
@@ -301,6 +314,7 @@ void init_environment(struct Environment* env) {
     env->beginDefine = NULL;
     env->endDefine = NULL;
     env->Content = NULL;
+    env->endText = NULL;
     init_käsk_list(&(env->käsk_list)); // Initialize the KäskList within the environment
 }
 
@@ -1243,7 +1257,6 @@ int TõlgiEnvironment(const struct Environment* env, FILE* input, FILE* output_f
 void read_environments_from_config(const char* filepath, struct EnvironmentList* env_list) {
     FILE* file = fopen(filepath, "r");
     if (!file) {
-        prindiVärviga("exitisin 1198", "punane");
         exit(EXIT_FAILURE);
     }
 
@@ -1252,7 +1265,6 @@ void read_environments_from_config(const char* filepath, struct EnvironmentList*
         // Skip empty line or kommentaarid yo
         if (line[0] == '\0' || line[0] == '#') {
             free(line);
-            prindiVärviga("Continuisin lineil 1207", "punane");
             continue;
         }
 
@@ -1283,6 +1295,7 @@ void print_environment_info(struct Environment* env) {
     printf("Begin Define: %s\n", env->beginDefine ? env->beginDefine : "Not found");
     printf("End Define: %s\n", env->endDefine ? env->endDefine : "Not found");
     printf("Content: %s\n", env->Content ? env->Content : "Not found");
+    printf("Ending Text: %s\n", env->endText ? env->endText : "Not found");
 
     for (size_t i = 0; i < env->käsk_list.count; i++) {
         printf("Subcommand %zu:\n", i + 1);
