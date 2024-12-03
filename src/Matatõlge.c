@@ -132,28 +132,27 @@ void parse_environment(const char *config_line, struct Environment* env) {
     } else {
         env->Content = NULL; // Missing \begin{} or \end{}
     }
+    
 
-    /* GET THE ENVIRONMENT BEGIN AND END DEFINITIONS */
+    // GET THE ENVIRONMENT BEGIN AND END DEFINITIONS
     begin_pos = strstr(config_line, "\\begin{");
     end_pos = strstr(config_line, "\\end{");
 
     if (begin_pos && end_pos) {
-        // Extract the part inside \begin{}
-        begin_pos += 7;  // Skip over "\\begin{"
+        // Find the entire "\begin{...}" substring
         const char* begin_end_pos = strchr(begin_pos, '}');
         if (begin_end_pos) {
-            size_t begin_len = begin_end_pos - begin_pos;
+            size_t begin_len = begin_end_pos - begin_pos + 1; // Include the closing brace '}'
             char* begin_content = malloc(begin_len + 1);
             strncpy(begin_content, begin_pos, begin_len);
             begin_content[begin_len] = '\0';
             env->beginDefine = begin_content;
         }
 
-        // Extract the part inside \end{}
-        end_pos += 5;  // Skip over "\\end{"
+        // Find the entire "\end{...}" substring
         const char* end_end_pos = strchr(end_pos, '}');
         if (end_end_pos) {
-            size_t end_len = end_end_pos - end_pos;
+            size_t end_len = end_end_pos - end_pos + 1; // Include the closing brace '}'
             char* end_content = malloc(end_len + 1);
             strncpy(end_content, end_pos, end_len);
             end_content[end_len] = '\0';
@@ -161,7 +160,7 @@ void parse_environment(const char *config_line, struct Environment* env) {
         }
     }
     
-    /* GET THE ENVIRONMENT NAME */
+    // GET THE ENVIRONMENT NAME
     const char* start = strstr(config_line, "env(");
     if (start) {
         start += 4; // Move past 'env('
@@ -175,17 +174,20 @@ void parse_environment(const char *config_line, struct Environment* env) {
         }
     }
     
-    /* THE BODY, NEST DETECTION PART STARTS HERE */
+    // THE BODY, NEST DETECTION PART STARTS HERE
     parse_flags_in_brackets(config_line, env);
 
-    /* THE SUBCOMMAND DETECTION PART STARTS HERE */
+    
+
+    // THE SUBCOMMAND DETECTION PART STARTS HERE
     const char *definitions_start = strchr(config_line, '|');
     if (!definitions_start) {
         printf("No subcommand definitions found.\n");
         return;
     }
     definitions_start++; // Move past the '|'
-
+    
+    
     int subcommand_count = 0;
     const char *current_pos = definitions_start;
 
@@ -203,7 +205,7 @@ void parse_environment(const char *config_line, struct Environment* env) {
                 open_parens--; // Found a closing parenthesis
             }
         }
-
+        
         // Extract the full subcommand definition (excluding '(' and ')')
         size_t def_length = current_pos - start_pos; // Exclude the closing ')'
         char subcommand_def[def_length + 1];
@@ -217,6 +219,7 @@ void parse_environment(const char *config_line, struct Environment* env) {
             continue;
         }
 
+        
         // Split into two parts
         *arrow_pos = '\0'; // Terminate the first part
         char *subcommand_name_and_args = subcommand_def;       // Part before '->'
@@ -228,7 +231,7 @@ void parse_environment(const char *config_line, struct Environment* env) {
 
         // Extract command name (before the first '(')
         const char *arg_start = strchr(subcommand_name_and_args, '(');
-        char command_name[50]; // Assuming command names are up to 49 characters
+        char command_name[100]; // Assuming command names are up to 49 characters
         if (arg_start) {
             size_t name_len = arg_start - subcommand_name_and_args;
             strncpy(command_name, subcommand_name_and_args, name_len);
@@ -258,6 +261,10 @@ void parse_environment(const char *config_line, struct Environment* env) {
             arg_pos = strchr(arg_end + 1, '(');
         }
 
+        
+
+        // CONSTRUCTION OF THE KÄSKLIST
+
         struct Käsk subcommand = {0};
         subcommand.käsunimi = strdup(command_name);
         subcommand.argumentideKogus = arg_count;
@@ -275,7 +282,7 @@ void parse_environment(const char *config_line, struct Environment* env) {
         for (int i = 0; i < arg_count; i++) {
             subcommand.argumentideNimed[i] = strdup(args[i]);
         }
-
+        
         add_käsk(&(env->käsk_list), subcommand);
 
         current_pos++; // Move past the current subcommand
@@ -494,6 +501,12 @@ char* LiidaArv(char* eelmineMälu, int lisatav)
 // Eraldab uut mälu, kuhu pannakse argumendiga antud tekst, millelt on eest ja tagant tühikud eemladatud. Tagastab selle mälu aadressi.
 #define trim_whitespaceDebug 0
 char* trim_whitespace(char* str) {
+    if (str == NULL) {
+        fprintf(stderr, "Error: Null string passed to trim_whitespace\n");
+        return NULL;
+    }
+
+
     #if trim_whitespaceDebug == 1
     prindiTaane();
     printf("trim_whitespace\n");
@@ -509,6 +522,10 @@ char* trim_whitespace(char* str) {
     for ( ; isspace(str[lõpuindeks]); lõpuindeks-- );
 
     char* tekst = malloc(lõpuindeks-algusindeks+2);
+    if (tekst == NULL) {
+        fprintf(stderr, "Error: Memory allocation failed in trim_whitespace\n");
+        return NULL;
+    }
     memcpy(tekst, &str[algusindeks], lõpuindeks-algusindeks+1);
     tekst[lõpuindeks-algusindeks+1] = '\0';
     return tekst;
@@ -544,19 +561,28 @@ void free_käsk_list(struct KäskList* list) {
 }
 
 // Add a Käsk to the list
-void add_käsk(struct KäskList* list, struct Käsk käsk)
-{
-
+void add_käsk(struct KäskList* list, struct Käsk subcommand) {
+    // Ensure the list has enough capacity
     if (list->count >= list->capacity) {
-        list->capacity *= 2;
-        list->käsud = realloc(list->käsud, list->capacity * sizeof(struct Käsk));
-        if (!list->käsud) {
-            perror("Memory allocation error");
-            exit(EXIT_FAILURE);
+        size_t new_capacity = list->capacity == 0 ? 4 : list->capacity * 2;
+
+        struct Käsk* new_käsud = realloc(list->käsud, new_capacity * sizeof(struct Käsk));
+        if (!new_käsud) {
+            fprintf(stderr, "Memory allocation failed in add_käsk\n");
+            exit(EXIT_FAILURE); // Exit gracefully on allocation failure
         }
+        list->käsud = new_käsud;
+        list->capacity = new_capacity;
     }
-    list->käsud[list->count++] = käsk;
+
+    // Add the subcommand to the list
+    list->käsud[list->count] = subcommand;
+    list->count++;
+
+    printf("Subcommand added. New count: %zu\n", list->count);
+    printf("Exiting add_käsk...\n");
 }
+
 
 
 /*
@@ -1122,14 +1148,16 @@ void init_environment_list(struct EnvironmentList* list) {
 
 void add_environment(struct EnvironmentList* list, struct Environment env) {
     if (list->count >= list->capacity) {
-        list->capacity *= 2;
-        list->environments = realloc(list->environments, list->capacity * sizeof(struct Environment));
-        if (!list->environments) {
-            perror("Failed to reallocate memory for EnvironmentList");
+        size_t new_capacity = list->capacity * 2;
+        struct Environment* new_environments = realloc(list->environments, new_capacity * sizeof(struct Environment));
+        if (!new_environments) {
+            perror("Failed to resize EnvironmentList");
             exit(EXIT_FAILURE);
         }
+        list->environments = new_environments;
+        list->capacity = new_capacity;
     }
-    list->environments[list->count++] = env;
+    list->environments[list->count++] = env; // Add the new environment.
 }
 
 void free_environment_list(struct EnvironmentList* list) {
@@ -1163,37 +1191,44 @@ struct Käsk* KasEnvironmentKäsk(const char* tekst, const struct Environment* e
     return NULL;
 }
 
-struct TekstArv TõlgiEnvironment(const struct Environment* env, FILE* input)
+int TõlgiEnvironment(const struct Environment* env, FILE* input, FILE* output_file)
 {
-    char* line;
+    int lines_processed = 0;
 
+    // Add the begin definition to the translation
+    fprintf(output_file, env->beginDefine);
+
+    // Translate the environment
+    char* line;
     while ((line = read_line(input)) != NULL) {
+        lines_processed++;        
         // Stop if we encounter an empty line
         if (line[0] == '\0') {
             printf("Empty line detected, ending environment.\n");
-            free(line);
             break;
         }
 
-        // Try to match a subcommand within the environment
-        struct Käsk* käsk = KasEnvironmentKäsk(line, env);
-        if (käsk) {
-            printf("Matched Subcommand: %s\n", käsk->käsunimi);
-            
-            // Siia paneme hiljem veel sitta
-        } else {
-            printf("No match for line: %s\n", line);
-        }
+        struct Käsk* subcmd = KasEnvironmentKäsk(line, env);
+        if (subcmd) {
+            printf("Matched Subcommand: %s\n", subcmd->käsunimi);
+            struct TekstArv käsuTagastus = TõlgiKäsk(line, subcmd); // Saame tagasi tekstarv structi
+            fprintf(output_file, käsuTagastus.Tekst);
 
-        free(line);
+        } else {
+            printf("Normal line: %s\n", line);
+            fprintf(output_file, line);
+        }
     }
+
+    fprintf(output_file, env->endDefine);
+    return lines_processed-1;
 }
 
 
 void read_environments_from_config(const char* filepath, struct EnvironmentList* env_list) {
     FILE* file = fopen(filepath, "r");
     if (!file) {
-        perror("Unable to open config file");
+        prindiVärviga("exitisin 1198", "punane");
         exit(EXIT_FAILURE);
     }
 
@@ -1202,6 +1237,7 @@ void read_environments_from_config(const char* filepath, struct EnvironmentList*
         // Skip empty line or kommentaarid yo
         if (line[0] == '\0' || line[0] == '#') {
             free(line);
+            prindiVärviga("Continuisin lineil 1207", "punane");
             continue;
         }
 
