@@ -897,7 +897,16 @@ struct TekstArv TõlgiKäsk(const char* tekst, struct Käsk* käsk)
         else if (käsk->argumentideTüübid[j] == 1)
         {
             argument = LeiaArgument(&tekst[i]);
-            i += strlen(argument)+1;
+            
+            if (KasAvaldiseÜmberOnSulud(argument))
+            {
+                i += strlen(argument)+1;
+                char* sulgudeta = EemaldaEsimeneViimane(argument);
+                puts("SULGUDETA!");
+                puts(sulgudeta);
+                free(argument);
+                argument = sulgudeta;
+            }
         }
         argumentideTõlked[j] = TõlgiMathMode(argument);
         
@@ -1797,7 +1806,6 @@ char* LeiaArgument(const char* tekst)
             char* argument = malloc(i+1);
             memcpy(argument, tekst, i);
             argument[i]='\0';
-
 
             #if LeiaArgumentDebug == 1
             rekursiooniTase-=1;
