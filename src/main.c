@@ -14,6 +14,30 @@ int reanumber = 1;
 
 //struct KeskkonnaNimekiri keskkonnaNimek;
 
+//Leiab fili viimase modification time'i
+FILETIME getFileModTime(const char* file_path) {
+    FILETIME modification_time = {0, 0};
+    HANDLE file_handle = CreateFile(file_path, GENERIC_READ, FILE_SHARE_READ, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
+
+    if (file_handle == INVALID_HANDLE_VALUE) {
+        fprintf(stderr, "Error: Unable to open file for getting modification time: %s\n", file_path);
+        return modification_time;
+    }
+
+    // Get the modification time
+    if (!GetFileTime(file_handle, NULL, NULL, &modification_time)) {
+        fprintf(stderr, "Error: Unable to retrieve file modification time for: %s\n", file_path);
+    }
+
+    CloseHandle(file_handle);
+    return modification_time;
+}
+
+int compare_filetime(FILETIME ft1, FILETIME ft2) {
+    return CompareFileTime(&ft1, &ft2);
+}
+
+
 /* Function to find the first .txt file in the current directory */
 int find_first_txt_file(char* txt_file_path) {
     WIN32_FIND_DATA find_file_data;
@@ -129,16 +153,16 @@ int main() {
     // Construct full path to the found .txt file
     snprintf(main_path, sizeof(main_path), "%s\\%s", cwd, main_txt_file);
 
-
-    long int vanaSuurus = 0;
-    long int uusSuurus = 0;
+    FILETIME last_mod_time = {0, 0};
     while (1)
     {
         Sleep(300);
-
-        long int uusSuurus = findSize(main_path);
-        if (uusSuurus != vanaSuurus)
+        FILETIME current_mod_time = getFileModTime(main_path);
+        
+        if (compare_filetime(current_mod_time, last_mod_time) != 0) 
         {
+            puts("Tajuti faili modifikatsiooni aja muutumist.");
+            last_mod_time = current_mod_time;
             init_käsk_list(&käskList);
             read_commands_from_config(config_path, &käskList);
 
@@ -372,7 +396,6 @@ int main() {
 
             free_käsk_list(&käskList);
         }
-        vanaSuurus = uusSuurus;
     }
 
     return 0;
