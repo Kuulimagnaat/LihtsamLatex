@@ -1150,6 +1150,7 @@ struct Environment* KasEnvironment(const char* tekst)
             return &environList.environments[i];
         }
     }
+    return NULL;
 }
 
 struct Käsk* KasEnvironmentKäsk(const char* tekst, const struct Environment* env) {
