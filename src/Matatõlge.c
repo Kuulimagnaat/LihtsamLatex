@@ -1411,6 +1411,43 @@ char* TõlgiMathMode(const char* expression)
         }
 
 
+        if (expression[i] == '[')
+        {
+            result = LiidaTekstid(result, "\\left[");
+            i += 1;
+
+            char* suluSisu = LeiaSuluSisu(&expression[i]);
+            i += strlen(suluSisu);
+
+            char* suluSisuTõlge = TõlgiMathMode(suluSisu);
+            free(suluSisu);
+            
+            result = LiidaTekstid(result, suluSisuTõlge);
+            free(suluSisuTõlge);
+
+            result = LiidaTekstid(result, "\\right]");
+            i+=1;
+        }
+
+        if (expression[i] == '{')
+        {
+            result = LiidaTekstid(result, "\\left\\{");
+            i += 1;
+
+            char* suluSisu = LeiaSuluSisu(&expression[i]);
+            i += strlen(suluSisu);
+
+            char* suluSisuTõlge = TõlgiMathMode(suluSisu);
+            free(suluSisu);
+            
+            result = LiidaTekstid(result, suluSisuTõlge);
+            free(suluSisuTõlge);
+
+            result = LiidaTekstid(result, "\\right\\}");
+            i+=1;
+        }
+
+
         // Check for 'tul' commands
         if (KasEsimesedTähed(&expression[i], "tul"))
         {
