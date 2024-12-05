@@ -1315,7 +1315,7 @@ void print_environment_info(struct Environment* env) {
 
 
 // Funkstioon uurib kas tegu on käsuga. Tagastab vastava käsu structi mäluaadressi kui on käsk ja NULL, kui ei ole käsk.
-#define KasKäskDebug 1
+#define KasKäskDebug 0
 struct Käsk* KasKäsk(const char* tekst)
 {
     #if KasKäskDebug == 1
@@ -1350,15 +1350,15 @@ struct Käsk* KasKäsk(const char* tekst)
 
 extern char main_path[256];
 // Rekursiivselt tõlgime math moodi latexisse. Funktsionn võtab sisse teksti, mida hakata tõlkima ja nimekirja nendest käskudest, mida funktsioon saab tõlkimiseks kasutada.
-#define TõlgiMathModeDebug 1
+#define TõlgiMathModeDebug 0
 #define VigadestTeatamine 0
-char* TõlgiMathMode(const char* expression)
+char* TõlgiMathMode(const char* avaldis)
 {
     #if TõlgiMathModeDebug == 1
     prindiTaane();
     printf("TõlgiMathMode\n");
     prindiTaane();
-    printf("SISSE: %s\n", expression);
+    printf("SISSE: %s\n", avaldis);
     rekursiooniTase += 1;
     #endif
 
@@ -1367,214 +1367,224 @@ char* TõlgiMathMode(const char* expression)
     char* result = malloc(1); // Empty string
     result[0] = '\0';
 
-    int i = 0;
-    while (i < strlen(expression))
+    int w = 0;
+    while (w < strlen(avaldis))
     {
-        #if VigadestTeatamine == 1
-        for (unsigned int j = 0 ; j<käskList.count; j++)
+        char* expression = LeiaTekstEnneTeksti(&avaldis[w], "\n");
+        w += strlen(expression);
+        int i = 0;
+        while (i < strlen(expression))
         {
-            // Ei lasta tähtede erinevusi kontrollida, kui käsolev käsk on ainult 1 v kahe tähe pikkune. Nende puhul on ühetäheline erinevus liiga tõenäoline.
-            if (strlen(käskList.käsud[j].käsunimi)<= 2)
+            #if VigadestTeatamine == 1
+            for (unsigned int j = 0 ; j<käskList.count; j++)
             {
-                continue;
-            }
-            if (MitmeTäheVõrraErineb(käskList.käsud[j].käsunimi, &expression[i]) == 1 && KasKäsk(&expression[i]) == 0)
-            {
-                prindiTaane();
-                unsigned int veapikkus = strlen(käskList.käsud[j].käsunimi);
-                char* viga = malloc(veapikkus+1);
-                strncpy(viga, &expression[i], veapikkus);
-                
-                printf("\nLeiti ainult ühe täheline erinevus.\nArvatatav viga: %s, mida tõenäoliselt mõeldi: %s.\n", viga ,käskList.käsud[j].käsunimi);
-
-                int mituRidaEtte = 1; 
-                int mituRidaTaha = 1; 
-                FILE* file = fopen(main_path, "r");
-                char* line;
-                for (int k = 0; k<=reanumber+mituRidaTaha-1; k++)
+                // Ei lasta tähtede erinevusi kontrollida, kui käsolev käsk on ainult 1 v kahe tähe pikkune. Nende puhul on ühetäheline erinevus liiga tõenäoline.
+                if (strlen(käskList.käsud[j].käsunimi)<= 2)
                 {
-                    line = read_line(file);
-                    if (k >= reanumber-1-mituRidaEtte)
+                    continue;
+                }
+                if (MitmeTäheVõrraErineb(käskList.käsud[j].käsunimi, &expression[i]) == 1 && KasKäsk(&expression[i]) == 0)
+                {
+                    prindiTaane();
+                    unsigned int veapikkus = strlen(käskList.käsud[j].käsunimi);
+                    char* viga = malloc(veapikkus+1);
+                    strncpy(viga, &expression[i], veapikkus);
+                    
+                    printf("\nLeiti ainult ühe täheline erinevus.\nArvatatav viga: %s, mida tõenäoliselt mõeldi: %s.\n", viga ,käskList.käsud[j].käsunimi);
+
+                    int mituRidaEtte = 1; 
+                    int mituRidaTaha = 1; 
+                    FILE* file = fopen(main_path, "r");
+                    char* line;
+                    for (int k = 0; k<=reanumber+mituRidaTaha-1; k++)
                     {
-                        // Kui on veaga rida
-                        if (k == reanumber-1)
+                        line = read_line(file);
+                        if (k >= reanumber-1-mituRidaEtte)
                         {
-                            char* enneViga = LeiaTekstEnneTeksti(line, viga);
-                            printf("  %d: ", k+1);
-                            printf(enneViga);
-                            prindiVärviga(viga, "punane");
-                            printf(&line[strlen(enneViga)+veapikkus]);
-                            printf("\n");
-                            free(enneViga);
-                        }
-                        // Eelnevate ja järgnevate ridade printimine on ilma mingi vormistuseta ns.
-                        else
-                        {
-                            printf("  %d: %s\n", k+1, line);
+                            // Kui on veaga rida
+                            if (k == reanumber-1)
+                            {
+                                char* enneViga = LeiaTekstEnneTeksti(line, viga);
+                                printf("  %d: ", k+1);
+                                printf(enneViga);
+                                prindiVärviga(viga, "punane");
+                                printf(&line[strlen(enneViga)+veapikkus]);
+                                printf("\n");
+                                free(enneViga);
+                            }
+                            // Eelnevate ja järgnevate ridade printimine on ilma mingi vormistuseta ns.
+                            else
+                            {
+                                printf("  %d: %s\n", k+1, line);
+                            }
                         }
                     }
+                    puts("");
                 }
-                puts("");
             }
-        }
-        #endif
+            #endif
 
 
-        // Kontrollib kas tegu on lugejaga.
-        if (KasLugeja(&expression[i]) == 1) {
-            char* lugeja = LeiaLugeja(&expression[i]);
-            int lugejaOnSulgudeta = 1;
-            char* sulgudetaLugeja;
+            // Kontrollib kas tegu on lugejaga.
+            if (KasLugeja(&expression[i]) == 1) {
+                char* lugeja = LeiaLugeja(&expression[i]);
+                int lugejaOnSulgudeta = 1;
+                char* sulgudetaLugeja;
 
-            // Check if the reader has parentheses
-            if (KasAvaldiseÜmberOnSulud(lugeja)) 
+                // Check if the reader has parentheses
+                if (KasAvaldiseÜmberOnSulud(lugeja)) 
+                {
+                    lugejaOnSulgudeta = 0;
+                    sulgudetaLugeja = EemaldaEsimeneViimane(lugeja);
+                } 
+                else 
+                {
+                    sulgudetaLugeja = lugeja;
+                }
+
+                char* lugejaTõlge = TõlgiMathMode(sulgudetaLugeja);
+                char* nimetaja = LeiaArgument(&expression[i + strlen(lugeja) + 1]);
+                
+                i += strlen(nimetaja);
+                if (KasAvaldiseÜmberOnSulud(nimetaja))
+                {
+                    char* sulgudeta = EemaldaEsimeneViimane(nimetaja);
+                    puts("SULGUDETA!");
+                    puts(sulgudeta);
+                    free(nimetaja);
+                    nimetaja = sulgudeta;
+                }
+                char* nimetajaTõlge = TõlgiMathMode(nimetaja);
+
+                result = LiidaTekstid(result, "\\frac{");
+                result = LiidaTekstid(result, lugejaTõlge);
+                result = LiidaTekstid(result, "}{");
+                result = LiidaTekstid(result, nimetajaTõlge);
+                result = LiidaTekstid(result, "}");
+
+                // Update the index
+                i += strlen(lugeja) + 1;
+
+                // Free memory to prevent leaks
+                free(lugeja);
+                if (lugejaOnSulgudeta == 0)
+                {
+                    free(sulgudetaLugeja);
+                }
+                free(nimetaja);
+                free(lugejaTõlge);
+                free(nimetajaTõlge);
+                continue;
+            }
+
+
+            if (expression[i] == '(')
             {
-                lugejaOnSulgudeta = 0;
-                sulgudetaLugeja = EemaldaEsimeneViimane(lugeja);
-            } 
+                result = LiidaTekstid(result, "\\left(");
+                i += 1;
+
+                char* suluSisu = LeiaSuluSisu(&expression[i]);
+                i += strlen(suluSisu);
+
+                char* suluSisuTõlge = TõlgiMathMode(suluSisu);
+                free(suluSisu);
+                
+                result = LiidaTekstid(result, suluSisuTõlge);
+                free(suluSisuTõlge);
+
+                result = LiidaTekstid(result, "\\right)");
+                i+=1;
+            }
+            if (expression[i] == '[')
+            {
+                result = LiidaTekstid(result, "\\left[");
+                i += 1;
+
+                char* suluSisu = LeiaSuluSisu(&expression[i]);
+                i += strlen(suluSisu);
+
+                char* suluSisuTõlge = TõlgiMathMode(suluSisu);
+                free(suluSisu);
+                
+                result = LiidaTekstid(result, suluSisuTõlge);
+                free(suluSisuTõlge);
+
+                result = LiidaTekstid(result, "\\right]");
+                i+=1;
+            }
+            if (expression[i] == '{')
+            {
+                result = LiidaTekstid(result, "\\left\\{");
+                i += 1;
+
+                char* suluSisu = LeiaSuluSisu(&expression[i]);
+                i += strlen(suluSisu);
+
+                char* suluSisuTõlge = TõlgiMathMode(suluSisu);
+                free(suluSisu);
+                
+                result = LiidaTekstid(result, suluSisuTõlge);
+                free(suluSisuTõlge);
+
+                result = LiidaTekstid(result, "\\right\\}");
+                i+=1;
+            }
+
+
+            // Check for 'tul' commands
+            if (KasEsimesedTähed(&expression[i], "tul"))
+            {
+                char* tõlge = malloc(1);
+                tõlge[0] = '\0';
+
+                char* argument = LeiaLühemArgument(&expression[i + 3]);
+                // In the case of argument 'xxy', the translation must be '''_{xxy}
+                char* alatekst = KõrvutiolevadAstmeks(argument);
+                for (unsigned int j = 0; j < strlen(argument); j++)
+                {
+                    tõlge = LiidaTäht(tõlge, '\'');
+                }
+                tõlge = LiidaTekstid(tõlge, "_{");
+                tõlge = LiidaTekstid(tõlge, alatekst);
+                tõlge = LiidaTekstid(tõlge, "}");
+
+                i += 3 + strlen(argument);
+                result = LiidaTekstid(result, tõlge);
+
+                // Free allocated memory
+                free(argument);
+                free(alatekst);
+                free(tõlge);
+                continue;
+            }
+
+
+            // Check for known commands
+            struct Käsk* käsk = KasKäsk(&expression[i]);
+            if (käsk != NULL)
+            {
+                struct TekstArv käsuTagastus = TõlgiKäsk(&expression[i], käsk);
+                result = LiidaTekstid(result, käsuTagastus.Tekst);
+                i += käsuTagastus.Arv;
+
+                free(käsuTagastus.Tekst);
+            }
+
             else 
             {
-                sulgudetaLugeja = lugeja;
+                // Handle regular characters
+                char* single_char = my_strndup(&expression[i], 1);
+                result = LiidaTekstid(result, single_char);
+                free(single_char);
+                i++;
             }
-
-            char* lugejaTõlge = TõlgiMathMode(sulgudetaLugeja);
-            char* nimetaja = LeiaArgument(&expression[i + strlen(lugeja) + 1]);
-            
-            i += strlen(nimetaja);
-            if (KasAvaldiseÜmberOnSulud(nimetaja))
-            {
-                char* sulgudeta = EemaldaEsimeneViimane(nimetaja);
-                puts("SULGUDETA!");
-                puts(sulgudeta);
-                free(nimetaja);
-                nimetaja = sulgudeta;
-            }
-            char* nimetajaTõlge = TõlgiMathMode(nimetaja);
-
-            result = LiidaTekstid(result, "\\frac{");
-            result = LiidaTekstid(result, lugejaTõlge);
-            result = LiidaTekstid(result, "}{");
-            result = LiidaTekstid(result, nimetajaTõlge);
-            result = LiidaTekstid(result, "}");
-
-            // Update the index
-            i += strlen(lugeja) + 1;
-
-            // Free memory to prevent leaks
-            free(lugeja);
-            if (lugejaOnSulgudeta == 0)
-            {
-                free(sulgudetaLugeja);
-            }
-            free(nimetaja);
-            free(lugejaTõlge);
-            free(nimetajaTõlge);
-            continue;
         }
-
-
-        if (expression[i] == '(')
+        if (avaldis[w] != '\0')
         {
-            result = LiidaTekstid(result, "\\left(");
-            i += 1;
-
-            char* suluSisu = LeiaSuluSisu(&expression[i]);
-            i += strlen(suluSisu);
-
-            char* suluSisuTõlge = TõlgiMathMode(suluSisu);
-            free(suluSisu);
-            
-            result = LiidaTekstid(result, suluSisuTõlge);
-            free(suluSisuTõlge);
-
-            result = LiidaTekstid(result, "\\right)");
-            i+=1;
-        }
-        if (expression[i] == '[')
-        {
-            result = LiidaTekstid(result, "\\left[");
-            i += 1;
-
-            char* suluSisu = LeiaSuluSisu(&expression[i]);
-            i += strlen(suluSisu);
-
-            char* suluSisuTõlge = TõlgiMathMode(suluSisu);
-            free(suluSisu);
-            
-            result = LiidaTekstid(result, suluSisuTõlge);
-            free(suluSisuTõlge);
-
-            result = LiidaTekstid(result, "\\right]");
-            i+=1;
-        }
-        if (expression[i] == '{')
-        {
-            result = LiidaTekstid(result, "\\left\\{");
-            i += 1;
-
-            char* suluSisu = LeiaSuluSisu(&expression[i]);
-            i += strlen(suluSisu);
-
-            char* suluSisuTõlge = TõlgiMathMode(suluSisu);
-            free(suluSisu);
-            
-            result = LiidaTekstid(result, suluSisuTõlge);
-            free(suluSisuTõlge);
-
-            result = LiidaTekstid(result, "\\right\\}");
-            i+=1;
-        }
-
-
-        // Check for 'tul' commands
-        if (KasEsimesedTähed(&expression[i], "tul"))
-        {
-            char* tõlge = malloc(1);
-            tõlge[0] = '\0';
-
-            char* argument = LeiaLühemArgument(&expression[i + 3]);
-            // In the case of argument 'xxy', the translation must be '''_{xxy}
-            char* alatekst = KõrvutiolevadAstmeks(argument);
-            for (unsigned int j = 0; j < strlen(argument); j++)
-            {
-                tõlge = LiidaTäht(tõlge, '\'');
-            }
-            tõlge = LiidaTekstid(tõlge, "_{");
-            tõlge = LiidaTekstid(tõlge, alatekst);
-            tõlge = LiidaTekstid(tõlge, "}");
-
-            i += 3 + strlen(argument);
-            result = LiidaTekstid(result, tõlge);
-
-            // Free allocated memory
-            free(argument);
-            free(alatekst);
-            free(tõlge);
-            continue;
-        }
-
-
-        // Check for known commands
-        struct Käsk* käsk = KasKäsk(&expression[i]);
-        if (käsk != NULL)
-        {
-            struct TekstArv käsuTagastus = TõlgiKäsk(&expression[i], käsk);
-            result = LiidaTekstid(result, käsuTagastus.Tekst);
-            i += käsuTagastus.Arv;
-
-            free(käsuTagastus.Tekst);
-        }
-
-        else 
-        {
-            // Handle regular characters
-            char* single_char = my_strndup(&expression[i], 1);
-            result = LiidaTekstid(result, single_char);
-            free(single_char);
-            i++;
+            w ++;
+            result = LiidaTekstid(result, "\\\\\n");
         }
     }
-
     #if TõlgiMathModeDebug == 1
     rekursiooniTase -= 1;
     prindiTaane();
@@ -1760,7 +1770,7 @@ char* LeiaLugeja(const char* tekst)
 
 
 
-#define KasLugejaDebug 1
+#define KasLugejaDebug 0
 int KasLugeja(const char* tekst) // nin(x)/sin(x + 4)abc     va(4 sin(x)x)/sin(x + 4)abc
 {
     #if KasLugejaDebug == 1

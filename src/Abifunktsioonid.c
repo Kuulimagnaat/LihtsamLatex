@@ -11,6 +11,18 @@ extern struct KäskList käskList;
 extern struct EnvironmentList environList;
 
 
+
+// Tagastab teksti, mis eelneb indeksiga märgitud kohale.
+char* VõtaTekstIndeksini(char* tekst, unsigned int indeks)
+{
+    char* mälu = malloc(indeks+1);
+    memcpy(mälu, tekst, indeks);
+    mälu[indeks] = '\0';
+    return mälu;
+}
+
+
+
 long int LeiaFailiSuurus(FILE* f)
 {
     fseek(f, 0, SEEK_END); // seek to end of file

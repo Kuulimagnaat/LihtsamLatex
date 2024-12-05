@@ -5,6 +5,7 @@
 #include <Windows.h>  // Täpitähtedega printimiseks ja exe faili asukoha jaoks
 #include <direct.h>  // for _getcwd on Windows
 #include "Headers/Abifunktsioonid.h"
+#include "Headers/Kõigetõlge.h"
 
 #define MAX_PATH_LENGTH 256
 
@@ -161,13 +162,13 @@ int main() {
         
         if (compare_filetime(current_mod_time, last_mod_time) != 0) 
         {
-            puts("Tajuti faili modifikatsiooni aja muutumist.");
             last_mod_time = current_mod_time;
             init_käsk_list(&käskList);
             read_commands_from_config(config_path, &käskList);
 
             init_environment_list(&environList);
             read_environments_from_config(config_path, &environList);
+
 
             // config.txt failist eraldatakse template faili nimi, millest koostatakse aadress, mis viitab soovitavale template failile.
             char* template_name = get_template_name(config_path);
@@ -192,6 +193,24 @@ int main() {
                 fclose(template_file);
                 free(template_name);
                 return EXIT_FAILURE;
+            }
+
+
+            char* koguTekst = 0;
+            long length;
+            FILE* koguFail = fopen (main_path, "rb");
+
+            if (koguFail)
+            {
+                fseek (koguFail, 0, SEEK_END);
+                length = ftell (koguFail);
+                fseek (koguFail, 0, SEEK_SET);
+                koguTekst = malloc (length);
+                if (koguTekst)
+                {
+                    fread (koguTekst, 1, length, koguFail);
+                }
+                fclose (koguFail);
             }
 
 
@@ -233,157 +252,17 @@ int main() {
                 // Check if the line contains a placeholder for content
                 if (strcmp(line, "{{content}}") == 0) {
                     // Process the main.txt content
-
-                    unsigned int peabOlemaInlineMath = 0;
-                    unsigned int onJubaMathMode = 0;
-                    while ((line = read_line(file)) != NULL)
+                    puts("KOGU TEKST!!!");
+                    puts(koguTekst);
+                    char* tõlge = TõlgiKõik(koguTekst);
+                    puts("KÕIGE TÕLGE!!!");
+                    puts(tõlge);
+                    for (unsigned int m=0; m<strlen(tõlge); m++)
                     {
-                        if (skip_lines > 0) {
-                            // Manually skip the remaining lines
-                            puts("skipped a line");
-                            skip_lines--;
-                            continue;
-                        }
-
-                        /* CHECK IF ENVIRONMENT STARTS ON THIS LINE */
-                        
-                        struct Environment* env = KasEnvironment(line);
-                        
-                        if (env) {
-                            printf("Detected Environment: %s\n", env->name);
-                            skip_lines = TõlgiEnvironment(env, file, output_file) - 1;
-                            puts("parsed environment too");
-                            continue;
-                        }
-
-                        puts("jätkame lugemisega");
-                        if (!onJubaMathMode) 
-                        {
-                            peabOlemaInlineMath = 0;
-                        }
-                        // Uut rida alustades sõltub edasine tegevus sellest, kas math mode on eelmisest reast jäänud lõpetamata ja ollakse mathmode'is või eiu ole math mode.
-                        // Kui on math mode eelmisest reast käimas ja ootab lõpetamist
-                        if (onJubaMathMode)
-                        {
-                            fprintf(output_file, "\\\\");
-                            char* leitudMata = LeiaTekstEnneTeksti(line, " mm");
-                            // On kaks võimalust, mis võib olla: 
-                            // Päriselt leitakse mm-tekst. Selle kontrollimiseks kontrollitakse, kas leitud tekstile järgnevad tähed on " mm".
-                            if (KasEsimesedTähed(&line[strlen(leitudMata)], " mm"))
-                            {
-                                char* tõlge = TõlgiMathMode(leitudMata);
-                                fprintf(output_file, "%s", tõlge);
-                                free(tõlge);
-                                if (peabOlemaInlineMath)
-                                {
-                                    fprintf(output_file, "$");
-                                }
-                                else
-                                {
-                                    fprintf(output_file, "\\]");
-                                }
-                                onJubaMathMode = 0;
-                            }
-                            // Järelikult ei leitud mm-teksti ja mathmode peab edasi kestma.
-                            else
-                            {
-                                char* tõlge = TõlgiMathMode(leitudMata);
-                                fprintf(output_file, "%s", tõlge);
-                                free(tõlge);
-                            }
-                        }
-                        // Kui mathmode mode pole käimas.
-                        else
-                        {
-                            for (unsigned int i = 0; line[i]!='\0'; )
-                            {
-                                // Kui mingil kohal tabatakse " mm " või kui ollakse täiesti rea alguses ja seal on "mm ", siis peab sealt math mode algama.
-                                if (KasEsimesedTähed(&line[i], " mm ") || i==0 && KasEsimesedTähed(&line[i], "mm "))
-                                {
-                                    char* leitudMata = NULL;
-                                    // Proovitakse kohe selle mata lõpetavat mm-i leida.
-                                    if (line[i] == 'm')
-                                    {
-                                        leitudMata = LeiaTekstEnneTeksti(&line[i+3], " mm");
-
-                                        // Saab olla, et leitakse lõpetav mm, aga võib ka seda mitte leida. Kui ei leitud lõpetajat, siis tuleb panna realugemistsükliväline muutuja selliseks, et see ütleks, et mathmode peab edasi kestma.
-                                        if (!KasEsimesedTähed(&line[i+3+strlen(leitudMata)], " mm"))
-                                        {
-                                            onJubaMathMode = 1;
-                                            i += 3 + strlen(leitudMata);
-                                        }
-                                        else 
-                                        {
-                                            i += 3 + strlen(leitudMata) + 3;
-                                        }
-                                    }
-                                    else
-                                    {
-                                        leitudMata = LeiaTekstEnneTeksti(&line[i+4], " mm");
-
-                                        // Saab olla, et leitakse lõpetav mm, aga võib ka seda mitte leida. Kui ei leitud lõpetajat, siis tuleb panna realugemistsükliväline muutuja selliseks, et see ütleks, et mathmode peab edasi kestma.
-                                        if (!KasEsimesedTähed(&line[i+4+strlen(leitudMata)], " mm"))
-                                        {
-                                            onJubaMathMode = 1;
-                                            i += 4 + strlen(leitudMata);
-                                        }
-                                        else 
-                                        {
-                                            i += 4 + strlen(leitudMata) + 3;
-                                        }
-                                    }
-
-                                    // Olenemata sellest, kas lõpetav mm leitakse v mitte, on vaja anda leitud tekst math mode tõlkesse.
-                                    char* tõlge = TõlgiMathMode(leitudMata);
-
-                                    // Kuna kolm taset välimine else haru ütleb, et siin mathmode pole veel käimas, siis tuleb lisada alguse ja lõpu märgid.
-                                    if (peabOlemaInlineMath)
-                                    {
-                                        fprintf(output_file, " $");
-                                    }
-                                    else
-                                    {
-                                        fprintf(output_file, "\\[");
-                                    }
-                                    fprintf(output_file, "%s", tõlge);
-                                    free(tõlge);
-                                    // Kui onJubaMath mode on jäetud üheks muutmata, siis järelikult leiti lõpp sellelt realt, mistõttu tuleb ka faili kirjutada kohe lõpp.
-                                    if (!onJubaMathMode)
-                                    {
-                                        if (peabOlemaInlineMath)
-                                        {
-                                            fprintf(output_file, "$");
-                                        }
-                                        else
-                                        {
-                                            fprintf(output_file, "\\]");
-                                        }
-                                    }
-                                }
-                                // Muul juhul, kui ei tajutud kohal i mathmode algust, siis käesolev täht lic lükatakse faili. Lisaks, kui see täht ei ole tühik, siis suvaline tulev math mode sellel real peab olema inline, mistõttu üks ridadelugemistsükliväline muutuja pannakse vastavaks.
-                                else
-                                {
-                                    if (line[i] != ' ')
-                                    {
-                                        peabOlemaInlineMath = 1;
-                                    }
-
-                                    char* täht = malloc(2);
-                                    täht[0] = line[i];
-                                    täht[1] = '\0';
-                                    fprintf(output_file, "%s", täht);
-                                    i++;
-                                }
-                            }
-                            // Soov on panna rea lõppu uuereamärk, aga mitte siis, kui on math mode.
-                            if (onJubaMathMode == 0)
-                            {
-                                fprintf(output_file, "%s", "\n");
-                            }
-                        }
-                        // puts("Reanumbrit kasvatati.");
-                        reanumber += 1;
+                        printf("%c", tõlge[m]);
                     }
+                    fprintf(output_file, tõlge);
+                    free(tõlge);
                 }
                 else {
                     // Write the current line from the template
