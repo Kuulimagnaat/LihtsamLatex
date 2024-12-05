@@ -237,7 +237,7 @@ int main() {
             snprintf(output_pdf_path, sizeof(output_pdf_path), "%s\\%s.pdf", cwd, output_base_name);
 
             // Open the output .tex file for writing
-            FILE* output_file = fopen(output_tex_path, "w");
+            FILE* output_file = fopen(output_tex_path, "wb");
             if (output_file == NULL) {
                 perror("Error creating output.tex file");
                 fclose(file);
@@ -251,16 +251,9 @@ int main() {
             while ((line = read_line(template_file)) != NULL) {
                 // Check if the line contains a placeholder for content
                 if (strcmp(line, "{{content}}") == 0) {
+                    
                     // Process the main.txt content
-                    puts("KOGU TEKST!!!");
-                    puts(koguTekst);
                     char* tõlge = TõlgiKõik(koguTekst);
-                    puts("KÕIGE TÕLGE!!!");
-                    puts(tõlge);
-                    for (unsigned int m=0; m<strlen(tõlge); m++)
-                    {
-                        printf("%c", tõlge[m]);
-                    }
                     fprintf(output_file, tõlge);
                     free(tõlge);
                 }
