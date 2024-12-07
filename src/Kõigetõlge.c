@@ -18,15 +18,16 @@ char* TõlgiKõik(char* tõlgitav)
     unsigned int pikkus = strlen(tõlgitav);
     // Läheb üle iga tähe kogu tõlgitavas tekstis.
     for (unsigned int i = 0; i<pikkus; )
-    {/*
-        if (KasEnvironment(&tõlgitav[i]))
+    {
+        struct Environment* env = KasEnvironment(&tõlgitav[i]);
+        if (env)
         {
-            struct TekstArv envTõlge = TõlgiEnvironment(&tõlgitav[i]);
+            struct TekstArv envTõlge = TõlgiEnvironment(&tõlgitav[i], env);
             tõlge = LiidaTekstid(tõlge, envTõlge.Tekst);
             free(envTõlge.Tekst);
             i += envTõlge.Arv;
         }
-        else*/
+        else
         if ( i == 0 && KasEsimesedTähed(&tõlgitav[i], "mm ") || KasEsimesedTähed(&tõlgitav[i], " mm ") || KasEsimesedTähed(&tõlgitav[i], "\nmm "))
         {
             int onDisplayMath = 0;
@@ -90,8 +91,5 @@ char* TõlgiKõik(char* tõlgitav)
         }
     }
     
-
-puts("TÕLGE!!!");
-    puts(tõlge);
     return tõlge;
 }

@@ -1,5 +1,9 @@
 Idee mõtleja, dokumendi kirjastus: Sven
 
+To compile main:
+color a && cls && gcc src/Matatõlge.c src/Abifunktsioonid.c src/Kõigetõlge.c src/main.c
+
+
 Kasutatavad flagid:
 body	                        The environment allows freeform content to be given aka no commands on some lines. If freeform content is given (aka no subcommand is used) and the environment doesnt support it, then an error should be given.
 args:N                          The environment OR subcommand takes N arguments. Can also be specified in terms of brackets (x)(y) for some n amount, in which case it searches for the given argument names "x", "y" to be replaced. Argument names default to arg1, arg2, .... if given as args:N.

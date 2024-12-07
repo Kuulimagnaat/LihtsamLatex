@@ -58,7 +58,9 @@ struct EnvironmentList {
 };
 
 struct Käsk* KasKäsk(const char* tekst);
-int TõlgiEnvironment(const struct Environment* env, FILE* input, FILE* output_file);
+struct TekstArv TõlgiEnvironment(char* tekst, struct Environment* env);
+char** SplitByDelimiter(const char* input, const char* delimiter);
+char* ReplaceArgumentInDefinition(char* definition, const char* placeholder, const char* translatedArg);
 
 void print_environment_info(struct Environment* env);
 

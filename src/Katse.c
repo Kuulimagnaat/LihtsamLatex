@@ -10,7 +10,18 @@ int main() {
     SetConsoleOutputCP(CP_UTF8);
     
     TäidaKäskList();
-    char* tulemus = TõlgiKõik(" mm a\nb mm ");
-    //char* tulemus = VõtaTekstIndeksini("a\nb.mm ", 4);
-    puts(tulemus);
+    TäidaEnvironmentList();
+
+    struct Environment* env1 = &environList.environments[0];
+
+    char* tekstitav = "enum\nTere, Siin tekst!\n--";
+    
+    struct TekstArv tulemus = TõlgiEnvironment(tekstitav, env1);
+    puts("TAGASTATUD TÕLGE:");
+    puts(tulemus.Tekst);
+    puts("TAGASTATUD PIKKUS:");
+    printf("%d\n", tulemus.Arv);
+
+    free_environment_list(&environList);
+    free_käsk_list(&käskList);
 }

@@ -5,6 +5,7 @@
 #include <math.h>
 #include <ctype.h>
 #include "Headers/Abifunktsioonid.h"
+#include "Headers/Kõigetõlge.h"
 #include "Windows.h"
 
 extern struct KäskList käskList;
@@ -600,9 +601,6 @@ void add_käsk(struct KäskList* list, struct Käsk subcommand) {
     // Add the subcommand to the list
     list->käsud[list->count] = subcommand;
     list->count++;
-
-    printf("Subcommand added. New count: %zu\n", list->count);
-    printf("Exiting add_käsk...\n");
 }
 
 
@@ -1224,37 +1222,236 @@ struct Käsk* KasEnvironmentKäsk(const char* tekst, const struct Environment* e
     return NULL;
 }
 
-int TõlgiEnvironment(const struct Environment* env, FILE* input, FILE* output_file)
+char** SplitByDelimiter(const char* input, const char* delimiter)
 {
-    int lines_processed = 0;
+    if (!input) return NULL;
 
-    // Add the begin definition to the translation
-    fprintf(output_file, env->beginDefine);
+    // Allocate memory for the result list (estimate large enough for simplicity)
+    char** parts = malloc(128 * sizeof(char*)); // 128 max parts (arbitrary limit for simplicity)
+    if (!parts) return NULL;
 
-    // Translate the environment
-    char* line;
-    while ((line = read_line(input)) != NULL) {
-        lines_processed++;        
-        // Stop if we encounter an empty line
-        if (line[0] == '\0') {
-            printf("Empty line detected, ending environment.\n");
-            break;
-        }
+    int index = 0;
+    const char* start = input;
+    const char* triple_space = strstr(start, "   "); // Find first triple space
 
-        struct Käsk* subcmd = KasEnvironmentKäsk(line, env);
-        if (subcmd) {
-            printf("Matched Subcommand: %s\n", subcmd->käsunimi);
-            struct TekstArv käsuTagastus = TõlgiKäsk(line, subcmd); // Saame tagasi tekstarv structi
-            fprintf(output_file, käsuTagastus.Tekst);
+    while (triple_space) {
+        // Calculate the length of this segment
+        size_t segment_length = triple_space - start;
 
-        } else {
-            printf("Normal line: %s\n", line);
-            fprintf(output_file, line);
-        }
+        // Allocate memory and copy this segment
+        parts[index] = malloc(segment_length + 1);
+        strncpy(parts[index], start, segment_length);
+        parts[index][segment_length] = '\0'; // Null-terminate
+
+        index++;
+        start = triple_space + 3; // Move past the triple spaces
+        triple_space = strstr(start, "   "); // Find the next triple space
     }
 
-    fprintf(output_file, env->endDefine);
-    return lines_processed-1;
+    // Add the remaining part of the string (or the whole string if no triple spaces were found)
+    parts[index] = strdup(start);
+    index++;
+
+    // Null-terminate the array
+    parts[index] = NULL;
+    return parts;
+}
+
+char* ReplaceArgumentInDefinition(char* definition, const char* placeholder, const char* translatedArg)
+{
+    // Find the placeholder in the definition
+    char* pos = strstr(definition, placeholder);
+    if (pos) {
+        size_t placeholderLen = strlen(placeholder);
+        size_t defLen = strlen(definition);
+        size_t translatedArgLen = strlen(translatedArg);
+
+        // Allocate new string for the final translation
+        char* result = malloc(defLen - placeholderLen + translatedArgLen + 1);
+
+        // Copy the part before the placeholder
+        size_t prefixLen = pos - definition;
+        strncpy(result, definition, prefixLen);
+
+        // Add the translated argument
+        strcpy(result + prefixLen, translatedArg);
+
+        // Copy the part after the placeholder
+        strcpy(result + prefixLen + translatedArgLen, pos + placeholderLen);
+
+        return result;
+    }
+
+    return strdup(definition);  // If no placeholder is found, just return the original definition
+}
+
+
+struct TekstArv TõlgiEnvironment(char* tekst, struct Environment* env)
+{   
+    struct TekstArv tõlkeStruct = { NULL, 0 }; 
+    char* tõlge = calloc(1,1);
+
+    tõlge = LiidaTekstid(tõlge, env->beginDefine);
+    tõlge = LiidaTekstid(tõlge, "\n"); // Pärast algust üks newline.
+    char* keskkonnaSisu = LeiaTekstEnneTeksti(tekst, env->endText); //Alates keskkonna definitsioonist, lõppeb just ENNE --
+
+    if (!keskkonnaSisu) {
+        prindiVärviga("Keskkonna sisu ei leitud. Arvatavasti tähendab, et on viga keskkonda lõpetava sümboliga või selle leidmisega.", "punane");
+        return tõlkeStruct;
+    }
+
+    int koguArv = strlen(keskkonnaSisu); // Terve environmenti sisu võrra liigume edasi lähtekoodis
+    koguArv += strlen(env->endText)+1; // Kuna keskkonda lõpetavate sümbolite pikkus pole seal sees.
+    tõlkeStruct.Arv = koguArv; 
+    
+
+
+    // MAIN TRANSLATION
+    // Kui keskkonnal on multiline flag TRUE, siis on tarvis, et igale reale kirjutataks ette kasutatava subcommandi nimi (eg. it, k, jne.).
+    // Kui keskkonnal ei ole multiline flagi, siis KUI keskkonnal on ainult üks subcommand defineeritud, siis võib iga rea algusest jätta subcommandi nime kirjutamata, sest igal real automaatselt eeldatakse, et sa kutsud seda välja.
+    // Vastasel juhul pead ikka igal real subcommandi nime välja kirjutama (sest subcommande võib olla mitu).
+
+    char* keskkonnaSisuTokeniteks = strdup(keskkonnaSisu); // Et esialgne keskkonna sisu mälu jääks alles
+
+    char* line = strtok(keskkonnaSisuTokeniteks, "\n");
+    line = strtok(NULL, "\n"); // Esimene rida on alati keskkonna nimi
+    
+    // Lets tõlk this bitch
+    while (line != NULL) {
+        if (env->multiline) {
+            // Teame, et iga uue rea alguses (mis ei ole eelnevaga seotud), peab olema käsu nimi
+            
+            // Kontrollime, kas real algab mõni käsk
+            // Kui käsku ei alga, ss on pohhui, sest me nkn oleme selle kinni püüdnud siis sellele reale eelneva (kusiganes see ka poleks) käsu reaga
+            struct Käsk* subcmd = KasEnvironmentKäsk(line, env);
+            if (subcmd) {
+                // Leidsime real käsu. See oli kas esimene rida või meil on eelnevalt olnud teksti, mida on vaja nüüd tõlkida
+                
+                char* TekstPraegusestReast = strstr(keskkonnaSisu, line);
+                TekstPraegusestReast += strlen(subcmd->käsunimi) + 1; // Et käsunimi välja jäetaks, +1 et tühikuga arvestada pärast käsunime
+                
+                if (TekstPraegusestReast) {
+                    char* TerveKäsuRida = LeiaTekstEnneTeksti(TekstPraegusestReast, subcmd->käsunimi);
+
+                    // Teeme väikese clean upi leitud teksti peal.
+                    size_t len = strlen(TerveKäsuRida);
+                    if (len >= 3 && TerveKäsuRida[len - 1] == '-' && TerveKäsuRida[len - 2] == '-' && TerveKäsuRida[len - 3] == '\n') {
+                        TerveKäsuRida[len - 3] = '\0'; // Remove "\n--"
+                    } else if (len >= 1 && TerveKäsuRida[len - 1] == '\n') {
+                        TerveKäsuRida[len - 1] = '\0'; // Remove single '\n'
+                    }
+                    
+                    // Nüüd tekib küsimus selles, et kas see terve käsurida sisaldab mitut argumenti, mis oli mõeldud välja kutsud käsu jaoks.
+                    // Loome masiivi, mis hoiab leitud argumente.
+                    char** arguments = SplitByDelimiter(TerveKäsuRida, "   ");
+                    char* finalTranslation = strdup(subcmd->definitsioon);
+
+                    for (unsigned int i = 0; i < subcmd->argumentideKogus; i++) {
+                        // Oleme leidnud kõik argumendid, mida see subcommand endale soovib. Nüüd peame tõlkima igat ühte ja asetama need sobivale kohale definitsioonis.
+                        char* tõlgitudArgument = TõlgiKõik(arguments[i]);
+                        
+                        // Teeme placeholderi, kus me hakkame ükshaaval argumente asendama
+                        char placeholder[50];
+                        snprintf(placeholder, sizeof(placeholder), "%s", subcmd->argumentideNimed[i]);
+                        
+                        // Saame selle argumendi suhtes lõpliku tõlke.
+                        finalTranslation = ReplaceArgumentInDefinition(finalTranslation, placeholder, tõlgitudArgument);
+                        free(tõlgitudArgument);
+                    }
+
+                    tõlge = LiidaTekstid(tõlge, finalTranslation);
+                    free(TerveKäsuRida);
+                    free(finalTranslation);
+                }
+            }
+        }
+        else
+        {
+            // Tuleb välja, et keskkonnas pole multiline lubatud. Seega on võimalusi mitu: kui keskkonnas on subcommande ainult üks, siis ei pea ühelgil real märkima kasutavat käsku (aga võib). Kui käske on mitu, siis peab igal real seda kasutama.
+            if (env->käsk_list.count == 1) {
+                // Ainult üks subcommand on. Igal real VÕIB olla käsk defineeritud, kuid ei pea olema.
+                struct Käsk* subcmd = KasEnvironmentKäsk(line, env);
+                if (subcmd) {
+                    // Real leiti käsk.
+                    // Võtame rea algusest ära käsu nime (ja tühiku).
+                    size_t subcmd_len = strlen(subcmd->käsunimi);
+                    if (strncmp(line, subcmd->käsunimi, subcmd_len) == 0) {
+                        line += subcmd_len + 1;
+                    }
+
+                    char ** arguments = SplitByDelimiter(line, "   ");
+                    char* finalTranslation = strdup(subcmd->definitsioon);
+
+                    for (unsigned int i = 0; i < subcmd->argumentideKogus; i++) {
+                        char* tõlgitudArgument = TõlgiKõik(arguments[i]);
+                        
+                        char placeholder[50];
+                        snprintf(placeholder, sizeof(placeholder), "%s", subcmd->argumentideNimed[i]);
+                        
+                        finalTranslation = ReplaceArgumentInDefinition(finalTranslation, placeholder, tõlgitudArgument);
+                        free(tõlgitudArgument);
+                    }
+                    tõlge = LiidaTekstid(tõlge, finalTranslation);
+                    free(finalTranslation);
+
+                } else {
+                    // Real ei leitud käsku. Sellisel juhul ei ole real alguses defineeritud käsu nime.
+                    struct Käsk* subcmd = &env->käsk_list.käsud[0]; // Leiame keskkonna ainsa käsu. 
+
+                    char ** arguments = SplitByDelimiter(line, "   ");
+                    char* finalTranslation = strdup(subcmd->definitsioon);
+                    puts(finalTranslation);
+
+                    for (unsigned int i = 0; i < subcmd->argumentideKogus; i++) {
+                        char* tõlgitudArgument = TõlgiKõik(arguments[i]);
+                        
+                        char placeholder[50];
+                        snprintf(placeholder, sizeof(placeholder), "%s", subcmd->argumentideNimed[i]);
+                        
+                        finalTranslation = ReplaceArgumentInDefinition(finalTranslation, placeholder, tõlgitudArgument);
+                        free(tõlgitudArgument);
+                    }
+                    tõlge = LiidaTekstid(tõlge, finalTranslation);
+                    free(finalTranslation);
+                }
+            }
+            else 
+            {
+                // Mitu subcommandi on. Peame igal real leidma vastava commandi ja seda tõlkima.
+                struct Käsk* subcmd = KasEnvironmentKäsk(line, env);
+                if (subcmd) {
+                    // Võtame rea algusest ära käsu nime (ja tühiku).
+                    size_t subcmd_len = strlen(subcmd->käsunimi);
+                    if (strncmp(line, subcmd->käsunimi, subcmd_len) == 0) {
+                        line += subcmd_len + 1;
+                    }
+
+                    char** arguments = SplitByDelimiter(line, "   ");
+                    char* finalTranslation = strdup(subcmd->definitsioon);
+
+                    for (unsigned int i = 0; i < subcmd->argumentideKogus; i++) {
+                        char* tõlgitudArgument = TõlgiKõik(arguments[i]);
+
+                        char placeholder[50];
+                        snprintf(placeholder, sizeof(placeholder), "%s", subcmd->argumentideNimed[i]);
+
+                        finalTranslation = ReplaceArgumentInDefinition(finalTranslation, placeholder, tõlgitudArgument);
+                        free(tõlgitudArgument);
+                    }
+                    tõlge = LiidaTekstid(tõlge, finalTranslation);
+                    free(finalTranslation);
+                }
+            }
+        }
+
+        line = strtok(NULL, "\n");
+    }
+    
+    tõlge = LiidaTekstid(tõlge, "\n"); // Enne lõppu newline.
+    tõlge = LiidaTekstid(tõlge, env->endDefine);
+    free(keskkonnaSisuTokeniteks);
+    tõlkeStruct.Tekst = tõlge;
+    return tõlkeStruct;
 }
 
 
@@ -1296,6 +1493,7 @@ void print_environment_info(struct Environment* env) {
     printf("Environment Name: %s\n", env->name);
     printf("Freeform Allowed? (Body): %d\n", env->body);
     printf("Nesting Allowed? (Nest): %d\n", env->nest);
+    printf("Multilines Allowed?: %d\n", env->multiline);
     printf("Begin Define: %s\n", env->beginDefine ? env->beginDefine : "Not found");
     printf("End Define: %s\n", env->endDefine ? env->endDefine : "Not found");
     printf("Content: %s\n", env->Content ? env->Content : "Not found");

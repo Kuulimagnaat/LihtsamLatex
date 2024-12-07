@@ -198,19 +198,21 @@ int main() {
 
             char* koguTekst = 0;
             long length;
-            FILE* koguFail = fopen (main_path, "rb");
+            FILE* koguFail = fopen(main_path, "rb");
 
             if (koguFail)
             {
-                fseek (koguFail, 0, SEEK_END);
-                length = ftell (koguFail);
-                fseek (koguFail, 0, SEEK_SET);
-                koguTekst = malloc (length);
+                fseek(koguFail, 0, SEEK_END);
+                length = ftell(koguFail);
+                fseek(koguFail, 0, SEEK_SET);
+                
+                koguTekst = malloc(length + 1);  // +1 for null terminator
                 if (koguTekst)
                 {
-                    fread (koguTekst, 1, length, koguFail);
+                    fread(koguTekst, 1, length, koguFail);
+                    koguTekst[length] = '\0';  // Ensure null termination
                 }
-                fclose (koguFail);
+                fclose(koguFail);
             }
 
 
@@ -256,6 +258,7 @@ int main() {
                     char* tõlge = TõlgiKõik(koguTekst);
                     fprintf(output_file, tõlge);
                     free(tõlge);
+                    puts("Faili tõlkimine toimis.");
                 }
                 else {
                     // Write the current line from the template

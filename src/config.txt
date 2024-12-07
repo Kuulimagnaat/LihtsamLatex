@@ -19,4 +19,4 @@ in -> \in
 tilde(täht) -> \tilde{täht}
 vahe -> \quad
 
-env(enum) [body, subcmds:{it}, end:{--}] -> \begin{enumerate} #content \end{enumerate} | (it(arg1) -> \item arg1)
+env(enum) [multiline, subcmds:{it}, end:{--}] -> \begin{enumerate} #content \end{enumerate} | (it(arg1) -> \item arg1)
