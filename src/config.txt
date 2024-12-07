@@ -1,6 +1,5 @@
 template = KAAREL
 
-
 ^[lmao] -> ^{lmao}
 to -> \to
 inf -> \infty

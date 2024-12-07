@@ -1,0 +1,11 @@
+\documentclass{article}
+\usepackage{amsfonts}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage[estonian]{babel}
+
+\usepackage{parskip}
+
+\begin{document}
+{{content}}
+\end{document}

@@ -5,10 +5,10 @@ color a && cls && gcc src/Matatõlge.c src/Abifunktsioonid.c src/Kõigetõlge.c 
 
 
 Kasutatavad flagid:
-body	                        The environment allows freeform content to be given aka no commands on some lines. If freeform content is given (aka no subcommand is used) and the environment doesnt support it, then an error should be given.
-args:N                          The environment OR subcommand takes N arguments. Can also be specified in terms of brackets (x)(y) for some n amount, in which case it searches for the given argument names "x", "y" to be replaced. Argument names default to arg1, arg2, .... if given as args:N.
+body	                        DEPRECATED.
+args:N                          The environment or subcommand takes N arguments. Can also be specified in terms of brackets (x)(y) for some n amount, in which case it searches for the given argument names "x", "y" to be replaced. Argument names default to arg1, arg2, .... if given as args:N.
 subcmds:{X, Y, ...}	            The environment includes subcommands.
-nest	                        The environment allows nesting of other environments or itself.
+nest	                        DEPRECATED.
 multiline                       The environment allows for multiline usage of its subcommands.
 
 Mandatory flags:
