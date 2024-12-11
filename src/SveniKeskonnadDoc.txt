@@ -4,6 +4,17 @@ To compile main:
 color a && cls && gcc src/Matatõlge.c src/Abifunktsioonid.c src/Kõigetõlge.c src/main.c
 
 
+KESKKONNA EDITS:
+* Arbitrary number of arguments for subcommand arguments.
+* NESTED ENVIRONMENTS
+* Be able to begin multiple environments with just one command. nt:
+env(cenum) [multiline, subcmds:{r}, end:{--}] -> center, enumerate | (it(arg1) -> \item arg1)
+(Eeldame, et esimesel ei ole ühtegi subcommandi)
+
+
+
+
+
 Kasutatavad flagid:
 body	                        DEPRECATED.
 args:N                          The environment or subcommand takes N arguments. Can also be specified in terms of brackets (x)(y) for some n amount, in which case it searches for the given argument names "x", "y" to be replaced. Argument names default to arg1, arg2, .... if given as args:N.
