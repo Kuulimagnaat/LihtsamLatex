@@ -1566,6 +1566,7 @@ char* TõlgiMathMode(const char* avaldis)
     result[0] = '\0';
 
     int w = 0;
+    // Avaldis on terve, võimalik et mitmerealine, tekst, mis jääb mm-de vahele.
     while (w < strlen(avaldis))
     {
         char* expression = LeiaTekstEnneTeksti(&avaldis[w], "\n");
