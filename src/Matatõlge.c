@@ -927,6 +927,10 @@ struct TekstArv TõlgiKäsk(const char* tekst, struct Käsk* käsk)
                 free(argument);
                 argument = sulgudeta;
             }
+            else
+            {
+                i += strlen(argument);
+            } 
         }
         argumentideTõlked[j] = TõlgiMathMode(argument);
         
@@ -1548,13 +1552,13 @@ struct Käsk* KasKäsk(const char* tekst)
 
 extern char main_path[256];
 // Rekursiivselt tõlgime math moodi latexisse. Funktsionn võtab sisse teksti, mida hakata tõlkima ja nimekirja nendest käskudest, mida funktsioon saab tõlkimiseks kasutada.
-#define TõlgiMathModeDebug 0
+#define TõlgiMathModeDebug 1
 #define VigadestTeatamine 0
 char* TõlgiMathMode(const char* avaldis)
 {
     #if TõlgiMathModeDebug == 1
     prindiTaane();
-    printf("TõlgiMathMode\n");
+    prindiVärviga("TõlgiMathMode\n", "roheline");
     prindiTaane();
     printf("SISSE: %s\n", avaldis);
     rekursiooniTase += 1;

@@ -44,7 +44,7 @@ char* TõlgiKõik(char* tõlgitav)
                 tõlge = LiidaTekstid(tõlge, "\n\\[ ");
                 onDisplayMath = 1;
             }
-            i += (KasEsimesedTähed(&tõlgitav[i], "\nmm ") ? 4 : 3);
+            i += (KasEsimesedTähed(&tõlgitav[i], "\nmm ") || KasEsimesedTähed(&tõlgitav[i], " mm ") ? 4 : 3);
 
             unsigned int start = i;
             while (i < pikkus && !(KasEsimesedTähed(&tõlgitav[i], " mm") || KasEsimesedTähed(&tõlgitav[i], "\nmm"))) {
@@ -64,8 +64,10 @@ char* TõlgiKõik(char* tõlgitav)
                 tõlge = LiidaTekstid(tõlge, "\\]");
             }
 
-            i += (KasEsimesedTähed(&tõlgitav[i], "\nmm") ? 4 : 3);
-        } else {
+            i += 3;
+        }
+        else 
+        {
             char* täht = malloc(2);
             täht[0] = tõlgitav[i];
             täht[1] = '\0';
