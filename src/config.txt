@@ -1,5 +1,6 @@
 template = KAAREL
 
+
 ^[lmao] -> ^{lmao}
 to -> \to
 inf -> \infty
@@ -19,7 +20,12 @@ tilde(täht) -> \tilde{täht}
 vahe -> \quad
 ... -> \dots
 .: -> \vdots
+_(a1) -> _{a1}
+... -> \dots
+.: -> \vdots
 _(a) -> _{a} 
 
-env(enum) [multiline, subcmds:{it}, end:{--}] -> \begin{enumerate} #content \end{enumerate} | (it(arg1) -> \item arg1)
+env(enum) [subcmds:{it}, multiline, end:{--}] -> \begin{enumerate} #content \end{enumerate} | (it(arg1)(lmao) -> \item \underline{arg1} \textbf{lmao})
+env(mat3) [subcmds:{rida}, end:{--}] -> \begin{pmatrix} #content \end{pmatrix} | (rida(arg1)(lmao)(arg3) -> arg1 & lmao & arg3\\)
+
 env(mat3) [subcmds:{r}, end:{--}] -> \begin{pmatrix} #content \end{pmatrix} | (r(arg1)(arg2)(arg3) -> arg1 & arg2 & arg3\\)
