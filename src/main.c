@@ -217,7 +217,7 @@ int main() {
 
 
             // Open the input .txt file for reading
-            FILE* file = fopen(main_path, "r");
+            FILE* file = fopen(main_path, "rb");
             if (file == NULL) {
                 perror("Unable to open the main .txt file in the current directory");
                 fclose(template_file);
@@ -256,7 +256,7 @@ int main() {
                     
                     // Process the main.txt content
                     char* tõlge = TõlgiKõik(koguTekst);
-                    fprintf(output_file, tõlge);
+                    fprintf(output_file, "%s\n", tõlge);
                     free(tõlge);
                     puts("Faili tõlkimine toimis.");
                 }
