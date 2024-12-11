@@ -44,49 +44,33 @@ char* TõlgiKõik(char* tõlgitav)
                 tõlge = LiidaTekstid(tõlge, "\n\\[ ");
                 onDisplayMath = 1;
             }
-            i+=4;
-            char* tõlgitavMata = NULL;
-            for (unsigned int j = i; j < pikkus; j++)
-            {
-                if (KasEsimesedTähed(&tõlgitav[j], " mm") || KasEsimesedTähed(&tõlgitav[j], "\nmm"))
-                {
-                    char* tõlgitavMata = VõtaTekstIndeksini(&tõlgitav[i], j-i);
+            i += (KasEsimesedTähed(&tõlgitav[i], "\nmm ") ? 4 : 3);
 
-                    char* mataTõlge = TõlgiMathMode(tõlgitavMata);
-                    tõlge = LiidaTekstid(tõlge, mataTõlge);
-                    free(mataTõlge);
-                    
-
-                    i += j-i;
-                    if (onDisplayMath == 0)
-                    {
-                        tõlge = LiidaTekstid(tõlge, "$");
-                    }
-                    else if(onDisplayMath == 1)
-                    {
-                        tõlge = LiidaTekstid(tõlge, "\\]");
-                    }
-
-                    i += 3;
-                }
-                
+            unsigned int start = i;
+            while (i < pikkus && !(KasEsimesedTähed(&tõlgitav[i], " mm") || KasEsimesedTähed(&tõlgitav[i], "\nmm"))) {
+                i++;
             }
-            
-            
 
-            
-            free (tõlgitavMata);
-            
-            
-        }
+            char* tõlgitavMata = VõtaTekstIndeksini(&tõlgitav[start], i - start);
+            char* mataTõlge = TõlgiMathMode(tõlgitavMata);
+            tõlge = LiidaTekstid(tõlge, mataTõlge);
 
+            free(mataTõlge);
+            free(tõlgitavMata);
 
-        else
-        {
+            if (onDisplayMath == 0) {
+                tõlge = LiidaTekstid(tõlge, "$");
+            } else {
+                tõlge = LiidaTekstid(tõlge, "\\]");
+            }
+
+            i += (KasEsimesedTähed(&tõlgitav[i], "\nmm") ? 4 : 3);
+        } else {
             char* täht = malloc(2);
             täht[0] = tõlgitav[i];
             täht[1] = '\0';
             tõlge = LiidaTekstid(tõlge, täht);
+            free(täht);
             i++;
         }
     }
