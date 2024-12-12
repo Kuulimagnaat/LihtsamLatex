@@ -20,6 +20,8 @@ char* TõlgiKõik(char* tõlgitav)
     for (unsigned int i = 0; i<pikkus; )
     {
         struct Environment* env = KasEnvironment(&tõlgitav[i]);
+        printf("\"\n%s\"\n", &tõlgitav[i]);
+        printf("KAS ESIMESED ON NMMN: %d\n", KasEsimesedTähed(&tõlgitav[i], "\nmm\r\n"));
         if (env)
         {
             struct TekstArv envTõlge = TõlgiEnvironment(&tõlgitav[i], env);
@@ -28,7 +30,7 @@ char* TõlgiKõik(char* tõlgitav)
             i += envTõlge.Arv;
         }
         else
-        if ( i == 0 && KasEsimesedTähed(&tõlgitav[i], "mm ") || KasEsimesedTähed(&tõlgitav[i], " mm ") || KasEsimesedTähed(&tõlgitav[i], "\nmm "))
+        if ( i == 0 && KasEsimesedTähed(&tõlgitav[i], "mm ") || KasEsimesedTähed(&tõlgitav[i], " mm ") || KasEsimesedTähed(&tõlgitav[i], "\nmm ") || KasEsimesedTähed(&tõlgitav[i], "\nmm\r\n"))
         {
             int onDisplayMath = 0;
             if (KasEsimesedTähed(&tõlgitav[i], " mm "))
@@ -39,12 +41,18 @@ char* TõlgiKõik(char* tõlgitav)
             {
                 tõlge = LiidaTekstid(tõlge, "$");
             }
-            else if (KasEsimesedTähed(&tõlgitav[i], "\nmm "))
+            else if (KasEsimesedTähed(&tõlgitav[i], "\nmm\r\n"))
             {
-                tõlge = LiidaTekstid(tõlge, "\n\\[ ");
+                puts("TAJUST NmmN");
+                tõlge = LiidaTekstid(tõlge, "\n\\[\n");
                 onDisplayMath = 1;
             }
-            i += (KasEsimesedTähed(&tõlgitav[i], "\nmm ") || KasEsimesedTähed(&tõlgitav[i], " mm ") ? 4 : 3);
+            else if (KasEsimesedTähed(&tõlgitav[i], "\nmm "))
+            {
+                tõlge = LiidaTekstid(tõlge, "\n\\[");
+                onDisplayMath = 1;
+            }
+            i += (KasEsimesedTähed(&tõlgitav[i], "\nmm\r\n") || KasEsimesedTähed(&tõlgitav[i], "\nmm ") || KasEsimesedTähed(&tõlgitav[i], " mm ") ? 4 : 3);
 
             unsigned int start = i;
             while (i < pikkus && !(KasEsimesedTähed(&tõlgitav[i], " mm") || KasEsimesedTähed(&tõlgitav[i], "\nmm"))) {

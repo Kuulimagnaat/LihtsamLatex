@@ -1,4 +1,5 @@
-template = KAAREL
+TEXTMODE KÄSUD
+pealk(qwe)
 
 
 MATHMODE KÄSUD
