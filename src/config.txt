@@ -25,5 +25,5 @@ _[a1] -> _{a1}
 
 
 KESKKONNAD
-env(enum) [subcmds:{it}, multiline, end:{--}] -> \begin{enumerate} #content \end{enumerate} | (it(arg1)(lmao) -> \item \underline{arg1} \textbf{lmao})
-env(mat3) [subcmds:{r}, end:{--}] -> \begin{pmatrix} #content \end{pmatrix} | (r(arg1)(arg2)(arg3) -> arg1 & arg2 & arg3\\)
+enum [multiline, end:{--}] -> \begin{enumerate} #content \end{enumerate} | (it(arg1) -> \item arg1) (it2(arg1)(arg2) -> \item arg1, arg2)
+mat3 [end:{--}] -> \begin{pmatrix} #content \end{pmatrix} | (r(arg1)(arg2)(arg3) -> arg1 & arg2 & arg3\\)

@@ -5,6 +5,8 @@ color a && cls && gcc src/Matatõlge.c src/Abifunktsioonid.c src/Kõigetõlge.c 
 
 
 KESKKONNA EDITS:
+* fix env(.) and subcmds:{.} (aka remove them.) DONE
+
 * Have mathmode be able to translate environments.
 * IF ENVIRONMENT IS INSIDE MATHMODE (MM) THEN ALL ARGUMENTS SHOULD BE GIVEN TO TÕLGIMATHMODE (GIVEN AS A PARAMETER TO TÕLGIENVIRONMENT)
 * NESTED ENVIRONMENTS
@@ -20,7 +22,6 @@ env(cenum) [multiline, subcmds:{r}, end:{--}] -> center, enumerate | (it(arg1) -
 Kasutatavad flagid:
 body	                        DEPRECATED.
 args:N                          The environment or subcommand takes N arguments. Can also be specified in terms of brackets (x)(y) for some n amount, in which case it searches for the given argument names "x", "y" to be replaced. Argument names default to arg1, arg2, .... if given as args:N.
-subcmds:{X, Y, ...}	            The environment includes subcommands.
 nest	                        DEPRECATED.
 multiline                       The environment allows for multiline usage of its subcommands.
 

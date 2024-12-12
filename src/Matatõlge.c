@@ -182,17 +182,22 @@ void parse_environment(const char *config_line, struct Environment* env) {
     }
     
     // GET THE ENVIRONMENT NAME
-    const char* start = strstr(config_line, "env(");
-    if (start) {
-        start += 4; // Move past 'env('
-        const char* end = strchr(start, ')');
-        if (end) {
-            size_t name_len = end - start;
-            char name[name_len + 1];
-            strncpy(name, start, name_len);
-            name[name_len] = '\0';  // Null-terminate the string
-            env->name = strdup(name); // Allocate and assign the environment name
-        }
+    const char* start = config_line;
+    while (*start == ' ' || *start == '\t') {
+        start++; // Skip leading whitespace
+    }
+    const char* end = strchr(start, '[');
+    if (end) {
+        size_t name_len = end - start;
+        char name[name_len + 1];
+        strncpy(name, start, name_len);
+        name[name_len] = '\0'; // Null-terminate the string
+        char * nameReal = strdup(name);
+        nameReal = trim_whitespace(nameReal);
+        env->name = nameReal; // Allocate and assign the environment name
+    } else {
+        printf("Error: Environment name not found or malformed configuration.\n");
+        env->name = NULL;
     }
     
     // THE BODY, NEST DETECTION PART AND OTHER STARTS HERE
@@ -210,8 +215,8 @@ void parse_environment(const char *config_line, struct Environment* env) {
     
     
     int subcommand_count = 0;
-    const char *current_pos = definitions_start;
 
+    const char *current_pos = definitions_start;
     // Loop through each subcommand definition
     while ((current_pos = strchr(current_pos, '(')) != NULL) {
         const char *start_pos = current_pos + 1; // Skip the opening '('
@@ -225,6 +230,11 @@ void parse_environment(const char *config_line, struct Environment* env) {
             } else if (*current_pos == ')') {
                 open_parens--; // Found a closing parenthesis
             }
+        }
+
+        if (*current_pos == '\0' || open_parens != 0) {
+            printf("Error: Unmatched parentheses in subcommand definition.\n");
+            break;
         }
         
         // Extract the full subcommand definition (excluding '(' and ')')
@@ -1448,12 +1458,10 @@ void read_environments_from_config(const char* filepath, struct EnvironmentList*
         {
             // Siin tuleks env() süntaksi nõudmine keskkondade puhul ära jätta, sest on teada, et kui lugemine toimub, siis on tegu keskkondadega, sest loetakse KESKKONNAD lõiku.
             // Eeldame, et "env" kasutame AINULT siis, kui defineerime uut keskkonda
-            if (strncmp(line, "env", 3) == 0){
-                printf("Valid Environment Line: %s\n", line);
-                struct Environment env = {0}; // Initialize a new Environment struct
-                parse_environment(line, &env); // Use the existing parsing method
-                add_environment(env_list, env); // Add the parsed environment to the global list
-            }
+            printf("Valid Environment Line: %s\n", line);
+            struct Environment env = {0}; // Initialize a new Environment struct
+            parse_environment(line, &env); // Use the existing parsing method
+            add_environment(env_list, env); // Add the parsed environment to the global list
         }
 
         free(line);
