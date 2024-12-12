@@ -5,8 +5,10 @@ color a && cls && gcc src/Matatõlge.c src/Abifunktsioonid.c src/Kõigetõlge.c 
 
 
 KESKKONNA EDITS:
-* Arbitrary number of arguments for subcommand arguments.
+* Have mathmode be able to translate environments.
+* IF ENVIRONMENT IS INSIDE MATHMODE (MM) THEN ALL ARGUMENTS SHOULD BE GIVEN TO TÕLGIMATHMODE (GIVEN AS A PARAMETER TO TÕLGIENVIRONMENT)
 * NESTED ENVIRONMENTS
+* Arbitrary number of arguments for subcommand arguments.
 * Be able to begin multiple environments with just one command. nt:
 env(cenum) [multiline, subcmds:{r}, end:{--}] -> center, enumerate | (it(arg1) -> \item arg1)
 (Eeldame, et esimesel ei ole ühtegi subcommandi)
