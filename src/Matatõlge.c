@@ -1576,6 +1576,8 @@ char* TõlgiMathMode(const char* avaldis)
         char* expression = LeiaTekstEnneTeksti(&avaldis[w], "\n");
         w += strlen(expression);
         int i = 0;
+        // Kas tähe juurde jõudes oli eelnev asi käsk. Kui oli, siis tuleb tavalise tähe korral selle ette panna tühik.
+        int eelmiselKohalOliKäsk = 0;
         while (i < strlen(expression))
         {
             #if VigadestTeatamine == 1
@@ -1769,12 +1771,19 @@ char* TõlgiMathMode(const char* avaldis)
                 struct TekstArv käsuTagastus = TõlgiKäsk(&expression[i], käsk);
                 result = LiidaTekstid(result, käsuTagastus.Tekst);
                 i += käsuTagastus.Arv;
-
                 free(käsuTagastus.Tekst);
+                
+                eelmiselKohalOliKäsk = 1;
             }
 
             else 
             {
+                // Vaja selleks, et panna tühik juhul, kui liidetav täht järgneb käsule. Kui ilma tühikuta panna, ss rikuks käsu ära, näiteks \lim_{x\toa}, kus \toa peaks olema \to a.
+                if (eelmiselKohalOliKäsk && expression[i]!=' ')
+                {
+                    result = LiidaTekstid(result, " ");
+                }
+                eelmiselKohalOliKäsk = 0;
                 // Handle regular characters
                 char* single_char = my_strndup(&expression[i], 1);
                 result = LiidaTekstid(result, single_char);
