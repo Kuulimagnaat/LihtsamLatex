@@ -9,7 +9,8 @@ struct EnvironmentList environList;
 int main() {
     SetConsoleOutputCP(CP_UTF8);
     
-    TäidaKäskList();
-    char* tulemus = TõlgiMathMode("limxtoinf");
-    printf("\"%s\"", tulemus);
+    char* lõpud[] = {"uuga", "buuga", "luuga", "duuga"};
+    char tekst[] = "Tere!, minu nimi on Kaarel luuga ja ma olen äge vend";
+    char* tulemus = LeiaTekstEnneTekste(tekst, lõpud, 4);
+    printf("\"%s\"\n", tulemus);
 }

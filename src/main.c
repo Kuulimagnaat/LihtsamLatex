@@ -163,11 +163,9 @@ int main() {
         if (compare_filetime(current_mod_time, last_mod_time) != 0) 
         {
             last_mod_time = current_mod_time;
-            init_käsk_list(&käskList);
-            read_commands_from_config(config_path, &käskList);
 
-            init_environment_list(&environList);
-            read_environments_from_config(config_path, &environList);
+            // Täidetakse käsklist ja envlist.
+            AmmendaConfig();
 
 
             // config.txt failist eraldatakse template faili nimi, millest koostatakse aadress, mis viitab soovitavale template failile.

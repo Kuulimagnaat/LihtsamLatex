@@ -32,45 +32,31 @@ long int LeiaFailiSuurus(FILE* f)
 }
 
 
-void TäidaKäskList()
+// Funktsioon, mis eraldab mälu ja kopeerib sinna antud tekstist kõik selle, mis jääb enne esimest antud lõppu. Kui ükski lõpp ei klapi, ss eraldab mälu ja kopeerib sinna lic esialgse teksti. On selge, et selle funktsiooni tagastatud mälu tuleb tagastada.
+char* LeiaTekstEnneTekste(char* tekst, char** lõpud, unsigned int lõppudeKogus)
 {
-    // ...\luuga\duuga\        <-- Kaust, kust programm käivitati – currend working directory.
-    char cwd[MAX_PATH_LENGTH];
-    // ...\uuga\buuga\a.exe        <-- Programmi exe faili directory, kus on ka programmi exe faili nimi lõpus.
-    char exe_path[MAX_PATH_LENGTH];
-    // ...\uuga\buuga\          <-- sama dir, aga ilma a.exe nimeta lõpus
-    char exe_dir[MAX_PATH_LENGTH];
-
-    // Get the current working directory for main.txt. Seda asukohta on vaja selleks, et sellel aadressil asuvat kasutaja kirjutatavat lähtekoodifaili avada.
-    if (_getcwd(cwd, sizeof(cwd)) == NULL) {
-        perror("_getcwd() error");
-        return;
+    for (unsigned int i = 0; tekst[i]!='\0'; i++)
+    {
+        for (unsigned j =0; j< lõppudeKogus; j++)
+        {
+            if (KasEsimesedTähed(&tekst[i], lõpud[j]))
+            {
+                char* eelnevTekst = malloc(i+1);
+                memcpy(eelnevTekst, tekst, i);
+                eelnevTekst[i] = '\0';
+                return eelnevTekst;
+            }
+        }
     }
-
-    // Get the executable full name. Seda teksti on vaja selleks, et sellest eraldada directory, kus exe fail asub, et seda kasutada muude failide nt config.txt ja SVEN.txt avamiseks.
-    if (GetModuleFileName(NULL, exe_path, MAX_PATH_LENGTH) == 0) {
-        perror("GetModuleFileName() error");
-        return;
-    }
-
-    // Strip the executable name to get the directory
-    strcpy(exe_dir, exe_path);
-    char* last_backslash = strrchr(exe_dir, '\\');
-    if (last_backslash) {
-        *last_backslash = '\0';  // Cut the path at the last backslash
-    }
-
-
-    // Koostatakse programmi exe faili aadressi abil aadress, kus asub config.txt. Seejärel sealt eraldatakse kasutaja defineeritud käsud, mida hakatakse hoidma KäskListi objektis.
-    char config_path[MAX_PATH_LENGTH];
-    snprintf(config_path, sizeof(config_path), "%s\\src\\config.txt", exe_dir);
-
-    init_käsk_list(&käskList);
-    read_commands_from_config(config_path, &käskList);
+    char* eelnevTekst = malloc(strlen(tekst)+1);
+    memcpy(eelnevTekst, tekst, strlen(tekst)+1); // Tekstilõpumärk kopeeritakse ka.
+    return eelnevTekst;
 }
 
 
-void TäidaEnvironmentList()
+
+// Funktsioon, mis loeb kõik mathmode käsud, textmode käsud ja keskkonnad config.txt failist.
+void AmmendaConfig()
 {
     // ...\luuga\duuga\        <-- Kaust, kust programm käivitati – currend working directory.
     char cwd[MAX_PATH_LENGTH];
@@ -99,13 +85,20 @@ void TäidaEnvironmentList()
     }
 
 
-    // Koostatakse programmi exe faili aadressi abil aadress, kus asub config.txt. Seejärel sealt eraldatakse kasutaja defineeritud käsud, mida hakatakse hoidma KäskListi objektis.
+    // Koostatakse config.txt faili aadress. Sealt eraldatakse kasutaja defineeritud käsud ja need pannakse käskListi objekti.
     char config_path[MAX_PATH_LENGTH];
     snprintf(config_path, sizeof(config_path), "%s\\src\\config.txt", exe_dir);
+
+
+
+    init_käsk_list(&käskList);
+    read_commands_from_config(config_path, &käskList);
 
     init_environment_list(&environList);
     read_environments_from_config(config_path, &environList);
 }
+
+
 
 long int findSize(char* file_name) 
 { 

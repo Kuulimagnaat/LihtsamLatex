@@ -709,147 +709,108 @@ void read_commands_from_config(const char* filepath, struct KäskList* käsk_lis
     }
 
     char* line;
+    int onMathmodeKäskudeJuures = 0;
+    // Loetakse config faili ridahaaval. Hiljem võiks teha nagu lähtekoodifailigagi et enne lugeda pikka sõnesse ja ss seda analüüsida.
     while ((line = read_line(file)) != NULL) 
     {
+        if (KasEsimesedTähed(line, "MATHMODE KÄSUD"))
+        {
+            onMathmodeKäskudeJuures = 1;
+            continue;
+        }
+        if (KasEsimesedTähed(line, "KESKKONNAD") || KasEsimesedTähed(line, "TEXTMODE KÄSUD"))
+        {
+            onMathmodeKäskudeJuures = 0;
+            continue;
+        }
         // Skip empty lines or comments and environment lines
         if (line[0] == '\0' || line[0] == '#' || KasEsimesedTähed(line, "env"))
         {
             free(line);
             continue;
         }
-
-        char* NooleAsuk = strstr(line, "->");
-        if (NooleAsuk == NULL)
+        if (onMathmodeKäskudeJuures)
         {
-            //fprintf(stderr, "Noolt ei leitud: %s\n", line);
-            free(line);
-            continue;
-        }
-        // Kui kood jõuab siiani, on teada, et sellel real on käsu definitsioon, st leidub ->.
-        // Split the line into the left and right parts
-        // Left ja right on dünaamiliselt eraldatud. Seesama mälu läheb loetava structi klassimuutujatesse, seega seda ei tohi siin vabastada.
-        char* left = LeiaTekstEnneTeksti(line, "->");
-        char* right = strdup(&line[strlen(left)+2]);
-        // Trim whitespace
-        left = trim_whitespace(left);
-        right = trim_whitespace(right);
-        struct Käsk käsk = {0};
-
-        käsk.definitsioon = right;
-        // Parse the command name and arguments from the left side
-        // 5) Käsu nimi
-        if (strstr(left, "(") || strstr(left, "["))
-        {
-            // Järelikult leiti argumendiga käsk, st tuleb käsu structis palju väärtusi määrata.
-            char* nimi = NULL;
-            char* t1 = LeiaTekstEnneTeksti(left, "(");
-            char* t2 = LeiaTekstEnneTeksti(left, "[");
-            if (strlen(t1)<strlen(t2))
+            char* NooleAsuk = strstr(line, "->");
+            if (NooleAsuk == NULL)
             {
-                nimi = t1;
-                free(t2);
+                //fprintf(stderr, "Noolt ei leitud: %s\n", line);
+                free(line);
+                continue;
+            }
+            // Kui kood jõuab siiani, on teada, et sellel real on käsu definitsioon, st leidub ->.
+            // Split the line into the left and right parts
+            // Left ja right on dünaamiliselt eraldatud. Seesama mälu läheb loetava structi klassimuutujatesse, seega seda ei tohi siin vabastada.
+            char* left = LeiaTekstEnneTeksti(line, "->");
+            char* right = strdup(&line[strlen(left)+2]);
+            // Trim whitespace
+            left = trim_whitespace(left);
+            right = trim_whitespace(right);
+            struct Käsk käsk = {0};
+
+            käsk.definitsioon = right;
+            // Parse the command name and arguments from the left side
+            // 5) Käsu nimi
+            if (strstr(left, "(") || strstr(left, "["))
+            {
+                // Järelikult leiti argumendiga käsk, st tuleb käsu structis palju väärtusi määrata.
+                char* nimi = NULL;
+                char* t1 = LeiaTekstEnneTeksti(left, "(");
+                char* t2 = LeiaTekstEnneTeksti(left, "[");
+                if (strlen(t1)<strlen(t2))
+                {
+                    nimi = t1;
+                    free(t2);
+                }
+                else
+                {
+                    nimi = t2;
+                    free(t1);
+                }
+
+                käsk.käsunimi = nimi;
+                for (unsigned int i = strlen(nimi); i<strlen(left); )
+                {
+                    // 1) Argumentide kogus
+                    if (left[i] == '(' || left[i]=='[')
+                    {
+                        char* argument = LeiaSuluSisu(&left[i+1]);
+                        // 1) Argumentide kogus
+                        käsk.argumentideKogus += 1;
+                        // 2) Argumentide nimed
+                        käsk.argumentideNimed = realloc(käsk.argumentideNimed, käsk.argumentideKogus*sizeof(char*));
+                        käsk.argumentideNimed[käsk.argumentideKogus-1] = argument;
+                        // 3) Argumentide tüübid
+                        käsk.argumentideTüübid = realloc(käsk.argumentideTüübid, käsk.argumentideKogus*sizeof(char*));
+                        
+                        if (left[i] == '(')
+                        {
+                            käsk.argumentideTüübid[käsk.argumentideKogus-1] = 1;
+                        }
+                        else if (left[i] == '[')
+                        {
+                            käsk.argumentideTüübid[käsk.argumentideKogus-1] = 0;
+                        }
+                        i += strlen(argument);
+                    }
+                    else 
+                    {
+                        i++;
+                    }
+                }
             }
             else
-            {
-                nimi = t2;
-                free(t1);
+            {  
+                // Järelikult leiti käsk,  millel pole argumenti. Paljud väärtused käsu structis määratakse nulliks.
+                käsk.käsunimi = strdup(left);
+                käsk.argumentideKogus = 0;
+                käsk.argumentideNimed = NULL;
+                käsk.argumentideTüübid = NULL;
             }
 
-            käsk.käsunimi = nimi;
-            for (unsigned int i = strlen(nimi); i<strlen(left); )
-            {
-                // 1) Argumentide kogus
-                if (left[i] == '(' || left[i]=='[')
-                {
-                    char* argument = LeiaSuluSisu(&left[i+1]);
-                    // 1) Argumentide kogus
-                    käsk.argumentideKogus += 1;
-                    // 2) Argumentide nimed
-                    käsk.argumentideNimed = realloc(käsk.argumentideNimed, käsk.argumentideKogus*sizeof(char*));
-                    käsk.argumentideNimed[käsk.argumentideKogus-1] = argument;
-                    // 3) Argumentide tüübid
-                    käsk.argumentideTüübid = realloc(käsk.argumentideTüübid, käsk.argumentideKogus*sizeof(char*));
-                    
-                    if (left[i] == '(')
-                    {
-                        käsk.argumentideTüübid[käsk.argumentideKogus-1] = 1;
-                    }
-                    else if (left[i] == '[')
-                    {
-                        käsk.argumentideTüübid[käsk.argumentideKogus-1] = 0;
-                    }
-                    i += strlen(argument);
-                }
-                else 
-                {
-                    i++;
-                }
-            }
+            // Add the parsed command to the list
+            add_käsk(käsk_list, käsk);
         }
-        else
-        {  
-            // Järelikult leiti käsk,  millel pole argumenti. Paljud väärtused käsu structis määratakse nulliks.
-            käsk.käsunimi = strdup(left);
-            käsk.argumentideKogus = 0;
-            käsk.argumentideNimed = NULL;
-            käsk.argumentideTüübid = NULL;
-        }
-
-        /* char* open_paren = strchr(left, '(');  // Find first '('
-        if (open_paren) {
-            // Extract the command name before the first '('
-            *open_paren = '\0'; // Null-terminate the command name
-            käsk.käsunimi = strdup(left);
-
-            // Now parse arguments
-            char* current = open_paren + 1; // Start after '('
-            unsigned int arg_count = 0;
-
-            
-         // while (current && *current) fucking abomination
-            while (*current != '\0')
-            {
-                char* close_paren = strchr(current, ')'); // Find closing ')'
-                if (!close_paren) break; // If no closing parenthesis, stop
-
-                // Null-terminate the argument name
-                *close_paren = '\0';
-
-                // Allocate memory and store the argument name
-                käsk.argumentideNimed = realloc(käsk.argumentideNimed, (arg_count + 1) * sizeof(char*));
-                käsk.argumentideNimed[arg_count] = strdup(current);
-                //puts(käsk.argumentideNimed[arg_count]);
-
-                // Default argument type (can be customized later)
-                käsk.argumentideTüübid = realloc(käsk.argumentideTüübid, (arg_count + 1) * sizeof(int));
-                käsk.argumentideTüübid[arg_count] = 1; // Default type "long"
-
-                // Increment argument count
-                arg_count++;
-
-                // Move past the closing parenthesis and skip any spaces
-                current = close_paren + 2;
-                while (*current == ' ') {
-                    current++;
-                }
-            }
-
-            // Set the total argument count
-            käsk.argumentideKogus = arg_count;
-        } else {
-            // No arguments, just the command name
-            käsk.käsunimi = strdup(left);
-            käsk.argumentideKogus = 0;
-            käsk.argumentideNimed = NULL;
-            käsk.argumentideTüübid = NULL;
-        }
-        */
-
-        // Set the definition (right-hand side of the "->")
-
-        //puts("KOOD SIIN!");
-        // Add the parsed command to the list
-        add_käsk(käsk_list, käsk);
 
         // Free the line buffer
         free(line);
@@ -1466,19 +1427,33 @@ void read_environments_from_config(const char* filepath, struct EnvironmentList*
     }
 
     char* line;
+    int onKeskkondadeJuures = 0;
     while ((line = read_line(file)) != NULL) {
         // Skip empty line or kommentaarid yo
         if (line[0] == '\0' || line[0] == '#') {
             free(line);
             continue;
         }
-
-        // Eeldame, et "env" kasutame AINULT siis, kui defineerime uut keskkonda
-        if (strncmp(line, "env", 3) == 0) {
-            printf("Valid Environment Line: %s\n", line);
-            struct Environment env = {0}; // Initialize a new Environment struct
-            parse_environment(line, &env); // Use the existing parsing method
-            add_environment(env_list, env); // Add the parsed environment to the global list
+        if (KasEsimesedTähed(line, "KESKKONNAD"))
+        {
+            onKeskkondadeJuures = 1;
+            continue;
+        }
+        if (KasEsimesedTähed(line, "MATHMODE KÄSUD") || KasEsimesedTähed(line, "TEXTMODE KÄSUD"))
+        {
+            onKeskkondadeJuures = 0;
+            continue;
+        }
+        if (onKeskkondadeJuures)
+        {
+            // Siin tuleks env() süntaksi nõudmine keskkondade puhul ära jätta, sest on teada, et kui lugemine toimub, siis on tegu keskkondadega, sest loetakse KESKKONNAD lõiku.
+            // Eeldame, et "env" kasutame AINULT siis, kui defineerime uut keskkonda
+            if (strncmp(line, "env", 3) == 0){
+                printf("Valid Environment Line: %s\n", line);
+                struct Environment env = {0}; // Initialize a new Environment struct
+                parse_environment(line, &env); // Use the existing parsing method
+                add_environment(env_list, env); // Add the parsed environment to the global list
+            }
         }
 
         free(line);
@@ -2091,7 +2066,7 @@ char* LeiaLühemArgument(const char* tekst)
             free(sulusisu);
             continue;
         }
-        if  (tekst[i] == '+' || tekst[i] == '-' || tekst[i] == '*' || tekst[i] == ' ' || tekst[i] == '=' || tekst[i]=='\0')
+        if  (tekst[i] == '+' || tekst[i] == '-' || tekst[i] == '*' || tekst[i] == ' ' || tekst[i] == '=' || tekst[i] == ',' || tekst[i]=='\0')
         {
             char* argument = malloc(i+1);
             memcpy(argument, tekst, i);
