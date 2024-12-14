@@ -1,5 +1,12 @@
+template = KAAREL
+
+
 TEXTMODE KÄSUD
-pealk(qwe)
+suurpealk (tekst) -> \begin{center}\section{tekst}\end{center}
+pealk (luuga) -> \section*{luuga}
+//(uuga)// -> \emph{uuga}
+**(buuga)** -> \textbf{buuga}
+
 
 
 MATHMODE KÄSUD
