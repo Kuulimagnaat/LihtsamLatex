@@ -9,7 +9,7 @@
 
 extern struct KäskList käskList;
 extern struct EnvironmentList environList;
-
+extern struct TextmodeKäskList textmodeKäskList;
 
 
 void prindiVärviga(char* tekst, char* värv)
@@ -77,7 +77,7 @@ char* LeiaTekstEnneTekste(char* tekst, char** lõpud, unsigned int lõppudeKogus
 
 
 
-// Funktsioon, mis loeb kõik mathmode käsud, textmode käsud ja keskkonnad config.txt failist.
+// Funktsioon, mis loeb kõik mathmode käsud, textmode käsud ja keskkonnad config.txt failist ja paneb need vastavatesse structidesse.
 void AmmendaConfig()
 {
     // ...\luuga\duuga\        <-- Kaust, kust programm käivitati – currend working directory.

@@ -27,10 +27,38 @@ void LisaTextmodeKäsk(struct TextmodeKäsk käsk)
         textmodeKäskList.maht *= 2;
         textmodeKäskList.käsud = realloc(textmodeKäskList.käsud, textmodeKäskList.maht*sizeof(struct TextmodeKäsk));
     }
-    textmodeKäskList.kogus += 1;
     textmodeKäskList.käsud[textmodeKäskList.kogus] = käsk;
+    textmodeKäskList.kogus += 1;
 }
 
+
+struct TextmodeKäsk* KasTextmodeKäsk(char* tekst)
+{
+    for (unsigned int i = 0; i<textmodeKäskList.kogus; i++)
+    {
+        if (KasEsimesedTähed(tekst, textmodeKäskList.käsud[i].käsualgus))
+        {
+            return &textmodeKäskList.käsud[i];
+        }
+    }
+    return NULL;
+}
+
+
+struct TekstArv TõlgiTextmodeKäsk(char* tekst, struct TextmodeKäsk* käsk)
+{
+    char* tõlge = malloc(1);
+    tõlge[0] = '\0';
+
+
+    int i = strlen(käsk->käsualgus);
+
+    for (unsigned int j = 0; j< käsk->argumentideKogus; j++)
+    {
+        char* argument = LeiaTekstEnneTeksti(&tekst[i], käsk->argumentideLõpud[j]);
+        i+= strlen(argument);
+    }
+}
 
 
 void TextmodeKäsudConfigist(char* config_path)
@@ -65,10 +93,12 @@ void TextmodeKäsudConfigist(char* config_path)
         }
         if (onTextmodeKäskudeJuures)
         {
+            printf("RIDA: %s\n", line);
             // Teskst enne " -> "
             char* vasak = LeiaTekstEnneTeksti(line, " -> ");
 
             // Terve see kood on debuginfo väljund. Mitte vaadata.
+            
             if (strlen(vasak) == strlen(line))
             {
                 printf("Textmode käskude lugemise juures configist on kahtlande rida.\n");
@@ -85,33 +115,62 @@ void TextmodeKäsudConfigist(char* config_path)
             // Tekst pärast " -> "
             char* parem = strdup(&line[strlen(vasak)+4]);
 
-            struct TextmodeKäsk käsk = {0};
+            struct TextmodeKäsk käsk = {.käsualgus = NULL, .argumentideKogus=0, .argumentideNimed=malloc(sizeof(char*)), .argumentideLõpud=malloc(sizeof(char*)), .definitsioon=NULL};
 
             char* algus = LeiaTekstEnneTeksti(vasak, "(");
+            käsk.käsualgus = algus;
 
             // Kui leiti ilma argumentideta textmode käsk
             if (strlen(algus) == strlen(vasak))
             {
-                käsk.argumentideKogus = 0;
                 käsk.argumentideNimed = NULL;
-                käsk.käsualgus = algus;
-                käsk.käsulõpp = NULL;
+                käsk.argumentideLõpud = NULL;
+                käsk.argumentideKogus = 0;
                 käsk.definitsioon = parem;
                 LisaTextmodeKäsk(käsk);
-                free(vasak);
-                free(parem);
-                free(algus);
+
                 continue;
             }
 
             // Kui kood jõuab siia, ss leiti tekst, millel on argumente.
             int i = strlen(algus); // Nüüd vasak[i] on esimese argumendi avav sulg.
-            while (1)
+            while (vasak[i] != '\0')
             {
-                
+                i++; // Nüüd vasak[i] on argumendi esimene täht
+                puts(&vasak[i]);
+                char* argumendiNimi = LeiaTekstEnneTeksti(&vasak[i], ")");
+                i += strlen(argumendiNimi); // Nüüd vasak[i] on argumenti sulgev sulg.
+                puts(&vasak[i]);
+                i++; // vasak[i] on argumendilõpu esimene täht
+                puts(&vasak[i]);
+                char* argumendiLõpp = LeiaTekstEnneTeksti(&vasak[i], "(");
+                i+=strlen(argumendiLõpp);
+                puts(&vasak[i]);
+                if (strlen(argumendiLõpp) == 0)
+                {
+                    argumendiLõpp = LiidaTekstid(argumendiLõpp, "\n");
+                }
+
+
+                käsk.argumentideNimed = realloc(käsk.argumentideNimed, (käsk.argumentideKogus+1)*sizeof(char*));
+                käsk.argumentideLõpud = realloc(käsk.argumentideLõpud, (käsk.argumentideKogus+1)*sizeof(char*));
+                käsk.argumentideNimed[käsk.argumentideKogus] = argumendiNimi;
+                käsk.argumentideLõpud[käsk.argumentideKogus] = argumendiLõpp;
+                käsk.argumentideKogus += 1;
+                //printf("Argumentide kogus: %d\n",  käsk.argumentideKogus);
+                // Nüüd vasak[i] on argumenti sulgev sulg.
             }
+
+            käsk.definitsioon = parem;
+            printf("Siin on käsu info:\n");
+            puts(käsk.käsualgus);
+            puts(käsk.argumentideLõpud[0]);
+            puts(käsk.argumentideNimed[0]);
+            puts(käsk.definitsioon);
+            LisaTextmodeKäsk(käsk);
         }
         free(line);
+    }
     fclose(file);
 }
 

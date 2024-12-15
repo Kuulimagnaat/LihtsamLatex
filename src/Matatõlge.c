@@ -11,6 +11,7 @@
 extern struct KäskList käskList;
 extern struct EnvironmentList environList;
 extern int reanumber;
+extern struct TextmodeKäskList textmodeKäskList;
 
 // Muutuja, mis hoiab endas seda infot, kui sügaval rekursiooniga ollakse. Võimaldab printida sügavusele vastavalt tühkuid debug sõnumite ette, et oleks kenam.
 unsigned int rekursiooniTase;
