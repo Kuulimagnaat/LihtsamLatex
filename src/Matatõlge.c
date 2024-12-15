@@ -1318,7 +1318,45 @@ struct TekstArv TõlgiEnvironment(char* tekst, struct Environment* env, int Kuts
                 TekstPraegusestReast += strlen(subcmd->käsunimi) + 1; // Et käsunimi välja jäetaks, +1 et tühikuga arvestada pärast käsunime
                 
                 if (TekstPraegusestReast) {
-                    char* TerveKäsuRida = LeiaTekstEnneTeksti(TekstPraegusestReast, subcmd->käsunimi);
+                    //char* TerveKäsuRida = LeiaTekstEnneTeksti(TekstPraegusestReast, subcmd->käsunimi);
+
+
+                    // Leiame järgmise käsunime (See ei pea olema SAMA, mis välja kutsunud real!)
+                    // Kõik järgnev kood on selleks, et korrektselt leida õige käsu rida antud käsu jaoks
+                    char* KäsuRead[100];
+                    unsigned int lineCount = 0;
+
+                    for (unsigned int i = 0; i < env->käsk_list.count; i++) {
+                        struct Käsk* JärgnevKäsk = &env->käsk_list.käsud[i];
+
+                        char* TerveKäsuRida = LeiaTekstEnneTeksti(TekstPraegusestReast, JärgnevKäsk->käsunimi);
+                        if (TerveKäsuRida) {
+                            KäsuRead[lineCount++] = TerveKäsuRida;
+                        }
+                    }
+
+                    char* TerveKäsuRida = NULL;
+                    for (unsigned int i = 0; i < lineCount; i++) {
+                        char* currentLine = KäsuRead[i];
+
+                        int containsSubcommand = 0;
+                        for (unsigned int n = 0; n < env->käsk_list.count; n++) {
+                            struct Käsk* JärgnevKäsk = &env->käsk_list.käsud[n];
+                            
+                            if (strstr(currentLine, JärgnevKäsk->käsunimi)) {
+                                containsSubcommand = 1;
+                                break;
+                            }
+                        }
+
+                        if (!containsSubcommand) {
+                            TerveKäsuRida = strdup(currentLine);
+                        }
+                    }
+
+                    for (unsigned int i = 0; i < lineCount; i++) {
+                        free(KäsuRead[i]);
+                    }
 
                     // Teeme väikese clean upi leitud teksti peal.
                     size_t len = strlen(TerveKäsuRida);
