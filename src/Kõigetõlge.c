@@ -20,14 +20,12 @@ char* TõlgiKõik(char* tõlgitav)
     for (unsigned int i = 0; i<pikkus; )
     {
         struct Environment* env = KasEnvironment(&tõlgitav[i]);
-        printf("\"\n%s\"\n", &tõlgitav[i]);
-        printf("KAS ESIMESED ON NMMN: %d\n", KasEsimesedTähed(&tõlgitav[i], "\nmm\r\n"));
         if (env)
         {
-            struct TekstArv envTõlge = TõlgiEnvironment(&tõlgitav[i], env);
+            struct TekstArv envTõlge = TõlgiEnvironment(&tõlgitav[i], env, 0);
             tõlge = LiidaTekstid(tõlge, envTõlge.Tekst);
-            free(envTõlge.Tekst);
             i += envTõlge.Arv;
+            free(envTõlge.Tekst);
         }
         else
         if ( i == 0 && KasEsimesedTähed(&tõlgitav[i], "mm ") || KasEsimesedTähed(&tõlgitav[i], " mm ") || KasEsimesedTähed(&tõlgitav[i], "\nmm ") || KasEsimesedTähed(&tõlgitav[i], "\nmm\r\n"))
@@ -43,7 +41,6 @@ char* TõlgiKõik(char* tõlgitav)
             }
             else if (KasEsimesedTähed(&tõlgitav[i], "\nmm\r\n"))
             {
-                puts("TAJUST NmmN");
                 tõlge = LiidaTekstid(tõlge, "\n\\[\n");
                 onDisplayMath = 1;
             }

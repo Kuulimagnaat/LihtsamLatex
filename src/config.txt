@@ -1,3 +1,5 @@
+template = KAAREL
+
 TEXTMODE KÄSUD
 pealk(qwe)
 
@@ -26,5 +28,5 @@ _[a1] -> _{a1}
 
 
 KESKKONNAD
-enum [multiline, end:{--}] -> \begin{enumerate} #content \end{enumerate} | (it(arg1) -> \item arg1) (it2(arg1)(arg2) -> \item arg1, arg2)
+enum [multiline, end:{--}] -> \begin{enumerate} #content \end{enumerate} | (it(arg1) -> \item arg1)
 mat3 [end:{--}] -> \begin{pmatrix} #content \end{pmatrix} | (r(arg1)(arg2)(arg3) -> arg1 & arg2 & arg3\\)

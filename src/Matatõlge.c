@@ -492,6 +492,10 @@ char* LiidaTekstid(char* eelmineMälu, const char* lisatav)
     printf("SISSE: \"%s\", \"%s\"\n", eelmineMälu, lisatav);
     rekursiooniTase += 1;
     #endif
+    if (!eelmineMälu || !lisatav) {
+        fprintf(stderr, "LiidaTekstid error: NULL input provided.\n");
+        exit(EXIT_FAILURE);
+    }
     char* result = realloc(eelmineMälu, strlen(eelmineMälu) + strlen(lisatav) + 1);
     if (result == NULL)
     {
@@ -1243,6 +1247,10 @@ char* ReplaceArgumentInDefinition(char* definition, const char* placeholder, con
 
         // Allocate new string for the final translation
         char* result = malloc(defLen - placeholderLen + translatedArgLen + 1);
+        if (!result) {
+            perror("Memory allocation failed");
+            exit(EXIT_FAILURE);
+        }
 
         // Copy the part before the placeholder
         size_t prefixLen = pos - definition;
@@ -1254,17 +1262,21 @@ char* ReplaceArgumentInDefinition(char* definition, const char* placeholder, con
         // Copy the part after the placeholder
         strcpy(result + prefixLen + translatedArgLen, pos + placeholderLen);
 
+        // Free the original definition and return the new result
+        free(definition);
         return result;
     }
 
-    return strdup(definition);  // If no placeholder is found, just return the original definition
+    return definition;  // If no placeholder is found, return the original definition
 }
 
 
-struct TekstArv TõlgiEnvironment(char* tekst, struct Environment* env)
-{   
+
+struct TekstArv TõlgiEnvironment(char* tekst, struct Environment* env, int KutsutiVäljaMMist)
+{       
     struct TekstArv tõlkeStruct = { NULL, 0 }; 
-    char* tõlge = calloc(1,1);
+    char* tõlge = malloc(1);
+    tõlge[0] = '\0';
 
     tõlge = LiidaTekstid(tõlge, env->beginDefine);
     tõlge = LiidaTekstid(tõlge, "\n"); // Pärast algust üks newline.
@@ -1323,7 +1335,15 @@ struct TekstArv TõlgiEnvironment(char* tekst, struct Environment* env)
 
                     for (unsigned int i = 0; i < subcmd->argumentideKogus; i++) {
                         // Oleme leidnud kõik argumendid, mida see subcommand endale soovib. Nüüd peame tõlkima igat ühte ja asetama need sobivale kohale definitsioonis.
-                        char* tõlgitudArgument = TõlgiKõik(arguments[i]);
+                        char* tõlgitudArgument = NULL;
+                        if (KutsutiVäljaMMist) 
+                        {
+                            tõlgitudArgument = TõlgiMathMode(arguments[i]);
+                        }
+                        else 
+                        {
+                            tõlgitudArgument = TõlgiKõik(arguments[i]);
+                        }
                         
                         // Teeme placeholderi, kus me hakkame ükshaaval argumente asendama
                         char placeholder[50];
@@ -1358,7 +1378,15 @@ struct TekstArv TõlgiEnvironment(char* tekst, struct Environment* env)
                     char* finalTranslation = strdup(subcmd->definitsioon);
 
                     for (unsigned int i = 0; i < subcmd->argumentideKogus; i++) {
-                        char* tõlgitudArgument = TõlgiKõik(arguments[i]);
+                        char* tõlgitudArgument = NULL;
+                        if (KutsutiVäljaMMist) 
+                        {
+                            tõlgitudArgument = TõlgiMathMode(arguments[i]);
+                        }
+                        else 
+                        {
+                            tõlgitudArgument = TõlgiKõik(arguments[i]);
+                        }
                         
                         char placeholder[50];
                         snprintf(placeholder, sizeof(placeholder), "%s", subcmd->argumentideNimed[i]);
@@ -1375,10 +1403,17 @@ struct TekstArv TõlgiEnvironment(char* tekst, struct Environment* env)
 
                     char ** arguments = SplitByDelimiter(line, "   ");
                     char* finalTranslation = strdup(subcmd->definitsioon);
-                    puts(finalTranslation);
 
                     for (unsigned int i = 0; i < subcmd->argumentideKogus; i++) {
-                        char* tõlgitudArgument = TõlgiKõik(arguments[i]);
+                        char* tõlgitudArgument = NULL;
+                        if (KutsutiVäljaMMist) 
+                        {
+                            tõlgitudArgument = TõlgiMathMode(arguments[i]);
+                        }
+                        else 
+                        {
+                            tõlgitudArgument = TõlgiKõik(arguments[i]);
+                        }
                         
                         char placeholder[50];
                         snprintf(placeholder, sizeof(placeholder), "%s", subcmd->argumentideNimed[i]);
@@ -1405,7 +1440,15 @@ struct TekstArv TõlgiEnvironment(char* tekst, struct Environment* env)
                     char* finalTranslation = strdup(subcmd->definitsioon);
 
                     for (unsigned int i = 0; i < subcmd->argumentideKogus; i++) {
-                        char* tõlgitudArgument = TõlgiKõik(arguments[i]);
+                        char* tõlgitudArgument = NULL;
+                        if (KutsutiVäljaMMist) 
+                        {
+                            tõlgitudArgument = TõlgiMathMode(arguments[i]);
+                        }
+                        else 
+                        {
+                            tõlgitudArgument = TõlgiKõik(arguments[i]);
+                        }
 
                         char placeholder[50];
                         snprintf(placeholder, sizeof(placeholder), "%s", subcmd->argumentideNimed[i]);
@@ -1418,13 +1461,15 @@ struct TekstArv TõlgiEnvironment(char* tekst, struct Environment* env)
                 }
             }
         }
-
         line = strtok(NULL, "\n");
     }
     
+    free(line);
     tõlge = LiidaTekstid(tõlge, "\n"); // Enne lõppu newline.
     tõlge = LiidaTekstid(tõlge, env->endDefine);
+
     free(keskkonnaSisuTokeniteks);
+    free(keskkonnaSisu);
     tõlkeStruct.Tekst = tõlge;
     return tõlkeStruct;
 }
@@ -1561,6 +1606,7 @@ char* TõlgiMathMode(const char* avaldis)
         int i = 0;
         // Kas tähe juurde jõudes oli eelnev asi käsk. Kui oli, siis tuleb tavalise tähe korral selle ette panna tühik.
         int eelmiselKohalOliKäsk = 0;
+        int OnKeskkond = 0;
         while (i < strlen(expression))
         {
             #if VigadestTeatamine == 1
@@ -1612,6 +1658,25 @@ char* TõlgiMathMode(const char* avaldis)
             }
             #endif
 
+            struct Environment* env = KasEnvironment(&expression[i]);
+            if (env)
+            {   
+                OnKeskkond = 1;
+                // Detect and process the entire environment content
+                
+                char* enviSisu = strstr(avaldis, &expression[i]);
+                struct TekstArv envTõlge = TõlgiEnvironment(enviSisu, env, 1);
+                
+                // Add the translated environment to the result
+                result = LiidaTekstid(result, envTõlge.Tekst);
+                
+                // Free memory for the environment's translated content
+                free(envTõlge.Tekst);
+
+                // Move the index forward to the next part of the expression
+                w += envTõlge.Arv;
+                break; // Skip the rest of the loop, as we've handled this environment
+            }
 
             // Kontrollib kas tegu on lugejaga.
             if (KasLugeja(&expression[i]) == 1) {
@@ -1774,7 +1839,7 @@ char* TõlgiMathMode(const char* avaldis)
                 i++;
             }
         }
-        if (avaldis[w] != '\0')
+        if (avaldis[w] != '\0' && !OnKeskkond)
         {
             w ++;
             result = LiidaTekstid(result, "\\\\\n");
