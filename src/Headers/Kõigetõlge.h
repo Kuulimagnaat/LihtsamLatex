@@ -3,7 +3,7 @@
 #include "Matatõlge.h"
 
 
-struct TextModeKäsk
+struct TextmodeKäsk
 {
     const char* käsualgus;
     const char* käsulõpp;
@@ -12,11 +12,11 @@ struct TextModeKäsk
     unsigned int argumentideKogus;
 };
 
-struct TextModeKäskList
+struct TextmodeKäskList
 {
-    struct TextModeKäsk* käsud;   // Array of Käsk
-    size_t count;         // Number of commands
-    size_t capacity;      // Array capacity
+    struct TextmodeKäsk* käsud; // käskude nimekiri
+    size_t kogus;         // kui palju hetkel nimekrijas käskusid on
+    size_t maht;      // kui mitu käsku mahub nimekrija ilma et peaks uut mälu eraldada.
 };
 
 void init_TextModeKäsk_list();

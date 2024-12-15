@@ -12,6 +12,28 @@ extern struct EnvironmentList environList;
 
 
 
+void prindiVärviga(char* tekst, char* värv)
+{
+    HANDLE hStdout = GetStdHandle(STD_OUTPUT_HANDLE);
+    DWORD dwMode = 0;
+    GetConsoleMode(hStdout, &dwMode);
+    dwMode |= ENABLE_VIRTUAL_TERMINAL_PROCESSING;
+    SetConsoleMode(hStdout, dwMode);
+    if (värv == "roheline")
+    {
+        printf("\033[1;32m");
+        printf("%s", tekst);
+    }
+    else if (värv == "punane")
+    {
+        printf("\033[31m");
+        printf("%s", tekst);
+    }
+    printf("\033[0m");
+}
+
+
+
 // Tagastab teksti, mis eelneb indeksiga märgitud kohale.
 char* VõtaTekstIndeksini(char* tekst, unsigned int indeks)
 {

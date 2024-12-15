@@ -1,0 +1,16 @@
+Siin on hulk näiteid ja selgitusi neile. Iga näite esimene rida on kösu definitsioon config failis, teisel real on käsu kasutamise näide lähtekoodifailis ja kolmandal real on see latexi kood, milleks programm lähtekoodifaili rea tõlgib.
+
+Näide 1.
+
+Näide 2.
+    suurpealk (tekst)\n -> \begin{center}\section*{tekst}\end{center}
+    Tere lmaoskrrt suurpealk damn son where'd you find this
+    Tere lmaoskrrt \begin{center}\section*{damn son where'd you find this}\end{center}
+
+Kui tahetakse argumendi lõpuks nõuda reaalset teksti "\n" – langkriips ja täht n kõrvuti – kahetäheline sõne, siis too bad. Seda ei saa teha.
+
+Kui ei märgita käsu definitsioonis 
+pealk (luuga) -> \section*{luuga}
+//(uuga)// -> \emph{uuga}
+**(buuga)** -> \textbf{buuga}
+edevpealkiri (pealkiri)   (alune) -> \begin{center}\section*{pealkiri}\newline alune\end{center}

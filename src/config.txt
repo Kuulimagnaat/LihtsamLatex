@@ -2,11 +2,11 @@ template = KAAREL
 
 
 TEXTMODE KÄSUD
-suurpealk (tekst) -> \begin{center}\section{tekst}\end{center}
+suurpealk (tekst) -> \begin{center}\section*{tekst}\end{center}
 pealk (luuga) -> \section*{luuga}
 //(uuga)// -> \emph{uuga}
 **(buuga)** -> \textbf{buuga}
-
+edevpealkiri (pealkiri)   (alune) -> \begin{center}\section*{pealkiri}\newline alune\end{center}
 
 
 MATHMODE KÄSUD

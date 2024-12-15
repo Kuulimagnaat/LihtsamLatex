@@ -7,18 +7,33 @@
 #include "Headers/Kõigetõlge.h"
 
 
-extern struct TextModeKäskList textModeKäskList;
+extern struct TextmodeKäskList textmodeKäskList;
 
 
-// Initialize a TextModeKäskList
-void init_TextModeKäsk_list() {
-    textModeKäskList.käsud = malloc(1 * sizeof(struct Käsk)); // -> on sama mis (*list).käsud
-    textModeKäskList.count = 0;
-    textModeKäskList.capacity = 1;
+// Initialize a TextModeKäskList. Argumenti pole vaja, sest textmodekäsklist on globaalne. Mdea, miks initKäsklistil ja initEnvListil on nõutud argumenti.
+void init_TextmodeKäsk_list() {
+    textmodeKäskList.käsud = malloc(1 * sizeof(struct TextmodeKäsk)); // -> on sama mis (*list).käsud
+    textmodeKäskList.kogus = 0;
+    textmodeKäskList.maht = 1;
 }
 
 
-void read_textModeKäsud_from_config(char* config_path)
+
+void LisaTextmodeKäsk(struct TextmodeKäsk käsk)
+{
+    // Kui lisatav käsk ei mahuks käsunimekirja, ss eraldatakse mälu ja tehakse nimekiri kaks korda mahukamaks.
+    if (textmodeKäskList.kogus >= textmodeKäskList.maht)
+    {
+        textmodeKäskList.maht *= 2;
+        textmodeKäskList.käsud = realloc(textmodeKäskList.käsud, textmodeKäskList.maht*sizeof(struct TextmodeKäsk));
+    }
+    textmodeKäskList.kogus += 1;
+    textmodeKäskList.käsud[textmodeKäskList.kogus] = käsk;
+}
+
+
+
+void TextmodeKäsudConfigist(char* config_path)
 {
     FILE* file = fopen(config_path, "r");
     if (!file) {
@@ -27,113 +42,76 @@ void read_textModeKäsud_from_config(char* config_path)
     }
 
     char* line;
-    int onMathmodeKäskudeJuures = 0;
-    // Loetakse config faili ridahaaval. Hiljem võiks teha nagu lähtekoodifailigagi et enne lugeda pikka sõnesse ja ss seda analüüsida.
+    int onTextmodeKäskudeJuures = 0;
     while ((line = read_line(file)) != NULL) 
     {
-        if (KasEsimesedTähed(line, "MATHMODE KÄSUD"))
+        if (KasEsimesedTähed(line, "TEXTMODE KÄSUD"))
         {
-            onMathmodeKäskudeJuures = 1;
+            free(line);
+            onTextmodeKäskudeJuures = 1;
             continue;
         }
-        if (KasEsimesedTähed(line, "KESKKONNAD") || KasEsimesedTähed(line, "TEXTMODE KÄSUD"))
+        if (KasEsimesedTähed(line, "KESKKONNAD") || KasEsimesedTähed(line, "MATHMODE KÄSUD"))
         {
-            onMathmodeKäskudeJuures = 0;
+            free(line);
+            onTextmodeKäskudeJuures = 0;
             continue;
         }
-        // Skip empty lines or comments and environment lines
-        if (line[0] == '\0' || line[0] == '#' || KasEsimesedTähed(line, "env"))
+        // Skip empty lines or comments
+        if (line[0] == '\0' || line[0] == '#')
         {
             free(line);
             continue;
         }
-        if (onMathmodeKäskudeJuures)
+        if (onTextmodeKäskudeJuures)
         {
-            char* NooleAsuk = strstr(line, "->");
-            if (NooleAsuk == NULL)
-            {
-                //fprintf(stderr, "Noolt ei leitud: %s\n", line);
-                free(line);
-                continue;
-            }
-            // Kui kood jõuab siiani, on teada, et sellel real on käsu definitsioon, st leidub ->.
-            // Split the line into the left and right parts
-            // Left ja right on dünaamiliselt eraldatud. Seesama mälu läheb loetava structi klassimuutujatesse, seega seda ei tohi siin vabastada.
-            char* left = LeiaTekstEnneTeksti(line, "->");
-            char* right = strdup(&line[strlen(left)+2]);
-            // Trim whitespace
-            left = trim_whitespace(left);
-            right = trim_whitespace(right);
-            struct Käsk käsk = {0};
+            // Teskst enne " -> "
+            char* vasak = LeiaTekstEnneTeksti(line, " -> ");
 
-            käsk.definitsioon = right;
-            // Parse the command name and arguments from the left side
-            // 5) Käsu nimi
-            if (strstr(left, "(") || strstr(left, "["))
+            // Terve see kood on debuginfo väljund. Mitte vaadata.
+            if (strlen(vasak) == strlen(line))
             {
-                // Järelikult leiti argumendiga käsk, st tuleb käsu structis palju väärtusi määrata.
-                char* nimi = NULL;
-                char* t1 = LeiaTekstEnneTeksti(left, "(");
-                char* t2 = LeiaTekstEnneTeksti(left, "[");
-                if (strlen(t1)<strlen(t2))
-                {
-                    nimi = t1;
-                    free(t2);
-                }
-                else
-                {
-                    nimi = t2;
-                    free(t1);
-                }
-
-                käsk.käsunimi = nimi;
-                for (unsigned int i = strlen(nimi); i<strlen(left); )
-                {
-                    // 1) Argumentide kogus
-                    if (left[i] == '(' || left[i]=='[')
-                    {
-                        char* argument = LeiaSuluSisu(&left[i+1]);
-                        // 1) Argumentide kogus
-                        käsk.argumentideKogus += 1;
-                        // 2) Argumentide nimed
-                        käsk.argumentideNimed = realloc(käsk.argumentideNimed, käsk.argumentideKogus*sizeof(char*));
-                        käsk.argumentideNimed[käsk.argumentideKogus-1] = argument;
-                        // 3) Argumentide tüübid
-                        käsk.argumentideTüübid = realloc(käsk.argumentideTüübid, käsk.argumentideKogus*sizeof(char*));
-                        
-                        if (left[i] == '(')
-                        {
-                            käsk.argumentideTüübid[käsk.argumentideKogus-1] = 1;
-                        }
-                        else if (left[i] == '[')
-                        {
-                            käsk.argumentideTüübid[käsk.argumentideKogus-1] = 0;
-                        }
-                        i += strlen(argument);
-                    }
-                    else 
-                    {
-                        i++;
-                    }
-                }
+                printf("Textmode käskude lugemise juures configist on kahtlande rida.\n");
+                char* prinditav = malloc(1);
+                prinditav[0] = '\0';
+                prinditav = LiidaTekstid(prinditav, "\"");
+                prinditav = LiidaTekstid(prinditav, line);
+                prinditav = LiidaTekstid(prinditav, "\"\n");
+                prindiVärviga(prinditav, "punane");
+                puts("Sellelt realt ei leitud sõne \" -> \"");
+                free(prinditav);
             }
-            else
-            {  
-                // Järelikult leiti käsk,  millel pole argumenti. Paljud väärtused käsu structis määratakse nulliks.
-                käsk.käsunimi = strdup(left);
+
+            // Tekst pärast " -> "
+            char* parem = strdup(&line[strlen(vasak)+4]);
+
+            struct TextmodeKäsk käsk = {0};
+
+            char* algus = LeiaTekstEnneTeksti(vasak, "(");
+
+            // Kui leiti ilma argumentideta textmode käsk
+            if (strlen(algus) == strlen(vasak))
+            {
                 käsk.argumentideKogus = 0;
                 käsk.argumentideNimed = NULL;
-                käsk.argumentideTüübid = NULL;
+                käsk.käsualgus = algus;
+                käsk.käsulõpp = NULL;
+                käsk.definitsioon = parem;
+                LisaTextmodeKäsk(käsk);
+                free(vasak);
+                free(parem);
+                free(algus);
+                continue;
             }
 
-            // Add the parsed command to the list
-            add_käsk(käsk_list, käsk);
+            // Kui kood jõuab siia, ss leiti tekst, millel on argumente.
+            int i = strlen(algus); // Nüüd vasak[i] on esimese argumendi avav sulg.
+            while (1)
+            {
+                
+            }
         }
-
-        // Free the line buffer
         free(line);
-    }
-
     fclose(file);
 }
 
