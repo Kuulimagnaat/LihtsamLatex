@@ -61,16 +61,30 @@ struct TekstArv TõlgiTextmodeKäsk(char* tekst, struct TextmodeKäsk* käsk)
     char* tõlge = malloc(1);
     tõlge[0] = '\0';
 
-    char** argumentideVäärtused = malloc(käsk->argumentideKogus*sizeof(char*));
+    char** argumentideTõlked = malloc(käsk->argumentideKogus*sizeof(char*));
 
     int i = strlen(käsk->käsualgus); // Nüüd tekst[i] on lähtekoodis esimese argumendi algus
-    // Läheb üle argumentidekoguse ja leiab igale argumendile väärtuse lähtekoodist.
+    // Teeb asja argumentidekogus korda. (iga argumendi jaoks)
     for (unsigned int j = 0; j< käsk->argumentideKogus; j++)
     {
-        for (unsigned int k = 0; !KasEsimesedTähed(&tekst[j+k], käsk->argumentideLõpud[j]); k++)
+        // Läheb üle lähtekoodi teksti tähthaaval ja kui mõni käsk tuleb ette, ss kutsub rekursiivselt välja uue textmode käsu tõlkimist. Kui lõpuks on nii, et kõik ettetulnud käsud on tõlgitud ja ette tuleb argumendilõpp, ss on argument eraldatud.
+        for ( ; KasEsimesedTähed(&tekst[i], käsk->argumentideLõpud[j]) == 0; )
         {
-            
+            struct TextmodeKäsk* sisemineKäsk = KasTextmodeKäsk(&tekst[i]);
+            // Kui lähtekoodi sees on kirjas uue käsu väljakutse. siis kutsutakse sedasama funktsiooni selle peal rekursiivselt.
+            if (sisemineKäsk != NULL)
+            {
+                struct TekstArv sisemiseTõlge = TõlgiTextmodeKäsk(&tekst[i], sisemineKäsk);
+                tõlge = LiidaTekstid(tõlge, sisemiseTõlge.Tekst);
+                i += strlen(sisemiseTõlge.Tekst);
+                free(sisemiseTõlge.Tekst);
+                continue;
+            }
+            // Kui kood jõuab siia, ss on tegu tavalise tähega, mis ei ole käsk.
+            tõlge = LiidaTäht(tõlge, tekst[i]);
+            i++;
         }
+        // Kui kood jõuab siia ss järelikult argumendis on kõik ettetulnud käsuväljakutsed ületatud ja jõutud on selle käsu selle argumendi lõpu juurde.
         char* argument = LeiaTekstEnneTeksti(&tekst[i], käsk->argumentideLõpud[j]);
         argumentideVäärtused[j] = argument;
         i+= strlen(argument) + strlen(käsk->argumentideLõpud[j]); // Nüüd tekst[i] on järgmise argumendi esimesel kohal.
