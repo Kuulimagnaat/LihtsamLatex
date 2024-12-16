@@ -51,7 +51,7 @@ Tlgikäsu kood peaks olema järgmine:
 antud on käsk ja tekst, mis algab sellest käsust. näiteks
 sumxk=0 m
 
-Tuleb lugeda argumentide väärtused lähtekoodist nimekirja sellises järjekorars nagu need lähtekoodis on. Siis need on samas järjekooras nagu need käsu dfinitsiooni vasakus pooles on. 
+Tuleb lugeda argumentide väärtused lähtekoodist nimekirja sellises järjekorars nagu need lähtekoodis on. Muuseas need väärtused ära tõlkida. Siis need on samas järjekooras nagu need käsu dfinitsiooni vasakus pooles on. 
 
 Minna üle definitsiooni parema poole ja iga tähe peal kontrollida, kas seal algab sellesama käsu mõni argumendinimi. Kui ei alga, ss lic panna sealt tähti tõlkesse. Kui seal on mõni argumendinimi, siis tuleb teha selgeks, mitmes argument see definitsiooni vasaku poole suhtes on. Selleks tuleb minna üle antud käsu argumentide nimede nimekirja. Kui on selge, mitmenda argumendi kasutamisega on tegu, siis võtta varem koostatud argumentide väärtuste nimekijrast selle sama indeksiga element ja liita see tõlkele.
 */
@@ -61,14 +61,22 @@ struct TekstArv TõlgiTextmodeKäsk(char* tekst, struct TextmodeKäsk* käsk)
     char* tõlge = malloc(1);
     tõlge[0] = '\0';
 
+    char** argumentideVäärtused = malloc(käsk->argumentideKogus*sizeof(char*));
 
-    int i = strlen(käsk->käsualgus);
-
+    int i = strlen(käsk->käsualgus); // Nüüd tekst[i] on lähtekoodis esimese argumendi algus
+    // Läheb üle argumentidekoguse ja leiab igale argumendile väärtuse lähtekoodist.
     for (unsigned int j = 0; j< käsk->argumentideKogus; j++)
     {
+        for (unsigned int k = 0; !KasEsimesedTähed(&tekst[j+k], käsk->argumentideLõpud[j]); k++)
+        {
+            
+        }
         char* argument = LeiaTekstEnneTeksti(&tekst[i], käsk->argumentideLõpud[j]);
-        i+= strlen(argument);
+        argumentideVäärtused[j] = argument;
+        i+= strlen(argument) + strlen(käsk->argumentideLõpud[j]); // Nüüd tekst[i] on järgmise argumendi esimesel kohal.
     }
+
+
 }
 
 
