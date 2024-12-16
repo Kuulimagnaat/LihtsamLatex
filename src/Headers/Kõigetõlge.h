@@ -6,8 +6,8 @@
 struct TextmodeKäsk
 {
     const char* käsualgus;
-    const char* käsulõpp;
     const char** argumentideNimed;
+    const char** argumentideLõpud;
     char* definitsioon;
     unsigned int argumentideKogus;
 };
@@ -19,8 +19,7 @@ struct TextmodeKäskList
     size_t maht;      // kui mitu käsku mahub nimekrija ilma et peaks uut mälu eraldada.
 };
 
-void init_TextModeKäsk_list();
-void read_textModeKäsud_from_config(const char* filepath);
+void TextmodeKäsudConfigist(char* config_path);
 
 char* TõlgiKõik(char* tõlgitav);
 

@@ -1,15 +1,10 @@
 template = KAAREL
 
-
 TEXTMODE KÄSUD
-suurpealk (tekst) -> \begin{center}\section*{tekst}\end{center}
-pealk (luuga) -> \section*{luuga}
-//(uuga)// -> \emph{uuga}
-**(buuga)** -> \textbf{buuga}
-edevpealkiri (pealkiri)   (alune) -> \begin{center}\section*{pealkiri}\newline alune\end{center}
-
+//(uuga)   (lammas) -> \emph{lammas}\textbf{uuga}
 
 MATHMODE KÄSUD
+sum(al)(ül) -> \sum_{al}^{ül}
 ... -> \dots
 ^[lmao] -> ^{lmao}
 to -> \to
@@ -23,7 +18,6 @@ kord -> \cdot
 int -> \int
 lim(uugh) -> \lim_{uugh}
 sin(kabuug) -> \sin{kabuug}
-sum(al)(ül) -> \sum_{al}^{ül}
 pi -> \pi
 in -> \in
 tilde(täht) -> \tilde{täht}

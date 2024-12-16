@@ -12,6 +12,7 @@
 struct KäskList käskList;
 struct EnvironmentList environList;
 int reanumber = 1;
+struct TextmodeKäskList textmodeKäskList;
 
 //struct KeskkonnaNimekiri keskkonnaNimek;
 
