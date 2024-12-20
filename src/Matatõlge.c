@@ -11,6 +11,7 @@
 extern struct KäskList käskList;
 extern struct EnvironmentList environList;
 extern int reanumber;
+extern struct TextmodeKäskList textmodeKäskList;
 
 // Muutuja, mis hoiab endas seda infot, kui sügaval rekursiooniga ollakse. Võimaldab printida sügavusele vastavalt tühkuid debug sõnumite ette, et oleks kenam.
 unsigned int rekursiooniTase;
@@ -29,26 +30,6 @@ void prindiTaane()
     } 
 }
 
-
-void prindiVärviga(char* tekst, char* värv)
-{
-    HANDLE hStdout = GetStdHandle(STD_OUTPUT_HANDLE);
-    DWORD dwMode = 0;
-    GetConsoleMode(hStdout, &dwMode);
-    dwMode |= ENABLE_VIRTUAL_TERMINAL_PROCESSING;
-    SetConsoleMode(hStdout, dwMode);
-    if (värv == "roheline")
-    {
-        printf("\033[1;32m");
-        printf("%s", tekst);
-    }
-    else if (värv == "punane")
-    {
-        printf("\033[31m");
-        printf("%s", tekst);
-    }
-    printf("\033[0m");
-}
 
 
 /* ENVIRONMENT ASJAD */
@@ -1271,7 +1252,7 @@ char* ReplaceArgumentInDefinition(char* definition, const char* placeholder, con
 }
 
 
-
+// Argument kutsuti välja mathmodest on 1 siis, kui see kutsuti välja mathmode sees olles ja 0 ss kui tavalises textmodes v muus mittemathmodes. 
 struct TekstArv TõlgiEnvironment(char* tekst, struct Environment* env, int KutsutiVäljaMMist)
 {       
     struct TekstArv tõlkeStruct = { NULL, 0 }; 
@@ -1588,8 +1569,8 @@ struct Käsk* KasKäsk(const char* tekst)
 {
     #if KasKäskDebug == 1
     prindiTaane();
-    prindiVärviga("KasKäsk\n", "roheline");
-    //printf("KasKäsk\n");
+    //prindiVärviga("KasKäsk\n", "roheline");
+    printf("KasKäsk\n");
     prindiTaane();
     printf("SISSE: %s\n", tekst);
     rekursiooniTase += 1;
@@ -1624,7 +1605,8 @@ char* TõlgiMathMode(const char* avaldis)
 {
     #if TõlgiMathModeDebug == 1
     prindiTaane();
-    prindiVärviga("TõlgiMathMode\n", "roheline");
+    //prindiVärviga("TõlgiMathMode\n", "roheline");
+    printf("TõlgiMathMode\n");
     prindiTaane();
     printf("SISSE: %s\n", avaldis);
     rekursiooniTase += 1;
@@ -2126,7 +2108,8 @@ char* LeiaArgument(const char* tekst)
 {
     #if LeiaArgumentDebug == 1
     prindiTaane();
-    prindiVärviga("LeiaArgument\n", "roheline");
+    //prindiVärviga("LeiaArgument\n", "roheline");
+    printf("LeiaArgument\n");
     prindiTaane();
     printf("SISSE: %s\n", tekst);
     rekursiooniTase += 1;
@@ -2163,7 +2146,8 @@ char* LeiaLühemArgument(const char* tekst)
 {
     #if LeiaLühemArgumentDebug == 1
     prindiTaane();
-    prindiVärviga("LeiaLühemArgument\n", "roheline");
+    //prindiVärviga("LeiaLühemArgument\n", "roheline");
+    printf("LeiaLühemArgument\n");
     prindiTaane();
     printf("SISSE: %s\n", tekst);
     rekursiooniTase += 1;

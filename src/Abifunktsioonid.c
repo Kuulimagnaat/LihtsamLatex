@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include "Headers/Abifunktsioonid.h"
 #include "Headers/Matatõlge.h"
+#include "Headers/Kõigetõlge.h"
 #include <stdlib.h>
 #include <Windows.h>
 #include <direct.h>  // for _getcwd on Windows
@@ -9,6 +10,28 @@
 
 extern struct KäskList käskList;
 extern struct EnvironmentList environList;
+extern struct TextmodeKäskList textmodeKäskList;
+
+
+void prindiVärviga(char* tekst, char* värv)
+{
+    HANDLE hStdout = GetStdHandle(STD_OUTPUT_HANDLE);
+    DWORD dwMode = 0;
+    GetConsoleMode(hStdout, &dwMode);
+    dwMode |= ENABLE_VIRTUAL_TERMINAL_PROCESSING;
+    SetConsoleMode(hStdout, dwMode);
+    if (värv == "roheline")
+    {
+        printf("\033[1;32m");
+        printf("%s", tekst);
+    }
+    else if (värv == "punane")
+    {
+        printf("\033[31m");
+        printf("%s", tekst);
+    }
+    printf("\033[0m");
+}
 
 
 
@@ -54,8 +77,15 @@ char* LeiaTekstEnneTekste(char* tekst, char** lõpud, unsigned int lõppudeKogus
 }
 
 
+void InitTextModeKäsudList()
+{
+    textmodeKäskList.käsud = malloc(1 * sizeof(struct Käsk)); // -> on sama mis (*list).käsud
+    textmodeKäskList.kogus = 0;
+    textmodeKäskList.maht = 1;
+}
 
-// Funktsioon, mis loeb kõik mathmode käsud, textmode käsud ja keskkonnad config.txt failist.
+
+// Funktsioon, mis loeb kõik mathmode käsud, textmode käsud ja keskkonnad config.txt failist ja paneb need vastavatesse structidesse.
 void AmmendaConfig()
 {
     // ...\luuga\duuga\        <-- Kaust, kust programm käivitati – currend working directory.
@@ -96,6 +126,10 @@ void AmmendaConfig()
 
     init_environment_list(&environList);
     read_environments_from_config(config_path, &environList);
+
+    InitTextModeKäsudList();
+    TextmodeKäsudConfigist(config_path);
+    puts("TextmodeKäsudConfigist jooksis.");
 }
 
 

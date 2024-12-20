@@ -31,6 +31,7 @@ struct Käsk
 
 
 
+
 // A dynamic array of Käsk structures
 struct KäskList {
     struct Käsk* käsud;   // Array of Käsk
@@ -56,6 +57,12 @@ struct EnvironmentList {
     size_t count;                     // Number of environments
     size_t capacity;                  // Capacity of the array
 };
+
+
+
+
+
+
 
 struct Käsk* KasKäsk(const char* tekst);
 struct TekstArv TõlgiEnvironment(char* tekst, struct Environment* env, int KutsutiVäljaMMist);
@@ -83,25 +90,6 @@ struct TekstTekst
 };
 
 
-
-struct Keskkond
-{
-    const char* alguseTähis;
-    const char* alguseLatex;
-    const char* igaReaAlgusesse; 
-    struct TekstTekst* tekstJaAsendus;
-    const char* igaReaLõppu;
-    const char* lõpuTähis;
-    const char* lõpuLatex;
-};
-
-
-
-struct KeskkonnaNimekiri
-{
-    struct Keskkond* keskkonnad;
-    size_t count;
-};
 
 
 

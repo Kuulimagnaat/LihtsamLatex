@@ -9,5 +9,7 @@ long int findSize(char* file_name);
 unsigned int MitmeTäheVõrraErineb(const char* tekst1, const char* tekst2 );
 char* VõtaTekstIndeksini(char* tekst, unsigned int indeks);
 char* LeiaTekstEnneTekste(char* tekst, char** lõpud, unsigned int lõppudeKogus);
+void prindiVärviga(char* tekst, char* värv);
+
 
 #endif
