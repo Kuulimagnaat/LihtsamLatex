@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include "Headers/Abifunktsioonid.h"
 #include "Headers/Matatõlge.h"
+#include "Headers/Kõigetõlge.h"
 #include <stdlib.h>
 #include <Windows.h>
 #include <direct.h>  // for _getcwd on Windows
@@ -76,6 +77,13 @@ char* LeiaTekstEnneTekste(char* tekst, char** lõpud, unsigned int lõppudeKogus
 }
 
 
+void InitTextModeKäsudList()
+{
+    textmodeKäskList.käsud = malloc(1 * sizeof(struct Käsk)); // -> on sama mis (*list).käsud
+    textmodeKäskList.kogus = 0;
+    textmodeKäskList.maht = 1;
+}
+
 
 // Funktsioon, mis loeb kõik mathmode käsud, textmode käsud ja keskkonnad config.txt failist ja paneb need vastavatesse structidesse.
 void AmmendaConfig()
@@ -118,6 +126,10 @@ void AmmendaConfig()
 
     init_environment_list(&environList);
     read_environments_from_config(config_path, &environList);
+
+    InitTextModeKäsudList();
+    TextmodeKäsudConfigist(config_path);
+    puts("TextmodeKäsudConfigist jooksis.");
 }
 
 

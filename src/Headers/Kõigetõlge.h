@@ -20,8 +20,9 @@ struct TextmodeKäskList
 };
 
 void TextmodeKäsudConfigist(char* config_path);
-
+struct TextmodeKäsk* KasTextmodeKäsk(char* tekst);
 char* TõlgiKõik(char* tõlgitav);
+struct TekstArv TõlgiTextmodeKäsk(char* tekst, struct TextmodeKäsk* käsk);
 
 
 

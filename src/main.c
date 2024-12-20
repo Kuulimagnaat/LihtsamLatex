@@ -274,7 +274,7 @@ int main() {
 
             // Compile output.tex to a .pdf using pdflatex
             char compile_command[MAX_PATH_LENGTH];
-            snprintf(compile_command, sizeof(compile_command), "pdflatex -quiet -output-directory=\"%s\" \"%s\"", cwd, output_tex_path);
+            snprintf(compile_command, sizeof(compile_command), "pdflatex -output-directory=\"%s\" \"%s\"", cwd, output_tex_path); //-quiet
             if (system(compile_command) != 0) {
                 perror("Error compiling .tex file with pdflatex");
             }

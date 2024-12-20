@@ -12,7 +12,7 @@ int main() {
 
     AmmendaConfig();
 
-    struct Käsk* a = &käskList.käsud[0];
-    struct TekstArv tulemus = TõlgiKäsk("summ k=0", a);
-    puts(tulemus.Tekst);
+    struct TextmodeKäsk* tulemus = KasTextmodeKäsk("//");
+    puts("TULEMUS:");
+    puts(tulemus->käsualgus);
 }

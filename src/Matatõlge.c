@@ -1486,8 +1486,8 @@ struct Käsk* KasKäsk(const char* tekst)
 {
     #if KasKäskDebug == 1
     prindiTaane();
-    prindiVärviga("KasKäsk\n", "roheline");
-    //printf("KasKäsk\n");
+    //prindiVärviga("KasKäsk\n", "roheline");
+    printf("KasKäsk\n");
     prindiTaane();
     printf("SISSE: %s\n", tekst);
     rekursiooniTase += 1;
@@ -1522,7 +1522,8 @@ char* TõlgiMathMode(const char* avaldis)
 {
     #if TõlgiMathModeDebug == 1
     prindiTaane();
-    prindiVärviga("TõlgiMathMode\n", "roheline");
+    //prindiVärviga("TõlgiMathMode\n", "roheline");
+    printf("TõlgiMathMode\n");
     prindiTaane();
     printf("SISSE: %s\n", avaldis);
     rekursiooniTase += 1;
@@ -2004,7 +2005,8 @@ char* LeiaArgument(const char* tekst)
 {
     #if LeiaArgumentDebug == 1
     prindiTaane();
-    prindiVärviga("LeiaArgument\n", "roheline");
+    //prindiVärviga("LeiaArgument\n", "roheline");
+    printf("LeiaArgument\n");
     prindiTaane();
     printf("SISSE: %s\n", tekst);
     rekursiooniTase += 1;
@@ -2041,7 +2043,8 @@ char* LeiaLühemArgument(const char* tekst)
 {
     #if LeiaLühemArgumentDebug == 1
     prindiTaane();
-    prindiVärviga("LeiaLühemArgument\n", "roheline");
+    //prindiVärviga("LeiaLühemArgument\n", "roheline");
+    printf("LeiaLühemArgument\n");
     prindiTaane();
     printf("SISSE: %s\n", tekst);
     rekursiooniTase += 1;

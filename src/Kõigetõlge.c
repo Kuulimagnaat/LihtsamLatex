@@ -36,6 +36,7 @@ struct TextmodeKäsk* KasTextmodeKäsk(char* tekst)
 {
     for (unsigned int i = 0; i<textmodeKäskList.kogus; i++)
     {
+        printf("KsTextmodeKäsk textmodeKäsk: %s\n", textmodeKäskList.käsud[i].käsualgus);
         if (KasEsimesedTähed(tekst, textmodeKäskList.käsud[i].käsualgus))
         {
             return &textmodeKäskList.käsud[i];
@@ -56,6 +57,109 @@ Tuleb lugeda argumentide väärtused lähtekoodist nimekirja sellises järjekora
 Minna üle definitsiooni parema poole ja iga tähe peal kontrollida, kas seal algab sellesama käsu mõni argumendinimi. Kui ei alga, ss lic panna sealt tähti tõlkesse. Kui seal on mõni argumendinimi, siis tuleb teha selgeks, mitmes argument see definitsiooni vasaku poole suhtes on. Selleks tuleb minna üle antud käsu argumentide nimede nimekirja. Kui on selge, mitmenda argumendi kasutamisega on tegu, siis võtta varem koostatud argumentide väärtuste nimekijrast selle sama indeksiga element ja liita see tõlkele.
 */
 
+
+// Funktsioon, millele antakse mingi tekst ja see teeb selle tekstiga pmst sama, mis tavaline tõlgikõik, ainult et läbib tsükli ainult ühe korra ja ainult esimese tähe peal. Seega kui esimene täht pole mingi käsu algus, ss lic tagastatakse tekstarv, kus tekst on see üks täht ja arv on 1. Kui aga esimesel tähel on käsk, ss tõlgitakse terve see käsk, tagastatakse käsu tõlge ja arv, kui mitu tähte tuleb tõlgitavas tekstis edasi minna. Seda funtksiooni on vaja, et textmodekäskude tõlkimisel teha tõlkimist tähthaaval, lastes kontrollida pärast iga tõlke sammu, ega polda argumendi lõpuni jõutud. Literaalselt copy-paste tõlgikõigest, aga tsükkel jookseb ainult ühe korra ja minimaalsed muudatused selleks, et tagastaks tekstarvu.
+struct TekstArv TõlgiKõikSellesKohas(char* tõlgitav)
+{
+    struct TekstArv tulemus;
+
+    char* tõlge = malloc(1);
+    tõlge[0] = '\0';
+
+
+    unsigned int pikkus = strlen(tõlgitav);
+    // Läheb üle iga tähe kogu tõlgitavas tekstis. Literaalselt copy-paste tõlgikõigest, aga tsükkel ainult üks kord.
+    for (unsigned int i = 0; i<1; )
+    {
+        struct TextmodeKäsk* käsk = KasTextmodeKäsk(&tõlgitav[i]);
+        if (käsk) // Sama mis käsk != NULL
+        {
+            struct TekstArv käsuTõlge = TõlgiTextmodeKäsk(&tõlgitav[i], käsk);
+            tõlge = LiidaTekstid(tõlge, käsuTõlge.Tekst);
+            free(käsuTõlge.Tekst);
+            i += käsuTõlge.Arv;
+            
+            tulemus.Arv = i;
+            tulemus.Tekst = tõlge;
+            return tulemus;
+        }
+
+        struct Environment* env = KasEnvironment(&tõlgitav[i]);
+        if (env)
+        {
+            struct TekstArv envTõlge = TõlgiEnvironment(&tõlgitav[i], env);
+            tõlge = LiidaTekstid(tõlge, envTõlge.Tekst);
+            free(envTõlge.Tekst);
+            i += envTõlge.Arv;
+
+            tulemus.Arv = i;
+            tulemus.Tekst = tõlge;
+            return tulemus;
+        }
+        if ( i == 0 && KasEsimesedTähed(&tõlgitav[i], "mm ") || KasEsimesedTähed(&tõlgitav[i], " mm ") || KasEsimesedTähed(&tõlgitav[i], "\nmm ") || KasEsimesedTähed(&tõlgitav[i], "\nmm\r\n"))
+        {
+            int onDisplayMath = 0;
+            if (KasEsimesedTähed(&tõlgitav[i], " mm "))
+            {
+                tõlge = LiidaTekstid(tõlge, " $");
+            }
+            else if (KasEsimesedTähed(&tõlgitav[i], "mm "))
+            {
+                tõlge = LiidaTekstid(tõlge, "$");
+            }
+            else if (KasEsimesedTähed(&tõlgitav[i], "\nmm\r\n"))
+            {
+                tõlge = LiidaTekstid(tõlge, "\n\\begin{gather*}\n");
+                onDisplayMath = 1;
+            }
+            else if (KasEsimesedTähed(&tõlgitav[i], "\nmm "))
+            {
+                tõlge = LiidaTekstid(tõlge, "\n\\begin{gather*}");
+                onDisplayMath = 1;
+            }
+            i += (KasEsimesedTähed(&tõlgitav[i], "\nmm\r\n") || KasEsimesedTähed(&tõlgitav[i], "\nmm ") || KasEsimesedTähed(&tõlgitav[i], " mm ") ? 4 : 3);
+
+            unsigned int start = i;
+            while (i < pikkus && !(KasEsimesedTähed(&tõlgitav[i], " mm") || KasEsimesedTähed(&tõlgitav[i], "\nmm"))) {
+                i++;
+            }
+
+            char* tõlgitavMata = VõtaTekstIndeksini(&tõlgitav[start], i - start);
+            char* mataTõlge = TõlgiMathMode(tõlgitavMata);
+            tõlge = LiidaTekstid(tõlge, mataTõlge);
+
+            free(mataTõlge);
+            free(tõlgitavMata);
+
+            if (onDisplayMath == 0) {
+                tõlge = LiidaTekstid(tõlge, "$");
+            } else {
+                tõlge = LiidaTekstid(tõlge, "\\end{gather*}");
+            }
+
+            i += 3;
+            tulemus.Arv = i;
+            tulemus.Tekst = tõlge;
+            return tulemus;
+        }
+        else 
+        {
+            char* täht = malloc(2);
+            täht[0] = tõlgitav[i];
+            täht[1] = '\0';
+            tõlge = LiidaTekstid(tõlge, täht);
+            free(täht);
+            i++;
+
+            tulemus.Arv = i;
+            tulemus.Tekst = tõlge;
+            return tulemus;
+        }
+    }
+}
+
+
+
 struct TekstArv TõlgiTextmodeKäsk(char* tekst, struct TextmodeKäsk* käsk)
 {
     char* tõlge = malloc(1);
@@ -67,30 +171,64 @@ struct TekstArv TõlgiTextmodeKäsk(char* tekst, struct TextmodeKäsk* käsk)
     // Teeb asja argumentidekogus korda. (iga argumendi jaoks)
     for (unsigned int j = 0; j< käsk->argumentideKogus; j++)
     {
+        char* argumendiTõlge = malloc(1);
+        argumendiTõlge[0] = '\0';
         // Läheb üle lähtekoodi teksti tähthaaval ja kui mõni käsk tuleb ette, ss kutsub rekursiivselt välja uue textmode käsu tõlkimist. Kui lõpuks on nii, et kõik ettetulnud käsud on tõlgitud ja ette tuleb argumendilõpp, ss on argument eraldatud.
         for ( ; KasEsimesedTähed(&tekst[i], käsk->argumentideLõpud[j]) == 0; )
         {
+            struct TekstArv kohaTõlge = TõlgiKõikSellesKohas(&tekst[i]);
+
+
             struct TextmodeKäsk* sisemineKäsk = KasTextmodeKäsk(&tekst[i]);
             // Kui lähtekoodi sees on kirjas uue käsu väljakutse. siis kutsutakse sedasama funktsiooni selle peal rekursiivselt.
-            if (sisemineKäsk != NULL)
+            /*if (sisemineKäsk != NULL)
             {
                 struct TekstArv sisemiseTõlge = TõlgiTextmodeKäsk(&tekst[i], sisemineKäsk);
-                tõlge = LiidaTekstid(tõlge, sisemiseTõlge.Tekst);
-                i += strlen(sisemiseTõlge.Tekst);
+                argumendiTõlge = LiidaTekstid(argumendiTõlge, sisemiseTõlge.Tekst);
+                i += sisemiseTõlge.Arv;
                 free(sisemiseTõlge.Tekst);
                 continue;
-            }
+            }*/
             // Kui kood jõuab siia, ss on tegu tavalise tähega, mis ei ole käsk.
-            tõlge = LiidaTäht(tõlge, tekst[i]);
-            i++;
+            argumendiTõlge = LiidaTekstid(argumendiTõlge, kohaTõlge.Tekst);
+            i += kohaTõlge.Arv;
         }
-        // Kui kood jõuab siia ss järelikult argumendis on kõik ettetulnud käsuväljakutsed ületatud ja jõutud on selle käsu selle argumendi lõpu juurde.
-        char* argument = LeiaTekstEnneTeksti(&tekst[i], käsk->argumentideLõpud[j]);
-        argumentideVäärtused[j] = argument;
-        i+= strlen(argument) + strlen(käsk->argumentideLõpud[j]); // Nüüd tekst[i] on järgmise argumendi esimesel kohal.
+        // Kui kood jõuab siia ss järelikult on käsud ületatud ja jõuti argumednilõõpu juurde.
+        argumentideTõlked[j] = argumendiTõlge;
+        i += strlen(käsk->argumentideLõpud[j]); // Nüüd tekst[i] on järgmise argumendi esimesel kohal.
+    }
+
+    puts("VÄLJUS ESIMESEST LOOPIST");
+    // Teksti määran allpool.
+    struct TekstArv tagastus = {.Arv = i, .Tekst=NULL};
+
+    
+    i = 0;
+    // Läheb üle definitsiooni iga tähe. Ja paneb tõlkesse definitsiooni tähe või argumendi tõlke.
+    for ( ; i<strlen(käsk->definitsioon); )
+    {
+        // Läheb iga tähe peal üle selle käsu iga argumendinime.
+        for (unsigned int j = 0; j<käsk->argumentideKogus; j++)
+        {
+            // Kas sellel kohal on mingi argumendinimi?
+            if (KasEsimesedTähed(&käsk->definitsioon[i], käsk->argumentideNimed[j]))
+            {
+                // Kui on, siis mitte lisada definitsooni tähte, vaid argumedni tõlget.
+                tõlge = LiidaTekstid(tõlge, argumentideTõlked[j]);
+                i += strlen(käsk->argumentideNimed[j]);
+            }
+            else
+            {
+                // Kui ei ole argumendinime, ss pannakse ns defintitsioobni täht tõlkessse.
+                tõlge = LiidaTäht(tõlge, käsk->definitsioon[i]);
+                i++;
+            }
+        }
     }
 
 
+    tagastus.Tekst = tõlge;
+    return tagastus;
 }
 
 
@@ -230,9 +368,16 @@ char* TõlgiKõik(char* tõlgitav)
     // Läheb üle iga tähe kogu tõlgitavas tekstis.
     for (unsigned int i = 0; i<pikkus; )
     {
+        struct TextmodeKäsk* käsk = KasTextmodeKäsk(&tõlgitav[i]);
+        if (käsk) // Sama mis käsk != NULL
+        {
+            struct TekstArv käsuTõlge = TõlgiTextmodeKäsk(&tõlgitav[i], käsk);
+            tõlge = LiidaTekstid(tõlge, käsuTõlge.Tekst);
+            free(käsuTõlge.Tekst);
+            i += käsuTõlge.Arv;
+        }
+
         struct Environment* env = KasEnvironment(&tõlgitav[i]);
-        printf("\"\n%s\"\n", &tõlgitav[i]);
-        printf("KAS ESIMESED ON NMMN: %d\n", KasEsimesedTähed(&tõlgitav[i], "\nmm\r\n"));
         if (env)
         {
             struct TekstArv envTõlge = TõlgiEnvironment(&tõlgitav[i], env);
@@ -254,13 +399,12 @@ char* TõlgiKõik(char* tõlgitav)
             }
             else if (KasEsimesedTähed(&tõlgitav[i], "\nmm\r\n"))
             {
-                puts("TAJUST NmmN");
-                tõlge = LiidaTekstid(tõlge, "\n\\[\n");
+                tõlge = LiidaTekstid(tõlge, "\n\\begin{gather*}\n");
                 onDisplayMath = 1;
             }
             else if (KasEsimesedTähed(&tõlgitav[i], "\nmm "))
             {
-                tõlge = LiidaTekstid(tõlge, "\n\\[");
+                tõlge = LiidaTekstid(tõlge, "\n\\begin{gather*}");
                 onDisplayMath = 1;
             }
             i += (KasEsimesedTähed(&tõlgitav[i], "\nmm\r\n") || KasEsimesedTähed(&tõlgitav[i], "\nmm ") || KasEsimesedTähed(&tõlgitav[i], " mm ") ? 4 : 3);
@@ -280,7 +424,7 @@ char* TõlgiKõik(char* tõlgitav)
             if (onDisplayMath == 0) {
                 tõlge = LiidaTekstid(tõlge, "$");
             } else {
-                tõlge = LiidaTekstid(tõlge, "\\]");
+                tõlge = LiidaTekstid(tõlge, "\\end{gather*}");
             }
 
             i += 3;
