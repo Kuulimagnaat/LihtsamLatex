@@ -3,7 +3,8 @@ template = KAAREL
 TEXTMODE KÄSUD
 //(uuga)// -> \emph{uuga}
 **(buuga)** -> \textbf{buuga}
-edevpealk (pealkiri)   (nimi) -> \begin{center}\section*{pealkiri}nimi\end{center}
+#edevpealk (pealkiri)   (nimi) -> \begin{center}\section*{pealkiri}nimi\end{center}
+teemapealk (pealk) -> \subsection*{pealk}
 
 MATHMODE KÄSUD
 sum(al)(ül) -> \sum_{al}^{ül}

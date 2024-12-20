@@ -36,7 +36,6 @@ struct TextmodeKäsk* KasTextmodeKäsk(char* tekst)
 {
     for (unsigned int i = 0; i<textmodeKäskList.kogus; i++)
     {
-        printf("KsTextmodeKäsk textmodeKäsk: %s\n", textmodeKäskList.käsud[i].käsualgus);
         if (KasEsimesedTähed(tekst, textmodeKäskList.käsud[i].käsualgus))
         {
             return &textmodeKäskList.käsud[i];
@@ -168,6 +167,7 @@ struct TekstArv TõlgiTextmodeKäsk(char* tekst, struct TextmodeKäsk* käsk)
     char** argumentideTõlked = malloc(käsk->argumentideKogus*sizeof(char*));
 
     int i = strlen(käsk->käsualgus); // Nüüd tekst[i] on lähtekoodis esimese argumendi algus
+    // Algab lähtekoodi lugemine ja igale argumendile lähtekoodist vastava teksti leidmine.
     // Teeb asja argumentidekogus korda. (iga argumendi jaoks)
     for (unsigned int j = 0; j< käsk->argumentideKogus; j++)
     {
@@ -176,20 +176,10 @@ struct TekstArv TõlgiTextmodeKäsk(char* tekst, struct TextmodeKäsk* käsk)
         // Läheb üle lähtekoodi teksti tähthaaval ja kui mõni käsk tuleb ette, ss kutsub rekursiivselt välja uue textmode käsu tõlkimist. Kui lõpuks on nii, et kõik ettetulnud käsud on tõlgitud ja ette tuleb argumendilõpp, ss on argument eraldatud.
         for ( ; KasEsimesedTähed(&tekst[i], käsk->argumentideLõpud[j]) == 0; )
         {
+            puts("ARGUMENDI j LÕPP:");
+            puts(käsk->argumentideLõpud[j]);
             struct TekstArv kohaTõlge = TõlgiKõikSellesKohas(&tekst[i]);
-
-
-            struct TextmodeKäsk* sisemineKäsk = KasTextmodeKäsk(&tekst[i]);
-            // Kui lähtekoodi sees on kirjas uue käsu väljakutse. siis kutsutakse sedasama funktsiooni selle peal rekursiivselt.
-            /*if (sisemineKäsk != NULL)
-            {
-                struct TekstArv sisemiseTõlge = TõlgiTextmodeKäsk(&tekst[i], sisemineKäsk);
-                argumendiTõlge = LiidaTekstid(argumendiTõlge, sisemiseTõlge.Tekst);
-                i += sisemiseTõlge.Arv;
-                free(sisemiseTõlge.Tekst);
-                continue;
-            }*/
-            // Kui kood jõuab siia, ss on tegu tavalise tähega, mis ei ole käsk.
+            
             argumendiTõlge = LiidaTekstid(argumendiTõlge, kohaTõlge.Tekst);
             i += kohaTõlge.Arv;
         }
