@@ -1,0 +1,122 @@
+\documentclass{article}
+\usepackage[a4paper, margin=2cm]{geometry}
+\usepackage{tcolorbox}
+\usepackage{amsmath} % For math symbols
+\usepackage{hyperref} % For clickable links
+\usepackage{xcolor} % For custom colors
+\usepackage{listings}
+\usepackage[estonian]{babel}
+
+% Custom colors for boxes
+\definecolor{boxbg}{rgb}{0.95, 0.95, 0.95}
+\definecolor{boxborder}{rgb}{0.2, 0.4, 0.6}
+
+% Box styling for command descriptions
+\newtcolorbox{commandbox}[1][]{
+    colback=boxbg,
+    colframe=boxborder,
+    fonttitle=\bfseries,
+    title=#1,
+    boxrule=0.5pt,
+    sharp corners,
+    rounded corners,
+    boxsep=5pt,
+    arc=4pt,
+    left=4pt,
+    right=4pt,
+    top=6pt,
+    bottom=6pt,
+    coltitle=black,
+}
+ 
+\lstset{
+    basicstyle=\ttfamily,   % Monospace font
+    backgroundcolor=\color{lightgray}, % Light gray background
+    frame=single,          % Single frame around the block
+    breaklines=true,       % Break long lines
+    captionpos=b,          % Caption position (b for bottom)
+    label={lst:config_example}  % Label for reference
+}
+
+\begin{document}
+Tegemist on LihtsamLatex C keele projekti dokumentatsiooniga. Et tegu on meie enda välja mõeldud keele kompilaatoriga, siis peaks dokumentatsioon olema põhjalik.
+
+Programmi töötamiseks on vajalik TeX keele kompilaatori \textbf{MikTex} töötav versioon (või muu TeXi kompilaator, mis kasutab \textit{pdflatex} käsku). Puuduolevate pakettide installeerimisega tegeleb MikTex ise.
+Samuti on tarvilik \colorbox{yellow!20}{confg.txt} (tõstutundlik!) faili olemasolu programmi enda kaustas ning mingi template faili olemasolu \colorbox{orange!20}{templates} folderis.
+
+Esmalt tegeleme template failidega. Template folder on mõeldud kõikide erinevate template failide hoidmiseks. Hetkel on seal ainult  \colorbox{yellow!20}{defaultTemplate.txt}, mille sisu võiks olla järgmine
+
+\begin{lstlisting}[]
+\documentclass{article}
+\usepackage{amsfonts}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage[estonian]{babel}
+
+\usepackage{parskip}
+
+\begin{document}
+{{content}}
+\end{document}
+\end{lstlisting}
+Siia saab oma valikul juurde lisada nii palju pakete, kui neid vaja võiks minna. Samuti võib kausta juurde lisada veel template faile, kusjuures nende nimed võivad olla suvalised.
+Igas template failis peab aga olema märksõna
+\[
+\colorbox{green!20}{\{\{content\}\}}
+\]
+mis enamasti käib koostatava dokumendi alustava ja lõpetava definitsiooni vahele, st. sinna, kuhu tõlge minema peaks.
+
+Nüüd saame liikuda järgmise faili juurde. Peamised käskude ja keskkondade definitsioonid, sealjuures ka muud lipud, lähevad kõik $\colorbox{yellow!20}{config.txt}$ faili. Algselt võiks selle sisuks olla
+\begin{lstlisting}[]
+template = defaultTemplate
+
+to -> \to
+inf -> \infty
+lim(arg1) -> \lim_{arg1}
+
+env(enum) [multiline, subcmds:{it}, end:{--}] -> \begin{enumerate} #content \end{enumerate} | (it(arg1) -> \item arg1)
+\end{lstlisting}
+Niisiis võimegi toodud faili sisu jaotada kolmeks, millest igaüht vaatleme eraldi.
+
+\textbf{Üldised lipud.} Nendeks on lipud, mida saab defineerida faili alguses ning mis kuidagimoodi mõjutavad programmi tööd. Hetkel on nendeks
+\begin{itemize}
+    \item \verb|template| - Määrab ära template faili nime, mida kompileerimisel kasutatakse. Samanimeline fail peab leiduma \colorbox{orange!20}{template} folderis.
+\end{itemize}
+
+\textbf{Käsu definitsioonid.} Teadaolevalt saab LaTeX koodis kasutada erinevaid käske. Neid saabki siinsamas defineerida. Käsu definitsiooni saame jaotada kaheks pooleks
+\begin{center}
+\texttt{[Tekst, mida lähtekoodis otsitakse.] -> [Tekst, mis sellega asendatakse.]}
+\end{center}
+Niimoodi saame defineerida lihtsad tekstasenduse käsud, näiteks
+\begin{center}
+\texttt{alfa -> \textbackslash alpha}\\
+\texttt{kord -> \textbackslash cdot}\\
+\texttt{RR -> \textbackslash mathbb\{R\}}
+\end{center}
+Vahest sellest aga ei piisa. Peame suutma ka defineerida integraale, summasid ning muid abikäske, mis võtavad endale teatud arv argumente. Selleks saab defineeritavas käsus anda sisse $n$ argumenti, kujul
+\begin{center}
+\texttt{käsuNimi(arg1)[arg2]$\ldots$ ->} \texttt{$\mathcal{F}(\text{arg}1, \text{arg}2,\ldots)$}
+\end{center}
+kus 
+\[
+\mathcal{F}(\text{arg}1, \text{arg}2,\ldots)
+\]
+on vastava käsu LaTeXi definitsioon, mis sisaldab endas vajalike argumente (kusjuures need peavad olema sama nimega, mis käsu definitsiooni vasakul pool).
+Samuti tuleb eristada käsu defineerimisel argumentide tüüpe. Nendeks on
+\begin{itemize}
+\item \verb|(argumendiNimi)| - Ümarad sulud tähendavad ... argumenti. See tähendab ...
+\item \verb|[argumendiNimi]| - Kandilised sulud tähendavad ... argumenti. See tähendab ...
+\end{itemize}
+Niisiis toome mõned näited
+\begin{center}
+\texttt{sum(al)(ül) -> \textbackslash sum\_\{al\}\^{ }\{ül\}}\\
+\texttt{sin(uuga) -> \textbackslash sin\{uuga\}}\\
+\texttt{\^{ }[mingiAsi] -> \^{ }\{mingiAsi\}}
+\end{center}
+Ainus käsk, mida defineerima ei pea, on jagamine, mida automaatselt tõlgitakse kui
+\begin{center}
+\texttt{a/b -> \textbackslash frac\{a\}\{b\}}
+\end{center}
+\textbf{Keskkonna definitsioonid.}
+
+\end{document}
