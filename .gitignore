@@ -1,9 +1,4 @@
 lib/main.exe
-output/output.aux
-output/output.fdb_latexmk
-output/output.fls
-output/output.log
-output/output.synctex.gz
 output/output.pdf
 .vscode/
 Materjalid/
@@ -11,8 +6,7 @@ a.exe
 output/output.tex/
 *.aux
 *.log
-*.pdf
-*.tex
-main.synctex.gz
-main.fdb_latexmk
-main.fls
+*.out
+*.fls
+*.fdb_latexmk
+*.synctex.gz
