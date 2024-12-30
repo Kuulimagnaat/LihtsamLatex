@@ -1,24 +1,26 @@
-Käsu anatoomia. Numbritega on tähistatud ühe keskmise käsu osad ja allpool selgitatakse, millega on tegu.
+Käsu anatoomia. Näitena on allpool esitatud üks keskmise käsu definitsioon. Numbritega on tähistatud selle definitsiooni osad ja seejärel selgitatakse, millega on tegu.
+
+
 
 Näide 0.
-         1       2   3    2 4 5  6  5 7  8 _________9______________    10  _____9____  11 ______9_____
-    edevpealkiri (pealkiri)   (alune)\n -> \begin{center}\section*{pealkiri}\newline alune\end{center}
+         1       2   3    2 4 5  6  57 8 _________9______________    10  _____9____  11 ______9_____
+    edevpealkiri (pealkiri)   (alune) -> \begin{center}\section*{pealkiri}\newline alune\end{center}
 
  (1)   Tegu on käsku alustava tekstiga. Kui seda teksti lähtekoodis tajutakse, ss sellele järgnevat teksti tõlgitakse erilisel moel nagu käsu definitsioonis kirjeldatud on. Panna tähele, et näidatud juhul on käsku alustavaks tekstiks "edevpealkiri ".
  (2)   Tegu on esimest argumenti avava ja sulgeva suluga. Argumentide eraldatakse muust tekstist neid ümbritsevate ümarsulgude järgi. Seega ei või käsu nimes ümarsulgi kasutada, sest asja võidaks tõlgendada valesti.
- (3)   See on esimese argumendi nimi. See tähistab teksti, mida kasutaja kirjutab lähtekoodis käsku alustava teksti järele kuni selle tekstini, mis on argumenti sulgeva sulu järel (4).
- (4)   Tegu on esimest argumenti lõpetava tekstiga. Lähtekoodis käsku alustava teksti ja esimet argumenti lõpetava teksti vahele jääv tekst loetakse esimeseks argumendiks ja see asendatakse käsu definitsioonis kohale, kus on esimese argumendi nimi (10). On mõeldud, et esimene argument läheb latexi sectioni loogeliste sulgude vahele.
+ (3)   See on esimese argumendi nimi. See tähistab teksti, mida kasutaja kirjutab lähtekoodis käsku alustava teksti järele kuni selle tekstini, mis on argumenti sulgeva sulu järel (4). Argumente saab käsul olla praktiliselt lõputu kogus.
+ (4)   Tegu on esimest argumenti lõpetava tekstiga. Lähtekoodis käsku alustava teksti ja esimet argumenti lõpetava teksti vahele jääv tekst loetakse esimeseks argumendiks ja see asendatakse käsu definitsiooni paremas pooles kohale, kus on esimese argumendi nimi (10). Selles näites on mõeldud, et esimene argument läheb latexi sectioni loogeliste sulgude vahele.
  (5)   Need sulud eraldavad muust definitsioonist teise argumendi nime (6). Järelikult kasutaja tahab peale esimese argumendi lõppu ka teise argumendi anda.
  (6)   See on teise argumendi nimi. See tähistab teksti, mis jääb lähtekoodis esimest argumenti lõpetava teksti (4) ja teist argumenti lõpetava teksti (7) vahele.
- (7)   See on teist argumenti lõpetava tekstiga. Tegu on erilise tekstijupiga, mida tõlgendatakse uue rea nõudmisena. Tähendab, et teist argumenti lõpetab uus rida. Kui tahta argumenti lõpetada täpselt tekstiga, kus on langkriips ja n kõrvuti, siis too bad. Ei saa teha. Kui uuereamärk on argumendi lõpetajaks, ss tõlkes seda ei kaotata ära nagu teisi argumendilõpetajaid. Kui tahta kirjutada argumendilõpetajaks reaalselt teksti "\n" – langkriips ja n-täht kõrvuti, ss too bad, ei saa.
- (8)   Tegu on tekstiga, mis eraldab definitsiooni vasakut poolt paremast poolest. Vasakul on kirjeldatud, kuidas käsk algab, kuidas argumendid eraldatud on ja kui palju neid on. Parem pool aga kirjeldab seda, milliseks tekstiks vasaku poole järgi vormistatud tekst lähtekoodis tõlgendada.
+ (7)   See on teist argumenti lõpetav tekst. Näites on teist arvumenti lõpetav tekst tühi sõne "". Kui kumbagi argumenti lõpetav tekst on tühi sõne, siis loetakse vastava argumendi lõpuks realõpp e uuereamärk.
+ (8)   Tegu on tähistusega, mis eraldab definitsiooni vasakut poolt paremast poolest. Selleks on tekst " -> ", oluline on meeles pidada, et tühikud on selle tähistuse osa. Vasakul on kirjeldatud, kuidas käsk algab, kuidas argumendid eraldatud on ja kui palju neid on. Parem pool aga kirjeldab seda, milliseks tekstiks vasaku poole järgi vormistatud tekst lähtekoodis tõlgendada.
  (9)   Kõik see tekst on see, mis lähtekoodis kirjutatud käsukoha teksti asemel pannakse latexi faili. Kohtades, kus käsu paremal poolel on kirjas argumentide nimed, saadetakse latexi faili tekstid, mis loeti argumentideks.
  (10), (11) Esimene argument pannakse sellele kohale ja teine argument teisele kohale.
 
 Selle käsu kasutamine lähtekoodifailis näeks muu teksti seas välja järgmine.
 
 Tere mina olen Kaarel ja see on minu fancy ass pealkiri.
-edevpealkiri MIMMA 6. kodune töö   Kaarel Parve, 3. variant, 15.12.2024
+edevpealkiri MIMMA 6. kodune töö   Kaarel Parve, 3. variant, 15.12.2024--
 Uuga buuga veel matemaatilist juttu mitme muutuja funktsionaalreak koondumine blaa.
 
 Ja see tõlgitakse järgmiseks latexi koodiks.
@@ -29,13 +31,17 @@ Uuga buuga veel matemaatilist juttu mitme muutuja funktsionaalreak koondumine bl
 
 Siin on hulk näiteid ja selgitusi neile (S). Iga näite esimene rida on kösu definitsioon config failis, teisel real on käsu kasutamise näide lähtekoodifailis ja kolmandal real on see latexi kood, milleks programm lähtekoodifaili rea tõlgib.
 
+
+
 Näide 1.
     uuga buuga -> \emph{paki piima}
     Tere minu nimi on Kaarel ja ma lähen ostan Coopist ühe uuga buuga.
     Tere minu nimi on Kaarel ja ma lähen ostan Coopist ühe \emph{paki piima}.
 
-(S) Tegu on sellise käsu tegemisega, mis lic asendab tekstis mingi sõne soovitud latexi koodiga. Mingeid argumente ei ole. Argumente kirjeldataakse järgmises näites.
+(S) Tegu on sellise käsu tegemisega, mis lic asendab tekstis mingi sõne soovitud latexi koodiga. Mingeid argumente ei ole.
 (S) Asendatav tekst algab täpselt rea algusest ja lõpeb täpselt enne teksti " -> ". Seega selles näites on asendatav tekst "uuga buuga".
+
+
 
 Näide 2.
     suurpealk (tekst)\n -> \begin{center}\section*{tekst}\end{center}
@@ -45,7 +51,3 @@ Näide 2.
 (S) Selle käsuga paistab olevat mõeldud pealkirjade vormistamiseks. Kui mingis kohas kasutaja kirjutatud lähtekoodis leitakse tekst "suurpealk ", siis hakatakse seda kohta tõlkima nagu käsku. Käsu defintisioonis 
 (S) Kui tahetakse argumendi lõpuks nõuda reaalset teksti "\n" – langkriips ja täht n kõrvuti – kahetäheline sõne, siis too bad. Seda ei saa teha.
 (S) Kui ei märgita käsu definitsioonis argumendi lõppu tähistavat teksti, siis loetakse argumendiks terve ülejäänud fail. See on täiesti mõttetu ja programm väljastab hoiatava sõnumi, kui kasutaja ei ole mingi textmode käsu definitsioonis argumendi lõppu märkinud.
-
-
-
-maatriks23(11)   (12)   (13)\n(21)   (22)   (23) -> \begin{center}\section*{pealkiri}\newline alune\end{center}
