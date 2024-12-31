@@ -7,6 +7,7 @@
 \usepackage{xcolor} % For custom colors
 \usepackage{listings}
 \usepackage[estonian]{babel}
+\usepackage{parskip}
 
 % Custom colors for boxes
 %\definecolor{boxbg}{rgb}{0.95, 0.95, 0.95}
@@ -77,11 +78,11 @@
 
 
 \begin{document}
-Tegemist on LihtsamLatex C keele projekti dokumentatsiooniga. Et tegu on meie enda välja mõeldud keele kompilaatoriga, siis peaks dokumentatsioon olema põhjalik.
+Tegemist on C-keele projekti LihtsamLatex dokumentatsiooniga. Et tegu on meie enda välja mõeldud keele kompilaatoriga, siis peaks dokumentatsioon olema põhjalik.
 
-Programmi töötamiseks on vajalik \TeX\ keele kompilaatori MiK\TeX\ töötav versioon (või muu \TeX i kompilaator, mis kasutab käsku \code{pdflatex}). Puuduolevate pakettide installeerimisega tegeleb MikTex ise.
-Samuti on tarvilik \code{confg.txt} (tõstutundlik!) faili olemasolu programmi enda kaustas ning mingi template faili olemasolu \code{templates} folderis.
+Programmi töötamiseks peab kasutajal installitud olema mõni \TeX\ keele kompilaator, näiteks MiK\TeX\ või muu \TeX i kompilaator, mis kasutaks käsku \code{pdflatex}. Seda käsku kasutab programm, et peale lähtekoodi tõlgendamist ja \LaTeX i koodi genereerimist see ka kompileerida pdf-failiks. Samuti on tarvilik \code{config.txt} faili olemasolu programmi enda kaustas ning mingi template faili olemasolu \code{templates} kaustas.
 
+\section{Template failid}
 Esmalt tegeleme template failidega. Template folder on mõeldud kõikide erinevate template failide hoidmiseks. Hetkel on seal ainult \code{defaultTemplate.txt}, mille sisu võiks olla järgmine
 
 \begin{tcolorbox}
@@ -143,15 +144,15 @@ Vahest sellest aga ei piisa. Peame suutma ka defineerida integraale, summasid ni
 \begin{center}
 	\tcbox[top=3mm, bottom=3mm]{käsuNimi(arg1)[arg2]$\ldots$ -> $\mathcal{F}$(arg1, arg2,$\ldots$)}
 \end{center}
-kus 
-\[
-\mathcal{F}(\text{arg}1, \text{arg}2,\ldots)
-\]
+kus \vspace{-2mm}
+\begin{center}
+	\ttfamily $\mathcal{F}$(arg1, arg2,$\ldots$)
+\end{center}
 on vastava käsu LaTeXi definitsioon, mis sisaldab endas vajalike argumente (kusjuures need peavad olema sama nimega, mis käsu definitsiooni vasakul pool).
 Samuti tuleb eristada käsu defineerimisel argumentide tüüpe. Nendeks on
 \begin{itemize}
-\item \verb|(argumendiNimi)| - Ümarad sulud tähendavad ... argumenti. See tähendab ...
-\item \verb|[argumendiNimi]| - Kandilised sulud tähendavad ... argumenti. See tähendab ...
+\item \tcbox[before=, after=, tcbox raise base]{(argumendiNimi)} -- Ümarad sulud tähendavad pikemat argumenti. See tähendab, et lähtekoodis argumendi lõppu tähistab ainult tühik või rea lõpp. Sellele vastandub lühem argumenditüüp.
+\item \tcbox[before=, after=, tcbox raise base]{[argumendiNimi]} -- Kandilised sulud tähendavad lühemat argumenti. See tähendab, et lähtekoodis tähistavad argumendi lõppu peale tühiku ka tähemärgid \code+,\code-,\code*, \code= ja \code,. Tightipeale ei ole vahet, kas definitsioonis on argumenditüüp märgitud pikaks või lühikeseks. Vahe tuleb aga sisse siis kui tahetakse näiteks kirjutada polünoome.
 \end{itemize}
 Niisiis toome mõned näited
 \begin{center}
