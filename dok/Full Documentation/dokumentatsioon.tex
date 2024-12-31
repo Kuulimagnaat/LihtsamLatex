@@ -1,4 +1,5 @@
 \documentclass{article}
+\usepackage{inconsolata}
 \usepackage[a4paper, margin=2cm]{geometry}
 \usepackage{tcolorbox}
 \usepackage{amsmath} % For math symbols
@@ -8,45 +9,83 @@
 \usepackage[estonian]{babel}
 
 % Custom colors for boxes
-\definecolor{boxbg}{rgb}{0.95, 0.95, 0.95}
-\definecolor{boxborder}{rgb}{0.2, 0.4, 0.6}
+%\definecolor{boxbg}{rgb}{0.95, 0.95, 0.95}
+%\definecolor{boxborder}{rgb}{0.2, 0.4, 0.6}
 
 % Box styling for command descriptions
-\newtcolorbox{commandbox}[1][]{
-    colback=boxbg,
-    colframe=boxborder,
-    fonttitle=\bfseries,
-    title=#1,
-    boxrule=0.5pt,
-    sharp corners,
-    rounded corners,
-    boxsep=5pt,
-    arc=4pt,
-    left=4pt,
-    right=4pt,
-    top=6pt,
-    bottom=6pt,
-    coltitle=black,
-}
- 
+
+%\lstset{
+%	basicstyle=\footnotesize\ttfamily,
+%	breaklines=true,
+%	keywordstyle=\color{black}
+%}
+
+%\tcbset{
+%	colframe=white,
+%	boxrule=0mm,
+%	rounded corners,
+%	arc=2mm
+%	frame empty,
+%	boxsep=-0mm
+%}
+
+
+
+
 \lstset{
-    basicstyle=\ttfamily,   % Monospace font
-    backgroundcolor=\color{lightgray}, % Light gray background
-    frame=single,          % Single frame around the block
-    breaklines=true,       % Break long lines
-    captionpos=b,          % Caption position (b for bottom)
-    label={lst:config_example}  % Label for reference
+	basicstyle=\small\ttfamily,
+	breaklines=true,
+	keywordstyle=\color{black},
+	basewidth=1.7mm
 }
+
+
+\tcbset{
+	colframe=white,
+	boxrule=0mm,
+	rounded corners,
+	arc=2mm
+	frame empty,
+	boxsep=-0mm,
+	fontupper=\small\ttfamily,
+}
+
+
+\newtcbox{\code}{
+	nobeforeafter,
+	tcbox raise base,
+	boxrule=0.0pt,
+	top=0.2mm,
+	bottom=0.2mm,
+	right=0.2mm,
+	left=0.2mm,
+	arc=0.5mm,
+	boxsep=0.5mm,
+	%before upper={\vphantom{dlg}},
+	colframe=gray!10!white,
+	fontupper=\small\ttfamily,
+	colback=gray!10!white
+}
+
+
+\ifdefined\pdfstringdefDisableCommands
+\pdfstringdefDisableCommands{\def\code#1{'#1'}}
+\fi
+
+
+
+
 
 \begin{document}
 Tegemist on LihtsamLatex C keele projekti dokumentatsiooniga. Et tegu on meie enda välja mõeldud keele kompilaatoriga, siis peaks dokumentatsioon olema põhjalik.
 
-Programmi töötamiseks on vajalik TeX keele kompilaatori \textbf{MikTex} töötav versioon (või muu TeXi kompilaator, mis kasutab \textit{pdflatex} käsku). Puuduolevate pakettide installeerimisega tegeleb MikTex ise.
-Samuti on tarvilik \colorbox{yellow!20}{confg.txt} (tõstutundlik!) faili olemasolu programmi enda kaustas ning mingi template faili olemasolu \colorbox{orange!20}{templates} folderis.
+Programmi töötamiseks on vajalik \TeX\ keele kompilaatori MiK\TeX\ töötav versioon (või muu \TeX i kompilaator, mis kasutab käsku \code{pdflatex}). Puuduolevate pakettide installeerimisega tegeleb MikTex ise.
+Samuti on tarvilik \code{confg.txt} (tõstutundlik!) faili olemasolu programmi enda kaustas ning mingi template faili olemasolu \code{templates} folderis.
 
-Esmalt tegeleme template failidega. Template folder on mõeldud kõikide erinevate template failide hoidmiseks. Hetkel on seal ainult  \colorbox{yellow!20}{defaultTemplate.txt}, mille sisu võiks olla järgmine
+Esmalt tegeleme template failidega. Template folder on mõeldud kõikide erinevate template failide hoidmiseks. Hetkel on seal ainult \code{defaultTemplate.txt}, mille sisu võiks olla järgmine
 
-\begin{lstlisting}[]
+\begin{tcolorbox}
+	\begin{lstlisting}
 \documentclass{article}
 \usepackage{amsfonts}
 \usepackage{amsmath}
@@ -59,15 +98,17 @@ Esmalt tegeleme template failidega. Template folder on mõeldud kõikide erineva
 {{content}}
 \end{document}
 \end{lstlisting}
+\end{tcolorbox}
 Siia saab oma valikul juurde lisada nii palju pakete, kui neid vaja võiks minna. Samuti võib kausta juurde lisada veel template faile, kusjuures nende nimed võivad olla suvalised.
 Igas template failis peab aga olema märksõna
-\[
-\colorbox{green!20}{\{\{content\}\}}
-\]
+\begin{center}
+	\tcbox[top=3mm, bottom=3mm]{\{\{content\}\}}
+\end{center}
 mis enamasti käib koostatava dokumendi alustava ja lõpetava definitsiooni vahele, st. sinna, kuhu tõlge minema peaks.
 
-Nüüd saame liikuda järgmise faili juurde. Peamised käskude ja keskkondade definitsioonid, sealjuures ka muud lipud, lähevad kõik $\colorbox{yellow!20}{config.txt}$ faili. Algselt võiks selle sisuks olla
-\begin{lstlisting}[]
+Nüüd saame liikuda järgmise faili juurde. Peamised käskude ja keskkondade definitsioonid, sealjuures ka muud lipud, lähevad kõik \code{config.txt} faili. Algselt võiks selle sisuks olla
+\begin{tcolorbox}
+\begin{lstlisting}
 template = defaultTemplate
 
 to -> \to
@@ -76,26 +117,31 @@ lim(arg1) -> \lim_{arg1}
 
 env(enum) [multiline, subcmds:{it}, end:{--}] -> \begin{enumerate} #content \end{enumerate} | (it(arg1) -> \item arg1)
 \end{lstlisting}
+\end{tcolorbox}
+
 Niisiis võimegi toodud faili sisu jaotada kolmeks, millest igaüht vaatleme eraldi.
 
 \textbf{Üldised lipud.} Nendeks on lipud, mida saab defineerida faili alguses ning mis kuidagimoodi mõjutavad programmi tööd. Hetkel on nendeks
 \begin{itemize}
-    \item \verb|template| - Määrab ära template faili nime, mida kompileerimisel kasutatakse. Samanimeline fail peab leiduma \colorbox{orange!20}{template} folderis.
+    \item \code{template} - Määrab ära template faili nime, mida kompileerimisel kasutatakse. Samanimeline fail peab leiduma \code{template} folderis.
 \end{itemize}
 
 \textbf{Käsu definitsioonid.} Teadaolevalt saab LaTeX koodis kasutada erinevaid käske. Neid saabki siinsamas defineerida. Käsu definitsiooni saame jaotada kaheks pooleks
 \begin{center}
-\texttt{[Tekst, mida lähtekoodis otsitakse.] -> [Tekst, mis sellega asendatakse.]}
+	\tcbox[top=3mm, bottom=3mm]{[Tekst, mida lähtekoodis otsitakse.] -> [Tekst, mis sellega asendatakse.]}
 \end{center}
 Niimoodi saame defineerida lihtsad tekstasenduse käsud, näiteks
-\begin{center}
-\texttt{alfa -> \textbackslash alpha}\\
-\texttt{kord -> \textbackslash cdot}\\
-\texttt{RR -> \textbackslash mathbb\{R\}}
-\end{center}
+
+\begin{tcolorbox}
+\begin{lstlisting}
+alfa -> \textbackslash alpha
+kord -> \textbackslash cdot
+RR -> \textbackslash mathbb{R}
+\end{lstlisting}
+\end{tcolorbox}
 Vahest sellest aga ei piisa. Peame suutma ka defineerida integraale, summasid ning muid abikäske, mis võtavad endale teatud arv argumente. Selleks saab defineeritavas käsus anda sisse $n$ argumenti, kujul
 \begin{center}
-\texttt{käsuNimi(arg1)[arg2]$\ldots$ ->} \texttt{$\mathcal{F}(\text{arg}1, \text{arg}2,\ldots)$}
+	\tcbox[top=3mm, bottom=3mm]{käsuNimi(arg1)[arg2]$\ldots$ -> $\mathcal{F}$(arg1, arg2,$\ldots$)}
 \end{center}
 kus 
 \[
@@ -120,3 +166,22 @@ Ainus käsk, mida defineerima ei pea, on jagamine, mida automaatselt tõlgitakse
 \textbf{Keskkonna definitsioonid.}
 
 \end{document}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
