@@ -18,7 +18,7 @@ delta -> \delta
 RR -> \mathbb R
 sqrt(asd) -> \sqrt{asd}
 kord -> \cdot
-int -> \int
+int(uih)(oih) -> \int_{uih}^{oih}
 lim(uugh) -> \lim_{uugh}
 sin(kabuug) -> \sin{kabuug}
 pi -> \pi

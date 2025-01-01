@@ -854,20 +854,20 @@ struct TekstArv TõlgiKäsk(const char* tekst, struct Käsk* käsk)
     uuga(arg1)buuga(arg2) -> \frac{arg1}{arg2}
     Sel juhul saaks lähtekoodis kirjutada niimoodi: uugaxbuuga4, millest saab \frac{x}{4}.
     Kas frac on ainus omalaadne, kus üks argument on käsu enda nimest eespool? Oletame, et ei ole. Ss võiks vabalt ka mitu argumenti käsu enda nimest ettepoole panna, aga ss peaks lugema nii palju tulevikku, et aru saada, kas käesoleval kohal on mingi mitmeargumendilise käsu esimene argument.
-    // Ütleme, et ei tohi nii olla ja ütleme, et ei tohi isegi olla käsu definitsioonid sellised: uuga(arg1)buuga(arg2). Postuleerime, et kõik argumendid peavad olema kõige lõpus igal commandil ja loodame selle peale, et me ei taha tulevikus midagi muud fracilaadset programmi lisada. frac on ainus omalaadne.
+    // Ütleme, et ei tohi nii olla ja ütleme, et ei tohi isegi olla käsu definitsioonid sellised: uuga(arg1)buuga(arg2) MUIDE: projekt on peaaegu valmis ja programmi sai juurde lisatud textmodecommandid, mida on võimalik kasutajal defineerida nimetatud kujul uuga(arg1)buuga(arg2). Mathmodecommandid on ses mõttes nendega võrreldes vähem võimekamad. Erinevus tuleb sellest, et tõlgimathmode kood on vana ja selle kirjutamise ajal olime lollimad. Siiski, fracilaadset argumendiga algavat käsku kujul (arg1)uuga(arg2) ei saa isegi textmodekäskudega defineerida frac ikkagi on ainus omalaadne MUIDELÕPP. Postuleerime, et kõik argumendid peavad olema kõige lõpus igal commandil ja loodame selle peale, et me ei taha tulevikus midagi muud fracilaadset programmi lisada. frac olgu ainus omalaadne.
 
     // Kõik argumendid selles nimekirjas ja hiljem see nimekiri ise on vaja vabastada.*/
     char** argumentideTõlked = malloc(käsk->argumentideKogus*sizeof(char*));
     unsigned int i = strlen(käsk->käsunimi);
-    // Nii mitu korda tuleb argumenti otsida.
+
+    // Tsükkel, mis otsib ja tõlgib argumente. Iga käiguga üks argument.
     for (unsigned int j=0; j<käsk->argumentideKogus; j++)
     {
-        //puts("Kood jõudis siia!");
         char* argument = NULL;
         if (käsk->argumentideTüübid[j] == 0)
         {
-            //puts("Kood jõudis siia");
             argument = LeiaLühemArgument(&tekst[i]);
+            // Tegu on lühema argumendiga, seega see ei sisalda tühikut, mistõttu kasutaja ei kasuta sulge, mistõttu ei pea sulukontrolli tegema nagu pikema argumendiga allpool.
             i += strlen(argument);
         }
         else if (käsk->argumentideTüübid[j] == 1)
@@ -885,7 +885,7 @@ struct TekstArv TõlgiKäsk(const char* tekst, struct Käsk* käsk)
             }
             else
             {
-                i += strlen(argument);
+                i += strlen(argument)+1;
             } 
         }
         argumentideTõlked[j] = TõlgiMathMode(argument);

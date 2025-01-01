@@ -8,6 +8,7 @@
 #include "Headers/Kõigetõlge.h"
 
 #define MAX_PATH_LENGTH 256
+#define pdfLatexSõnumiteNäitemine 0
 
 struct KäskList käskList;
 struct EnvironmentList environList;
@@ -249,17 +250,25 @@ int main() {
 
             char* line; // Pointer for the line
             int skip_lines = 0;
-            while ((line = read_line(template_file)) != NULL) {
+            while ((line = read_line(template_file)) != NULL)
+            {
                 // Check if the line contains a placeholder for content
-                if (strcmp(line, "{{content}}") == 0) {
-                    
+                if (strcmp(line, "{{content}}") == 0)
+                {
                     // Process the main.txt content
                     char* tõlge = TõlgiKõik(koguTekst);
                     fprintf(output_file, "%s\n", tõlge);
                     free(tõlge);
                     puts("Faili tõlkimine toimis.");
                 }
-                else {
+                else if (strcmp(line, "\\begin{document}") == 0)
+                {   
+                    // Trükib output.tex faili begindoci ette ühe olulise ümberdefinitsiooni, mis fixib ära väikesed valevahed left( right) sulgude ümber. Asi teeb sama välja mis see, kui kasutaja trükiks selle sisse oam template faili. Siiski, kasutaja ei peaks seda tegema, sest tegu on programmi tekitatud probleemiga – las programm ise fixib selle.
+                    fprintf(output_file, "\\let\\originalleft\\left\n\\let\\originalright\\right\n\\renewcommand{\\left}{\\mathopen{}\\mathclose\\bgroup\\originalleft}\n\\renewcommand{\\right}{\\aftergroup\\egroup\\originalright}\n\n");
+                    fprintf(output_file, "%s\n", line);
+                }
+                else
+                {
                     // Write the current line from the template
                     fprintf(output_file, "%s\n", line);
                 }
@@ -274,7 +283,11 @@ int main() {
 
             // Compile output.tex to a .pdf using pdflatex
             char compile_command[MAX_PATH_LENGTH];
-            snprintf(compile_command, sizeof(compile_command), "pdflatex -output-directory=\"%s\" \"%s\"", cwd, output_tex_path); //-quiet
+            #if pdfLatexSõnumiteNäitemine == 1
+            snprintf(compile_command, sizeof(compile_command), "pdflatex -output-directory=\"%s\" \"%s\"", cwd, output_tex_path);
+            #else
+            snprintf(compile_command, sizeof(compile_command), "pdflatex -quiet -output-directory=\"%s\" \"%s\"", cwd, output_tex_path);
+            #endif
             if (system(compile_command) != 0) {
                 perror("Error compiling .tex file with pdflatex");
             }

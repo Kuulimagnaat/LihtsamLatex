@@ -9,3 +9,4 @@ output/output.tex/
 *.fls
 *.fdb_latexmk
 *.synctex.gz
+compile.txt
