@@ -85,7 +85,7 @@ void InitTextModeKäsudList()
 }
 
 
-// Funktsioon, mis loeb kõik mathmode käsud, textmode käsud ja keskkonnad config.txt failist ja paneb need vastavatesse structidesse.
+// Funktsioon, mis loeb kõik mathmode käsud, textmode käsud ja keskkonnad config.txt failist ja paneb need vastavatesse structidesse. Kui workingdirectorys ei ole configit, siis teeb sinna koopia exediris olevast configist.
 void AmmendaConfig()
 {
     // ...\luuga\duuga\        <-- Kaust, kust programm käivitati – currend working directory.
@@ -119,8 +119,40 @@ void AmmendaConfig()
     char config_path[MAX_PATH_LENGTH];
     snprintf(config_path, sizeof(config_path), "%s\\src\\config.txt", exe_dir);
 
+    // Tahan lugeda configit workingdirectoryst. Kui workingdirectorys ei ole configit, siis teha exediril olevast config failist workingdirctoysse koopia ja ikkagi lugeda seda workingdirectoryst.
+    char cwdConfigPath[MAX_PATH_LENGTH];
+    snprintf(cwdConfigPath,MAX_PATH_LENGTH, "%s\\config.txt", cwd);
+    FILE* configiFail = fopen(cwdConfigPath, "r");
+    if (configiFail == NULL)
+    {
+        printf("\nTEHTI UUS CONFIG.\n\n");
+        // config faili pole cwd-s. Tuleb teha sellest exediris koopia.
+        FILE* configiFail = fopen(config_path, "r");
+        FILE* uusCwdConfig = fopen(cwdConfigPath, "w");
+
+        char* line = NULL;
+        while ((line = read_line(configiFail)) != NULL)
+        {
+            fprintf(uusCwdConfig, "%s\n", line);
+            free(line);
+        }
+        fclose(configiFail);
+        fclose(uusCwdConfig);
+    }
 
 
+    init_käsk_list(&käskList);
+    read_commands_from_config(cwdConfigPath, &käskList);
+
+    init_environment_list(&environList);
+    read_environments_from_config(cwdConfigPath, &environList);
+
+    InitTextModeKäsudList();
+    TextmodeKäsudConfigist(cwdConfigPath);
+    puts("TextmodeKäsudConfigist jooksis.");
+
+
+    /*
     init_käsk_list(&käskList);
     read_commands_from_config(config_path, &käskList);
 
@@ -129,7 +161,7 @@ void AmmendaConfig()
 
     InitTextModeKäsudList();
     TextmodeKäsudConfigist(config_path);
-    puts("TextmodeKäsudConfigist jooksis.");
+    puts("TextmodeKäsudConfigist jooksis.");*/
 }
 
 

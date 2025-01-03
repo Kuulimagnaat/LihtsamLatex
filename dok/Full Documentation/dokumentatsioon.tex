@@ -6,6 +6,7 @@
 \usepackage{hyperref} % For clickable links
 \usepackage{xcolor} % For custom colors
 \usepackage{listings}
+\usepackage{verbatim}
 \usepackage[estonian]{babel}
 \usepackage{parskip}
 
@@ -78,7 +79,9 @@
 
 
 \begin{document}
+\section*{Sissejuhatus}
 Tegemist on C-keele projekti LihtsamLatex dokumentatsiooniga. Et tegu on meie enda välja mõeldud keele kompilaatoriga, siis peaks dokumentatsioon olema põhjalik.
+
 
 Programmi töötamiseks peab kasutajal installitud olema mõni \TeX\ keele kompilaator, näiteks MiK\TeX\ või muu \TeX i kompilaator, mis kasutaks käsku \code{pdflatex}. Seda käsku kasutab programm, et peale lähtekoodi tõlgendamist ja \LaTeX i koodi genereerimist see ka kompileerida pdf-failiks. Samuti on tarvilik \code{config.txt} faili olemasolu programmi enda kaustas ning mingi template faili olemasolu \code{templates} kaustas.
 
@@ -86,7 +89,7 @@ Programmi töötamiseks peab kasutajal installitud olema mõni \TeX\ keele kompi
 Esmalt tegeleme template failidega. Template folder on mõeldud kõikide erinevate template failide hoidmiseks. Hetkel on seal ainult \code{defaultTemplate.txt}, mille sisu võiks olla järgmine
 
 \begin{tcolorbox}
-	\begin{lstlisting}
+	\begin{verbatim}
 \documentclass{article}
 \usepackage{amsfonts}
 \usepackage{amsmath}
@@ -98,7 +101,7 @@ Esmalt tegeleme template failidega. Template folder on mõeldud kõikide erineva
 \begin{document}
 {{content}}
 \end{document}
-\end{lstlisting}
+\end{verbatim}
 \end{tcolorbox}
 Siia saab oma valikul juurde lisada nii palju pakete, kui neid vaja võiks minna. Samuti võib kausta juurde lisada veel template faile, kusjuures nende nimed võivad olla suvalised.
 Igas template failis peab aga olema märksõna
@@ -107,21 +110,29 @@ Igas template failis peab aga olema märksõna
 \end{center}
 mis enamasti käib koostatava dokumendi alustava ja lõpetava definitsiooni vahele, st. sinna, kuhu tõlge minema peaks.
 
+\section{Config.txt}
 Nüüd saame liikuda järgmise faili juurde. Peamised käskude ja keskkondade definitsioonid, sealjuures ka muud lipud, lähevad kõik \code{config.txt} faili. Algselt võiks selle sisuks olla
 \begin{tcolorbox}
-\begin{lstlisting}
-template = defaultTemplate
+\begin{verbatim}
+template = KAAREL
 
+TEXTMODE KÄSUD
+//(arg1)// -> \emph{arg1}
+pealk (arg1) -> \secton{arg1}
+
+MATHMODE KÄSUD
+sum(al)(ül) -> \sum_{al}^{ül}
 to -> \to
 inf -> \infty
 lim(arg1) -> \lim_{arg1}
 
-env(enum) [multiline, subcmds:{it}, end:{--}] -> \begin{enumerate} #content \end{enumerate} | (it(arg1) -> \item arg1)
-\end{lstlisting}
+KESKKONNAD
+enum [multiline, end:{--}] -> \begin{enumerate} #content \end{enumerate} | (item(arg1) -> \item arg1)
+\end{verbatim}
 \end{tcolorbox}
 
-Niisiis võimegi toodud faili sisu jaotada kolmeks, millest igaüht vaatleme eraldi.
-
+Välimuseltki on selge, et selle faili sisu on neljas eri osas. Iga osa kirjeldatakse allpool eraldi.
+\subsection{Üldised lipud}
 \textbf{Üldised lipud.} Nendeks on lipud, mida saab defineerida faili alguses ning mis kuidagimoodi mõjutavad programmi tööd. Hetkel on nendeks
 \begin{itemize}
     \item \code{template} - Määrab ära template faili nime, mida kompileerimisel kasutatakse. Samanimeline fail peab leiduma \code{template} folderis.

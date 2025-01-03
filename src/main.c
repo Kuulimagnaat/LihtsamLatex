@@ -41,7 +41,7 @@ int compare_filetime(FILETIME ft1, FILETIME ft2) {
 }
 
 
-/* Function to find the first .txt file in the current directory */
+/* Function to find the first .txt file in the current directory 
 int find_first_txt_file(char* txt_file_path) {
     WIN32_FIND_DATA find_file_data;
     HANDLE h_find = FindFirstFile("*.txt", &find_file_data);
@@ -55,6 +55,32 @@ int find_first_txt_file(char* txt_file_path) {
         FindClose(h_find);
         return 1;  // Success
     }
+}*/
+
+// Idk, chatgpt kirjutas selle lolli windowsi koodi, millega ma ei viitsi nussida. See on pmst sama, mis ülal mahakommenteeritud, aga jätab vahele faili "config.txt".
+int find_first_txt_file(char* txt_file_path) {
+    WIN32_FIND_DATA find_file_data;
+    HANDLE h_find = FindFirstFile("*.txt", &find_file_data);
+
+    if (h_find == INVALID_HANDLE_VALUE) {
+        printf("No .txt files found in the current directory.\n");
+        return 0; // No .txt file found
+    } 
+
+    do {
+        // Skip "config.txt"
+        if (strcmp(find_file_data.cFileName, "config.txt") != 0) {
+            // Store the name of the first valid .txt file found
+            strcpy(txt_file_path, find_file_data.cFileName);
+            FindClose(h_find);
+            return 1; // Success
+        }
+    } while (FindNextFile(h_find, &find_file_data));
+
+    // No valid .txt file found
+    printf("No .txt files other than 'config.txt' found in the current directory.\n");
+    FindClose(h_find);
+    return 0;
 }
 
 
@@ -108,6 +134,8 @@ int main() {
     char config_path[MAX_PATH_LENGTH];
     // ...\uuga\buuga\src\templatefailinimi.txt
     char template_path[MAX_PATH_LENGTH];
+    // ...\uuga\buuga\config.txt
+    char cwdConfigPath[MAX_PATH_LENGTH];
 
 
     // Get the current working directory for main.txt. Seda asukohta on vaja selleks, et sellel aadressil asuvat kasutaja kirjutatavat lähtekoodifaili avada.
@@ -146,7 +174,7 @@ int main() {
     // Construct full path to the template file in the templates folder
     snprintf(template_path, sizeof(template_path), "%s\\templates\\%s.txt", exe_dir, template_name);
 
-    // Otsitakse funktsiooni abil working directoryst esimene tekstifail, mis on see, kust loetakse kasutaja krijtuatud latexiks tõlgitavat teksti.
+    // Otsitakse funktsiooni abil working directoryst esimene tekstifail peale "config.txt" faili. See on lähtekoodifail.
     char main_txt_file[MAX_PATH_LENGTH];
     if (!find_first_txt_file(main_txt_file)) {
         free(template_name);
@@ -155,18 +183,32 @@ int main() {
 
     // Construct full path to the found .txt file
     snprintf(main_path, sizeof(main_path), "%s\\%s", cwd, main_txt_file);
+    snprintf(cwdConfigPath, sizeof(main_path), "%s\\config.txt", cwd);
 
     FILETIME last_mod_time = {0, 0};
     while (1)
     {
         Sleep(300);
-        FILETIME current_mod_time = getFileModTime(main_path);
-        
-        if (compare_filetime(current_mod_time, last_mod_time) != 0) 
+        FILETIME current_source_mod_time = getFileModTime(main_path);
+        FILETIME current_config_mod_time = getFileModTime(cwdConfigPath);
+        printf("High time: %ld\n", current_config_mod_time.dwLowDateTime);
+        if (compare_filetime(current_source_mod_time, last_mod_time) > 0 || compare_filetime(current_config_mod_time, last_mod_time) > 0) 
         {
-            last_mod_time = current_mod_time;
+            printf("source: %d\nconfig: %d\nlast:   %d\n", current_source_mod_time.dwLowDateTime, current_config_mod_time.dwLowDateTime, last_mod_time.dwLowDateTime);
+            if (CompareFileTime(&current_source_mod_time, &current_config_mod_time) > 0)
+            {
+                puts("source time on suurem");
+                last_mod_time = current_source_mod_time;
+            }
+            else
+            {
+                puts("COnfig time on suurem");
+                last_mod_time = current_config_mod_time;
+            }
+            //last_mod_time = current_source_mod_time;
+                
 
-            // Täidetakse käsklist ja envlist.
+            // Täidetakse käsklist ja envlist, tekitatakse configfail cwd-sse, kui vaja.
             AmmendaConfig();
 
 
@@ -263,7 +305,7 @@ int main() {
                 }
                 else if (strcmp(line, "\\begin{document}") == 0)
                 {   
-                    // Trükib output.tex faili begindoci ette ühe olulise ümberdefinitsiooni, mis fixib ära väikesed valevahed left( right) sulgude ümber. Asi teeb sama välja mis see, kui kasutaja trükiks selle sisse oam template faili. Siiski, kasutaja ei peaks seda tegema, sest tegu on programmi tekitatud probleemiga – las programm ise fixib selle.
+                    // Trükib output.tex faili begindoci ette ühe olulise ümberdefinitsiooni, mis fixib ära väikesed valevahed left(, right) sulgude ümber. Asi teeb sama välja mis see, kui kasutaja trükiks selle sisse oma template faili. Siiski, kasutaja ei peaks seda tegema, sest tegu on programmi tekitatud probleemiga – las programm ise fixib selle.
                     fprintf(output_file, "\\let\\originalleft\\left\n\\let\\originalright\\right\n\\renewcommand{\\left}{\\mathopen{}\\mathclose\\bgroup\\originalleft}\n\\renewcommand{\\right}{\\aftergroup\\egroup\\originalright}\n\n");
                     fprintf(output_file, "%s\n", line);
                 }
