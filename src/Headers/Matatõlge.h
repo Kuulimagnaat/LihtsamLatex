@@ -104,7 +104,6 @@ char* LiidaTekstid(char* eelmineMälu, const char* lisatav);
 char* append_str(const char* a, const char* b);
 char* TõlgiMathMode(const char* expression);
 char* LeiaTekstEnneTähte(const char* tekst, char täht);
-struct LimiTagastus TõlgiLim(char* tekst);
 char* LeiaTekstEnneTeksti(const char* tekst, const char* teksti);
 int KasLugeja(const char* tekst);
 char* LeiaNimetaja(const char* tekst);

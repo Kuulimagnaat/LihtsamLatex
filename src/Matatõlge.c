@@ -1798,69 +1798,6 @@ char* LeiaTekstEnneTeksti(const char* tekst, const char* teksti)
     return leitud;
 }
 
-
-
-/* Funktsioon võtab sisse mäluaadressi, kus on limi algus. Funktsioon hakkab sealt teksti lugema, eraldab endale sobiva koguse mälu ja kirjutab sellesse loetud teksti tõlke. Tagastab structi, mis sisaldab endas tõlke alguse aadressi ja seda, kui palju funktsiooni väline kood peaks lähtekoodis edasi hüppama, et jõuda tekstis sinnamaale, kus lim läbi saab.
-Täpsemalt on kolm võimalust, mis limi tekstile järgnev jähemärk olla saab. Iga võimaluse puhul käitutakse erinevalt.
-1) limi järel on tühik. Siis limi alla teksti ei tule ja lim on üksinda. Selline lim on jadade piirväärtusel.
-2) limi järel on avanev sulg. Siis limi alla läheb kõik see, mis jääb nimetatud avaneva ja seda sulgeva sulu vahele.
-3) limi järel on mingi muu täht. Siis läheb limi alla kõik see, mis jääb limi ja esimese tühiku vahele. limlima/btoc (a+b)/c+d*/
-struct LimiTagastus TõlgiLim(char* tekst)
-{
-    struct LimiTagastus tagastus = {.TähtiLoeti=0, .Tõlge=NULL};
-
-    char* mälu = malloc(1);
-    if (mälu == NULL)
-    {
-        perror("Ei õnnestunud mälu eraldada :(");
-        exit(EXIT_FAILURE);
-    }
-    mälu[0] = '\0';    
-
-    mälu = LiidaTekstid(mälu, "\\lim");
-    if (tekst[3] == '(')
-    {
-        char* sulusisu = LeiaSuluSisu(&tekst[4]);
-        char* tõlge = TõlgiMathMode(sulusisu);
-        mälu = LiidaTekstid(mälu, "_{");
-        mälu = LiidaTekstid(mälu, tõlge);
-        free(tõlge);
-        mälu = LiidaTekstid(mälu, "}");
-        tagastus.TähtiLoeti = 4+strlen(sulusisu)+1;
-        tagastus.Tõlge = mälu;
-        free(sulusisu);
-        return tagastus;
-    }
-    else if (tekst[3] == ' ')
-    {
-        mälu = LiidaTekstid(mälu, " ");
-        tagastus.TähtiLoeti = 4;
-        tagastus.Tõlge = mälu;
-        return tagastus;
-    }
-    // Tegeleda hiljem põhjalikumalt üldisema juhu jaoks, kus limi all võib omakorda lim olla ja esimene tühik tajutakse ära sisemise limi omaks, seega loetake edasi otsimaks järgmist tühikut, mis lõpetaks välimise limi.
-    else
-    {
-        char* limiAlla = LeiaTekstEnneTähte(&tekst[3], ' ');
-        if (limiAlla == NULL)
-        {
-            free(limiAlla);
-            limiAlla = &tekst[3];
-        }
-        char* tõlge = TõlgiMathMode(limiAlla);
-        mälu = LiidaTekstid(mälu, "_{");
-        mälu = LiidaTekstid(mälu, tõlge);
-        free(tõlge);
-        mälu = LiidaTekstid(mälu, "}");
-        tagastus.TähtiLoeti = 3+strlen(limiAlla)+1;
-        free(limiAlla);
-        tagastus.Tõlge = mälu;
-        return tagastus;
-    }
-}
-
-
-
 #define LeiaNimetajaDebug 0
 char* LeiaNimetaja(const char* tekst) // sin(x)/sin(x + 4)abc     va(4 sin(x)x)/sin(x + 4)abc
 {
