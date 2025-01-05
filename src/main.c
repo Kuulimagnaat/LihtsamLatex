@@ -191,18 +191,14 @@ int main() {
         Sleep(300);
         FILETIME current_source_mod_time = getFileModTime(main_path);
         FILETIME current_config_mod_time = getFileModTime(cwdConfigPath);
-        printf("High time: %ld\n", current_config_mod_time.dwLowDateTime);
         if (compare_filetime(current_source_mod_time, last_mod_time) > 0 || compare_filetime(current_config_mod_time, last_mod_time) > 0) 
         {
-            printf("source: %d\nconfig: %d\nlast:   %d\n", current_source_mod_time.dwLowDateTime, current_config_mod_time.dwLowDateTime, last_mod_time.dwLowDateTime);
             if (CompareFileTime(&current_source_mod_time, &current_config_mod_time) > 0)
             {
-                puts("source time on suurem");
                 last_mod_time = current_source_mod_time;
             }
             else
             {
-                puts("COnfig time on suurem");
                 last_mod_time = current_config_mod_time;
             }
             //last_mod_time = current_source_mod_time;

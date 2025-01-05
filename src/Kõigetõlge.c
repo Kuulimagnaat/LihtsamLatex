@@ -176,8 +176,6 @@ struct TekstArv TõlgiTextmodeKäsk(char* tekst, struct TextmodeKäsk* käsk)
         // Läheb üle lähtekoodi teksti tähthaaval ja kui mõni käsk tuleb ette, ss kutsub rekursiivselt välja uue textmode käsu tõlkimist. Kui lõpuks on nii, et kõik ettetulnud käsud on tõlgitud ja ette tuleb argumendilõpp, ss on argument eraldatud.
         for ( ; KasEsimesedTähed(&tekst[i], käsk->argumentideLõpud[j]) == 0; )
         {
-            puts("ARGUMENDI j LÕPP:");
-            puts(käsk->argumentideLõpud[j]);
             struct TekstArv kohaTõlge = TõlgiKõikSellesKohas(&tekst[i]);
             
             argumendiTõlge = LiidaTekstid(argumendiTõlge, kohaTõlge.Tekst);
@@ -188,7 +186,7 @@ struct TekstArv TõlgiTextmodeKäsk(char* tekst, struct TextmodeKäsk* käsk)
         i += strlen(käsk->argumentideLõpud[j]); // Nüüd tekst[i] on järgmise argumendi esimesel kohal.
     }
 
-    puts("VÄLJUS ESIMESEST LOOPIST");
+    //puts("VÄLJUS ESIMESEST LOOPIST");
     // Teksti määran allpool.
     struct TekstArv tagastus = {.Arv = i, .Tekst=NULL};
 
@@ -254,7 +252,6 @@ void TextmodeKäsudConfigist(char* config_path)
         }
         if (onTextmodeKäskudeJuures)
         {
-            printf("RIDA: %s\n", line);
             // Teskst enne " -> "
             char* vasak = LeiaTekstEnneTeksti(line, " -> ");
 
@@ -298,15 +295,12 @@ void TextmodeKäsudConfigist(char* config_path)
             while (vasak[i] != '\0')
             {
                 i++; // Nüüd vasak[i] on argumendi esimene täht
-                puts(&vasak[i]);
                 char* argumendiNimi = LeiaTekstEnneTeksti(&vasak[i], ")");
                 i += strlen(argumendiNimi); // Nüüd vasak[i] on argumenti sulgev sulg.
-                puts(&vasak[i]);
+                //puts(&vasak[i]);
                 i++; // vasak[i] on argumendilõpu esimene täht
-                puts(&vasak[i]);
                 char* argumendiLõpp = LeiaTekstEnneTeksti(&vasak[i], "(");
                 i+=strlen(argumendiLõpp);
-                puts(&vasak[i]);
                 if (strlen(argumendiLõpp) == 0)
                 {
                     argumendiLõpp = LiidaTekstid(argumendiLõpp, "\n");
@@ -323,11 +317,11 @@ void TextmodeKäsudConfigist(char* config_path)
             }
 
             käsk.definitsioon = parem;
-            printf("Siin on käsu info:\n");
-            puts(käsk.käsualgus);
-            puts(käsk.argumentideLõpud[0]);
-            puts(käsk.argumentideNimed[0]);
-            puts(käsk.definitsioon);
+            //printf("Siin on käsu info:\n");
+            //puts(käsk.käsualgus);
+            //puts(käsk.argumentideLõpud[0]);
+            //puts(käsk.argumentideNimed[0]);
+            //puts(käsk.definitsioon);
             LisaTextmodeKäsk(käsk);
         }
         free(line);
