@@ -149,7 +149,7 @@ void AmmendaConfig()
 
     InitTextModeKäsudList();
     TextmodeKäsudConfigist(cwdConfigPath);
-    puts("TextmodeKäsudConfigist jooksis.");
+    //puts("TextmodeKäsudConfigist jooksis.");
 
 
     /*

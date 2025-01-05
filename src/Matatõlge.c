@@ -839,7 +839,7 @@ char* my_strndup(const char* s, size_t n) {
 
 
 // Kui TõlgiMathMode funktsioonis tajutakse, et kättejõudnud kohal on mingi käsk, siis seal kohas antakse selle koha aadress ja tajutud käsule vastav struct selele funtksiooile, et see saaks tõlkida seda kohta. 
-#define TõlgiKäskDebug 1
+#define TõlgiKäskDebug 0
 struct TekstArv TõlgiKäsk(const char* tekst, struct Käsk* käsk)
 {
     #if TõlgiKäskDebug == 1
@@ -1522,7 +1522,7 @@ void read_environments_from_config(const char* filepath, struct EnvironmentList*
         {
             // Siin tuleks env() süntaksi nõudmine keskkondade puhul ära jätta, sest on teada, et kui lugemine toimub, siis on tegu keskkondadega, sest loetakse KESKKONNAD lõiku.
             // Eeldame, et "env" kasutame AINULT siis, kui defineerime uut keskkonda
-            printf("Valid Environment Line: %s\n", line);
+            //printf("Valid Environment Line: %s\n", line);
             struct Environment env = {0}; // Initialize a new Environment struct
             parse_environment(line, &env); // Use the existing parsing method
             add_environment(env_list, env); // Add the parsed environment to the global list
@@ -1599,7 +1599,7 @@ struct Käsk* KasKäsk(const char* tekst)
 
 extern char main_path[256];
 // Rekursiivselt tõlgime math moodi latexisse. Funktsionn võtab sisse teksti, mida hakata tõlkima ja nimekirja nendest käskudest, mida funktsioon saab tõlkimiseks kasutada.
-#define TõlgiMathModeDebug 1
+#define TõlgiMathModeDebug 0
 #define VigadestTeatamine 0
 char* TõlgiMathMode(const char* avaldis)
 {
@@ -2013,7 +2013,7 @@ char* LeiaNimetaja(const char* tekst) // sin(x)/sin(x + 4)abc     va(4 sin(x)x)/
 
 
 
-#define LeiaLugejaDebug 1
+#define LeiaLugejaDebug 0
 char* LeiaLugeja(const char* tekst)
 {
     #if LeiaLugejaDebug == 1
@@ -2103,7 +2103,7 @@ int KasLugeja(const char* tekst) // nin(x)/sin(x + 4)abc     va(4 sin(x)x)/sin(x
 
 
 // Argumendi võtmine käib nii, et tagastatakse tekst enne esimest tühikut välja arvatud juhul kui see tühik on mingite sulgude sees. See ei ole aga ainus viis argumenti võtta, sest näitekst astmed tahavad veidi teistsugust argumendivõtmist. Teksti ax^2+bx+c peab tõlgendama nii, et ax^(2)+bx+c, mitte ax^(2+bx+c) nagu esimene variant tõlgendaks. Seega on olemas kaks argumendivõtmise funtksiooni. Üks on tavaline LeiaArgument, teine on LeiaLühemArgument selline, mis lõpetab argumendivõtu mitte ainult tühiku peale vaid ka tehete +-* peale. Jagamismärki selles nimekirjas pole, sest jagamise argumendid selgitatakse välja enne astmete omi, mistõttu jagamismärki ei tule kunagi astme argumendi otsimisel ette.
-#define LeiaArgumentDebug 1
+#define LeiaArgumentDebug 0
 char* LeiaArgument(const char* tekst)
 {
     #if LeiaArgumentDebug == 1
@@ -2141,7 +2141,7 @@ char* LeiaArgument(const char* tekst)
 }
 
 // Identne eelmise funktsooniga, lic argumendi võtmise lõpetamise tingimusi on rohkem.
-#define LeiaLühemArgumentDebug 1
+#define LeiaLühemArgumentDebug 0
 char* LeiaLühemArgument(const char* tekst)
 {
     #if LeiaLühemArgumentDebug == 1

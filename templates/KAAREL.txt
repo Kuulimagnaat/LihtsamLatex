@@ -11,6 +11,7 @@
 \usepackage{graphicx}
 \usepackage{enumitem}
 \usepackage{siunitx}
+\usepackage{cancel}
 \sisetup{per-mode=fraction}
 \sisetup{exponent-product = \cdot, output-product = \cdot}
 \newcommand{\imp}{\ensuremath{\;\Rightarrow\;}}
