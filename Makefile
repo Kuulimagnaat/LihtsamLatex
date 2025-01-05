@@ -1,27 +1,30 @@
-CFLAGS := -std=c99 -g -Og -Werror -Wall -Wpedantic
-EXE := lib/main
-OBJS := obj/main.o
-CC := gcc
+CC = gcc
+CFLAGS = -Wall -Wextra -std=c11 -Iheaders
 
-$(EXE): $(OBJS) lib
-	$(CC) -Iinc/ $(CFLAGS) -o $(EXE) $(OBJS)
+SRC_DIR = src
+OBJ_DIR = obj
 
-obj/%.o: src/%.c obj
-	gcc -c -Iinc/ $(CFLAGS) -o $@ $<
+SRC_FILES = $(filter-out $(SRC_DIR)/Katse.c, $(wildcard $(SRC_DIR)/*.c))
+OBJ_FILES = $(patsubst $(SRC_DIR)/%.c, $(OBJ_DIR)/%.o, $(SRC_FILES))
 
-obj:
-	mkdir obj
+TARGET = a.exe
 
-lib:
-	mkdir lib
+.PHONY: all clean run dirs
 
-.PHONY: run
-run: $(EXE)
-	./$(EXE)
+all: dirs $(TARGET)
 
-.PHONY: clean
+dirs:
+	mkdir -p $(OBJ_DIR)
+
+$(TARGET): $(OBJ_FILES)
+	$(CC) $(CFLAGS) -o $@ $^
+
+$(OBJ_DIR)/%.o: $(SRC_DIR)/%.c
+	$(CC) $(CFLAGS) -c -o $@ $<
+
+run: $(TARGET)
+	./$(TARGET)
+
 clean:
-	del /q "obj/"
-	rmdir obj
-	del /q "lib/"
-	rmdir lib
+	rm -f $(TARGET)
+	rm -rf $(OBJ_DIR)

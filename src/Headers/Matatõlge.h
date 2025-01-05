@@ -101,7 +101,6 @@ char* read_line(FILE* file);
 int KasEsimesedTähed(const char* tekstis, const char* tekst);
 char* LeiaSuluSisu(const char* tekst);
 char* LiidaTekstid(char* eelmineMälu, const char* lisatav);
-char* my_strndup(const char* s, size_t n);
 char* append_str(const char* a, const char* b);
 char* TõlgiMathMode(const char* expression);
 char* LeiaTekstEnneTähte(const char* tekst, char täht);

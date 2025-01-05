@@ -598,103 +598,6 @@ void add_käsk(struct KäskList* list, struct Käsk subcommand) {
     list->count++;
 }
 
-
-
-/*
-void loeConfigistKeskkonnad(const char* filepath, struct KeskkonnaNimekiri* keskkonnaNimek)
-{
-    FILE* file = fopen(filepath, "r");
-    if (!file) 
-    {
-        perror("Unable to open config file");
-        exit(EXIT_FAILURE);
-    }
-
-
-
-    char* line;
-    while ((line = read_line(file)) != NULL) 
-    {
-        int onKeskkonnaLugemine = 0;
-        // Igal real, kui ei ole kohe alguses "keskkond", siis lic edasi minna järgmisele reale. Kõik, millest hoolitakse on see, mis on "keskkonna" taga.
-        if (!KasEsimesedTähed(line, "keskkond"))
-        {
-            continue;
-        }
-        // Kui kood jõuab siia, ss järelikult on käesoleval real esimene sõna "keskkond".
-
-
-        char* left = line;
-        char* right = arrow + 2;
-
-        // Trim whitespace
-        left = trim_whitespace(left);
-        right = trim_whitespace(right);
-
-        struct Käsk käsk = {0};
-
-        // Parse the command name and arguments from the left side
-        char* open_paren = strchr(left, '(');  // Find first '('
-        if (open_paren) {
-            // Extract the command name before the first '('
-            *open_paren = '\0'; // Null-terminate the command name
-            käsk.käsunimi = strdup(left);
-
-            // Now parse arguments
-            char* current = open_paren + 1; // Start after '('
-            unsigned int arg_count = 0;
-
-            while (current && *current) {
-                char* close_paren = strchr(current, ')'); // Find closing ')'
-                if (!close_paren) break; // If no closing parenthesis, stop
-
-                // Null-terminate the argument name
-                *close_paren = '\0';
-
-                // Allocate memory and store the argument name
-                käsk.argumentideNimed = realloc(käsk.argumentideNimed, (arg_count + 1) * sizeof(char*));
-                käsk.argumentideNimed[arg_count] = strdup(current);
-
-                // Default argument type (can be customized later)
-                käsk.argumentideTüübid = realloc(käsk.argumentideTüübid, (arg_count + 1) * sizeof(int));
-                käsk.argumentideTüübid[arg_count] = 1; // Default type "long"
-
-                // Increment argument count
-                arg_count++;
-
-                // Move past the closing parenthesis and skip any spaces
-                current = close_paren + 2;
-                while (*current == ' ') {
-                    current++;
-                }
-            }
-
-            // Set the total argument count
-            käsk.argumentideKogus = arg_count;
-        } else {
-            // No arguments, just the command name
-            käsk.käsunimi = strdup(left);
-            käsk.argumentideKogus = 0;
-            käsk.argumentideNimed = NULL;
-            käsk.argumentideTüübid = malloc(1 * sizeof(int));
-            käsk.argumentideTüübid[0] = -1; // No arguments
-        }
-
-        // Set the definition (right-hand side of the "->")
-        käsk.definitsioon = strdup(right);
-
-        // Add the parsed command to the list
-        add_käsk(käsk_list, käsk);
-
-        // Free the line buffer
-        free(line);
-    }
-
-    fclose(file);
-}
-*/
-
-
 void read_commands_from_config(const char* filepath, struct KäskList* käsk_list)
 {
     FILE* file = fopen(filepath, "r");
@@ -813,29 +716,6 @@ void read_commands_from_config(const char* filepath, struct KäskList* käsk_lis
 
     fclose(file);
 }
-
-
-
-// duplikeerib antud stringi kuni n baidini (tagastab pointeri uuele stringile)
-char* my_strndup(const char* s, size_t n) {
-    char* result;
-    size_t len = strlen(s);
-
-    if (n < len) {
-        len = n;
-    }
-
-    result = malloc(len + 1); // Mälu substringi jaoks
-    if (!result) {
-        perror("Mälu ei saadud eraldada. :(\n");
-        exit(EXIT_FAILURE);
-    }
-
-    strncpy(result, s, len); // Kopeerime kuni n characteri
-    result[len] = '\0'; //Null-terminate
-    return result;
-}
-
 
 
 // Kui TõlgiMathMode funktsioonis tajutakse, et kättejõudnud kohal on mingi käsk, siis seal kohas antakse selle koha aadress ja tajutud käsule vastav struct selele funtksiooile, et see saaks tõlkida seda kohta. 
@@ -1852,8 +1732,17 @@ char* TõlgiMathMode(const char* avaldis)
                     result = LiidaTekstid(result, " ");
                 }
                 eelmiselKohalOliKäsk = 0;
+
                 // Handle regular characters
-                char* single_char = my_strndup(&expression[i], 1);
+                char *single_char = malloc(2);
+                if (single_char == NULL) {
+                    perror("malloc failed for single char in Matatõlge.");
+                    return 1;
+                }
+
+                single_char[0] = expression[i];  // Copy the character
+                single_char[1] = '\0';           // Null-terminate the string
+
                 result = LiidaTekstid(result, single_char);
                 free(single_char);
                 i++;
