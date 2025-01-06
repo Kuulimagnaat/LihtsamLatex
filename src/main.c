@@ -15,6 +15,11 @@ struct EnvironmentList environList;
 int reanumber = 1;
 struct TextmodeKäskList textmodeKäskList;
 
+// Muutuja, mis hoiab endas seda infot, kui sügaval rekursiooniga ollakse. Võimaldab printida sügavusele vastavalt tühkuid debug sõnumite ette, et oleks kenam.
+unsigned int rekursiooniTase;
+// See kui mitu tühikut on taande pikkus.
+unsigned int taandePikkus = 4;
+
 //struct KeskkonnaNimekiri keskkonnaNimek;
 
 //Leiab fili viimase modification time'i
@@ -290,7 +295,6 @@ int main() {
             }
 
             char* line; // Pointer for the line
-            int skip_lines = 0;
             while ((line = read_line(template_file)) != NULL)
             {
                 // Check if the line contains a placeholder for content

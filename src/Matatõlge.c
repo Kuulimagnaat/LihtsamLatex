@@ -14,21 +14,11 @@ extern int reanumber;
 extern struct TextmodeKäskList textmodeKäskList;
 
 // Muutuja, mis hoiab endas seda infot, kui sügaval rekursiooniga ollakse. Võimaldab printida sügavusele vastavalt tühkuid debug sõnumite ette, et oleks kenam.
-unsigned int rekursiooniTase;
+extern unsigned int rekursiooniTase;
 // See kui mitu tühikut on taande pikkus.
-unsigned int taandePikkus = 4;
+extern unsigned int taandePikkus;
 
-void prindiTaane()
-{
-    for (unsigned int i = 0; i<rekursiooniTase; i++)
-    {
-        printf("|");
-        for(unsigned int j = 0; j<taandePikkus-1; j++)
-        {
-            printf(" ");
-        }
-    } 
-}
+
 
 
 
@@ -54,6 +44,7 @@ void extract_between(const char *source, const char *start, const char *end, cha
         fprintf(stderr, "Error: Substring exceeds maximum length of %d characters.\n", max_len);
         return;
     }
+
 
     strncpy(result, start_ptr, length);
     result[length] = '\0';
@@ -195,7 +186,6 @@ void parse_environment(const char *config_line, struct Environment* env) {
     definitions_start++; // Move past the '|'
     
     
-    int subcommand_count = 0;
 
     const char *current_pos = definitions_start;
     // Loop through each subcommand definition
@@ -1062,7 +1052,7 @@ struct Käsk* KasEnvironmentKäsk(const char* tekst, const struct Environment* e
     return NULL;
 }
 
-char** SplitByDelimiter(const char* input, const char* delimiter)
+char** SplitByDelimiter(const char* input)
 {
     if (!input) return NULL;
 
@@ -1229,7 +1219,7 @@ struct TekstArv TõlgiEnvironment(char* tekst, struct Environment* env, int Kuts
                     
                     // Nüüd tekib küsimus selles, et kas see terve käsurida sisaldab mitut argumenti, mis oli mõeldud välja kutsud käsu jaoks.
                     // Loome masiivi, mis hoiab leitud argumente.
-                    char** arguments = SplitByDelimiter(TerveKäsuRida, "   ");
+                    char** arguments = SplitByDelimiter(TerveKäsuRida);
                     char* finalTranslation = strdup(subcmd->definitsioon);
 
                     for (unsigned int i = 0; i < subcmd->argumentideKogus; i++) {
@@ -1273,7 +1263,7 @@ struct TekstArv TõlgiEnvironment(char* tekst, struct Environment* env, int Kuts
                         line += subcmd_len + 1;
                     }
 
-                    char ** arguments = SplitByDelimiter(line, "   ");
+                    char ** arguments = SplitByDelimiter(line);
                     char* finalTranslation = strdup(subcmd->definitsioon);
 
                     for (unsigned int i = 0; i < subcmd->argumentideKogus; i++) {
@@ -1300,7 +1290,7 @@ struct TekstArv TõlgiEnvironment(char* tekst, struct Environment* env, int Kuts
                     // Real ei leitud käsku. Sellisel juhul ei ole real alguses defineeritud käsu nime.
                     struct Käsk* subcmd = &env->käsk_list.käsud[0]; // Leiame keskkonna ainsa käsu. 
 
-                    char ** arguments = SplitByDelimiter(line, "   ");
+                    char ** arguments = SplitByDelimiter(line);
                     char* finalTranslation = strdup(subcmd->definitsioon);
 
                     for (unsigned int i = 0; i < subcmd->argumentideKogus; i++) {
@@ -1335,7 +1325,7 @@ struct TekstArv TõlgiEnvironment(char* tekst, struct Environment* env, int Kuts
                         line += subcmd_len + 1;
                     }
 
-                    char** arguments = SplitByDelimiter(line, "   ");
+                    char** arguments = SplitByDelimiter(line);
                     char* finalTranslation = strdup(subcmd->definitsioon);
 
                     for (unsigned int i = 0; i < subcmd->argumentideKogus; i++) {
@@ -1497,13 +1487,13 @@ char* TõlgiMathMode(const char* avaldis)
     char* result = malloc(1); // Empty string
     result[0] = '\0';
 
-    int w = 0;
+    unsigned int w = 0;
     // Avaldis on terve, võimalik et mitmerealine, tekst, mis jääb mm-de vahele.
     while (w < strlen(avaldis))
     {
         char* expression = LeiaTekstEnneTeksti(&avaldis[w], "\n");
         w += strlen(expression);
-        int i = 0;
+        unsigned int i = 0;
         // Kas tähe juurde jõudes oli eelnev asi käsk. Kui oli, siis tuleb tavalise tähe korral selle ette panna tühik.
         int eelmiselKohalOliKäsk = 0;
         int OnKeskkond = 0;
@@ -1737,7 +1727,7 @@ char* TõlgiMathMode(const char* avaldis)
                 char *single_char = malloc(2);
                 if (single_char == NULL) {
                     perror("malloc failed for single char in Matatõlge.");
-                    return 1;
+                    exit(1);
                 }
 
                 single_char[0] = expression[i];  // Copy the character
@@ -1835,6 +1825,10 @@ char* LeiaNimetaja(const char* tekst) // sin(x)/sin(x + 4)abc     va(4 sin(x)x)/
             i++;
         }
     }
+
+    char* a = malloc(1);
+    a = LiidaTekstid(a, "LmaoxdlolDab Nimetajat ei olnud bruh, stupid ass");
+    return a;
 }
 
 

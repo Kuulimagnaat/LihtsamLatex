@@ -66,7 +66,7 @@ struct EnvironmentList {
 
 struct Käsk* KasKäsk(const char* tekst);
 struct TekstArv TõlgiEnvironment(char* tekst, struct Environment* env, int KutsutiVäljaMMist);
-char** SplitByDelimiter(const char* input, const char* delimiter);
+char** SplitByDelimiter(const char* input);
 char* ReplaceArgumentInDefinition(char* definition, const char* placeholder, const char* translatedArg);
 
 void print_environment_info(struct Environment* env);
@@ -82,6 +82,7 @@ void init_environment(struct Environment* env);
 void parse_environment(const char *config_line, struct Environment* env);
 void parse_flags_in_brackets(const char* config_line, struct Environment* env);
 void extract_between(const char *source, const char *start, const char *end, char *result, int max_len);
+
 
 struct TekstTekst
 {

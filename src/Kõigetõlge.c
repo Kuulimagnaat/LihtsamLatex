@@ -8,6 +8,10 @@
 
 
 extern struct TextmodeKäskList textmodeKäskList;
+extern struct KäskList käskList;
+extern struct EnvironmentList environList;
+extern int reanumber;
+extern unsigned int rekursiooniTase;
 
 
 // Initialize a TextModeKäskList. Argumenti pole vaja, sest textmodekäsklist on globaalne. Mdea, miks initKäsklistil ja initEnvListil on nõutud argumenti.
@@ -95,7 +99,7 @@ struct TekstArv TõlgiKõikSellesKohas(char* tõlgitav)
             tulemus.Tekst = tõlge;
             return tulemus;
         }
-        if ( i == 0 && KasEsimesedTähed(&tõlgitav[i], "mm ") || KasEsimesedTähed(&tõlgitav[i], " mm ") || KasEsimesedTähed(&tõlgitav[i], "\nmm ") || KasEsimesedTähed(&tõlgitav[i], "\nmm\r\n"))
+        if ((i == 0 && KasEsimesedTähed(&tõlgitav[i], "mm ")) || KasEsimesedTähed(&tõlgitav[i], " mm ") || KasEsimesedTähed(&tõlgitav[i], "\nmm ") || KasEsimesedTähed(&tõlgitav[i], "\nmm\r\n"))
         {
             int onDisplayMath = 0;
             if (KasEsimesedTähed(&tõlgitav[i], " mm "))
@@ -155,18 +159,33 @@ struct TekstArv TõlgiKõikSellesKohas(char* tõlgitav)
             return tulemus;
         }
     }
+    tulemus.Arv = 69;
+    char* täht = malloc(1);
+    täht[0] = '\0';
+    täht = LiidaTekstid(täht, "lmaoxDstupidass kood jõudis lõppu sea, k kus lõpppu ei pidanud jõudme. bruh");
+    tulemus.Tekst = täht;
+    return tulemus;
 }
 
 
 
+#define TõlgiTextmodeKäskDebug 1
 struct TekstArv TõlgiTextmodeKäsk(char* tekst, struct TextmodeKäsk* käsk)
 {
+    #if TõlgiTextmodeKäskDebug == 1
+    prindiTaane();
+    printf("TõlgiTextmodeKäsk\n");
+    prindiTaane();
+    printf("SISSE: %s", tekst);
+    rekursiooniTase += 1;
+    #endif
+
     char* tõlge = malloc(1);
     tõlge[0] = '\0';
 
     char** argumentideTõlked = malloc(käsk->argumentideKogus*sizeof(char*));
 
-    int i = strlen(käsk->käsualgus); // Nüüd tekst[i] on lähtekoodis esimese argumendi algus
+    unsigned int i = strlen(käsk->käsualgus); // Nüüd tekst[i] on lähtekoodis esimese argumendi algus
     // Algab lähtekoodi lugemine ja igale argumendile lähtekoodist vastava teksti leidmine.
     // Teeb asja argumentidekogus korda. (iga argumendi jaoks)
     for (unsigned int j = 0; j< käsk->argumentideKogus; j++)
@@ -216,6 +235,13 @@ struct TekstArv TõlgiTextmodeKäsk(char* tekst, struct TextmodeKäsk* käsk)
 
 
     tagastus.Tekst = tõlge;
+
+    #if TõlgiTextmodeKäskDebug == 1
+    prindiTaane();
+    printf("VÄLJA: %s, %d", tagastus.Tekst, tagastus.Arv);
+    rekursiooniTase -= 1;
+    #endif
+    
     return tagastus;
 }
 
@@ -370,7 +396,7 @@ char* TõlgiKõik(char* tõlgitav)
             free(envTõlge.Tekst);
         }
         else
-        if ( i == 0 && KasEsimesedTähed(&tõlgitav[i], "mm ") || KasEsimesedTähed(&tõlgitav[i], " mm ") || KasEsimesedTähed(&tõlgitav[i], "\nmm ") || KasEsimesedTähed(&tõlgitav[i], "\nmm\r\n"))
+        if (( i == 0 && KasEsimesedTähed(&tõlgitav[i], "mm ")) || KasEsimesedTähed(&tõlgitav[i], " mm ") || KasEsimesedTähed(&tõlgitav[i], "\nmm ") || KasEsimesedTähed(&tõlgitav[i], "\nmm\r\n"))
         {
             int onDisplayMath = 0;
             if (KasEsimesedTähed(&tõlgitav[i], " mm "))

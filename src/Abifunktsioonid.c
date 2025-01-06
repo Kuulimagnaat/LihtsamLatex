@@ -11,6 +11,21 @@
 extern struct KäskList käskList;
 extern struct EnvironmentList environList;
 extern struct TextmodeKäskList textmodeKäskList;
+extern unsigned int rekursiooniTase;
+extern unsigned int taandePikkus;
+
+
+void prindiTaane()
+{
+    for (unsigned int i = 0; i<rekursiooniTase; i++)
+    {
+        printf("|");
+        for(unsigned int j = 0; j<taandePikkus-1; j++)
+        {
+            printf(" ");
+        }
+    } 
+}
 
 
 void prindiVärviga(char* tekst, char* värv)
@@ -20,12 +35,12 @@ void prindiVärviga(char* tekst, char* värv)
     GetConsoleMode(hStdout, &dwMode);
     dwMode |= ENABLE_VIRTUAL_TERMINAL_PROCESSING;
     SetConsoleMode(hStdout, dwMode);
-    if (värv == "roheline")
+    if (strcmp(tekst, "roheline"))
     {
         printf("\033[1;32m");
         printf("%s", tekst);
     }
-    else if (värv == "punane")
+    else if (strcmp(värv, "punane"))
     {
         printf("\033[31m");
         printf("%s", tekst);
