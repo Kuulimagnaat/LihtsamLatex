@@ -395,8 +395,8 @@ char* TõlgiKõik(char* tõlgitav)
             tõlge = LiidaTekstid(tõlge, envTõlge.Tekst);
             i += envTõlge.Arv;
             free(envTõlge.Tekst);
+            continue;
         }
-        else
         if (( i == 0 && KasEsimesedTähed(&tõlgitav[i], "mm ")) || KasEsimesedTähed(&tõlgitav[i], " mm ") || KasEsimesedTähed(&tõlgitav[i], "\nmm ") || KasEsimesedTähed(&tõlgitav[i], "\nmm\r\n"))
         {
             int onDisplayMath = 0;
