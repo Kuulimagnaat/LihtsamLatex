@@ -15,6 +15,6 @@ int main() {
 
     AmmendaConfig();
 
-    char* tulemus = TõlgiKõik("suurpealk uuga\nteemapealk buuga\n");
+    char* tulemus = TõlgiKõik("teemapealk Sissejuhatus\n\nTundub, et kood [[main.txt]] bruh Pärisori [[pärisori]].\nPikk kood. Bruh Lõpp.\n");
     puts(tulemus);
 }

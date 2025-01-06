@@ -69,6 +69,13 @@ struct TekstArv TõlgiKõikSellesKohas(char* tõlgitav)
     char* tõlge = malloc(1);
     tõlge[0] = '\0';
 
+    // Tülikas juhtum
+    if (tõlgitav[0] == '\r')
+    {
+        tulemus.Arv = 1;
+        tulemus.Tekst = tõlge;
+        return tulemus;
+    }
 
     unsigned int pikkus = strlen(tõlgitav);
     // Läheb üle iga tähe kogu tõlgitavas tekstis. Literaalselt copy-paste tõlgikõigest, aga tsükkel ainult üks kord.
@@ -225,14 +232,20 @@ struct TekstArv TõlgiTextmodeKäsk(char* tekst, struct TextmodeKäsk* käsk)
                 // Kui on, siis mitte lisada definitsooni tähte, vaid argumedni tõlget.
                 tõlge = LiidaTekstid(tõlge, argumentideTõlked[j]);
                 i += strlen(käsk->argumentideNimed[j]);
-                continue;
             }
         }
         // Kui kood jõuab siia, ss ei ole argumendinime, ss pannakse ns defintitsioobni täht tõlkessse.
+        if (KasEsimesedTähed(&käsk->definitsioon[i], "\\n"))
+        {
+            tõlge = LiidaTäht(tõlge, '\n');
+            i += 2;
+            continue;
+        }
+
+        // Kui kood jõuab siia, ss tõesti oli sel kohal kõige tavalsiem täht ja see pannakse tõlkesse.
         tõlge = LiidaTäht(tõlge, käsk->definitsioon[i]);
         i++;
     }
-
 
     tagastus.Tekst = tõlge;
 
@@ -282,7 +295,6 @@ void TextmodeKäsudConfigist(char* config_path)
             char* vasak = LeiaTekstEnneTeksti(line, " -> ");
 
             // Terve see kood on debuginfo väljund. Mitte vaadata.
-            
             if (strlen(vasak) == strlen(line))
             {
                 printf("Textmode käskude lugemise juures configist on kahtlande rida.\n");
@@ -450,6 +462,5 @@ char* TõlgiKõik(char* tõlgitav)
             i++;
         }
     }
-    
     return tõlge;
 }

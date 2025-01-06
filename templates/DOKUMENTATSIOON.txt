@@ -1,0 +1,83 @@
+\documentclass{article}
+\usepackage{inconsolata}
+\usepackage[a4paper, margin=2cm]{geometry}
+\usepackage{tcolorbox}
+\usepackage{amsmath} % For math symbols
+\usepackage{hyperref} % For clickable links
+\usepackage{xcolor} % For custom colors
+\usepackage{listings}
+\usepackage{verbatim}
+\usepackage[estonian]{babel}
+\usepackage{parskip}
+
+% Custom colors for boxes
+%\definecolor{boxbg}{rgb}{0.95, 0.95, 0.95}
+%\definecolor{boxborder}{rgb}{0.2, 0.4, 0.6}
+
+% Box styling for command descriptions
+
+%\lstset{
+%	basicstyle=\footnotesize\ttfamily,
+%	breaklines=true,
+%	keywordstyle=\color{black}
+%}
+
+%\tcbset{
+%	colframe=white,
+%	boxrule=0mm,
+%	rounded corners,
+%	arc=2mm
+%	frame empty,
+%	boxsep=-0mm
+%}
+
+
+
+
+\lstset{
+	basicstyle=\small\ttfamily,
+	breaklines=true,
+	keywordstyle=\color{black},
+	basewidth=1.7mm
+}
+
+
+\tcbset{
+	colframe=white,
+	boxrule=0mm,
+	rounded corners,
+	arc=2mm
+	frame empty,
+	boxsep=-0mm,
+	fontupper=\small\ttfamily,
+}
+
+
+\newtcbox{\code}{
+	nobeforeafter,
+	tcbox raise base,
+	boxrule=0.0pt,
+	top=0.2mm,
+	bottom=0.2mm,
+	right=0.2mm,
+	left=0.2mm,
+	arc=0.5mm,
+	boxsep=0.5mm,
+	%before upper={\vphantom{dlg}},
+	colframe=gray!10!white,
+	fontupper=\small\ttfamily,
+	colback=gray!10!white
+}
+
+
+\ifdefined\pdfstringdefDisableCommands
+\pdfstringdefDisableCommands{\def\code#1{'#1'}}
+\fi
+
+
+
+
+
+\begin{document}
+{{content}}
+\end{document}

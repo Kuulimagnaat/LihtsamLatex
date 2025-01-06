@@ -1,10 +1,11 @@
-template = KAAREL
+template = DOKUMENTATSIOON
 
 TEXTMODE KÄSUD
 //(uuga)// -> \emph{uuga}
 **(buuga)** -> \textbf{buuga}
-suurpealk (pealkiri)   (nimi) -> \begin{center}\section*{pealkiri}nimi\end{center}
 teemapealk (pealk) -> \subsection*{pealk}
+[[(arg1)]] -> \code{arg1}
+Pikk kood.(arg1)Lõpp. -> \begin{tcolorbox}\n\begin{verbatim}\narg1\n\end{verbatim}\n\end{tcolorbox}
 
 MATHMODE KÄSUD
 sum(al)(ül) -> \sum_{al}^{ül}
@@ -31,12 +32,7 @@ iga -> \forall
 in -> \in
 vahe -> \qquad
 EE -> \mathbb{E}
-TOO -> \to
 vek[asi] -> \vec{asi}
-x1 -> \vec{x_1}
-x2 -> \vec{x_2}
-x3 -> \vec{x_3}
-xn -> \vec{x_n}
 != -> \neq
 
 KESKKONNAD
