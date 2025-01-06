@@ -3,7 +3,7 @@ template = KAAREL
 TEXTMODE KÄSUD
 //(uuga)// -> \emph{uuga}
 **(buuga)** -> \textbf{buuga}
-suurpealk (pealkiri)   (nimi) -> \begin{center}\section*{pealkiri}nimi\end{center}
+suurpealk (pealkiri) -> \begin{center}\section*{pealkiri}\end{center}
 teemapealk (pealk) -> \subsection*{pealk}
 
 MATHMODE KÄSUD

@@ -169,14 +169,16 @@ struct TekstArv TõlgiKõikSellesKohas(char* tõlgitav)
 
 
 
-#define TõlgiTextmodeKäskDebug 1
+
+
+#define TõlgiTextmodeKäskDebug 0
 struct TekstArv TõlgiTextmodeKäsk(char* tekst, struct TextmodeKäsk* käsk)
 {
     #if TõlgiTextmodeKäskDebug == 1
     prindiTaane();
     printf("TõlgiTextmodeKäsk\n");
     prindiTaane();
-    printf("SISSE: %s", tekst);
+    printf("SISSE: %s\n", tekst);
     rekursiooniTase += 1;
     #endif
 
@@ -185,7 +187,8 @@ struct TekstArv TõlgiTextmodeKäsk(char* tekst, struct TextmodeKäsk* käsk)
 
     char** argumentideTõlked = malloc(käsk->argumentideKogus*sizeof(char*));
 
-    unsigned int i = strlen(käsk->käsualgus); // Nüüd tekst[i] on lähtekoodis esimese argumendi algus
+    unsigned int i = strlen(käsk->käsualgus);
+    // Nüüd tekst[i] on lähtekoodis esimese argumendi algus
     // Algab lähtekoodi lugemine ja igale argumendile lähtekoodist vastava teksti leidmine.
     // Teeb asja argumentidekogus korda. (iga argumendi jaoks)
     for (unsigned int j = 0; j< käsk->argumentideKogus; j++)
@@ -205,11 +208,10 @@ struct TekstArv TõlgiTextmodeKäsk(char* tekst, struct TextmodeKäsk* käsk)
         i += strlen(käsk->argumentideLõpud[j]); // Nüüd tekst[i] on järgmise argumendi esimesel kohal.
     }
 
-    //puts("VÄLJUS ESIMESEST LOOPIST");
+
     // Teksti määran allpool.
     struct TekstArv tagastus = {.Arv = i, .Tekst=NULL};
 
-    
     i = 0;
     // Läheb üle definitsiooni iga tähe. Ja paneb tõlkesse definitsiooni tähe või argumendi tõlke.
     for ( ; i<strlen(käsk->definitsioon); )
@@ -223,14 +225,12 @@ struct TekstArv TõlgiTextmodeKäsk(char* tekst, struct TextmodeKäsk* käsk)
                 // Kui on, siis mitte lisada definitsooni tähte, vaid argumedni tõlget.
                 tõlge = LiidaTekstid(tõlge, argumentideTõlked[j]);
                 i += strlen(käsk->argumentideNimed[j]);
-            }
-            else
-            {
-                // Kui ei ole argumendinime, ss pannakse ns defintitsioobni täht tõlkessse.
-                tõlge = LiidaTäht(tõlge, käsk->definitsioon[i]);
-                i++;
+                continue;
             }
         }
+        // Kui kood jõuab siia, ss ei ole argumendinime, ss pannakse ns defintitsioobni täht tõlkessse.
+        tõlge = LiidaTäht(tõlge, käsk->definitsioon[i]);
+        i++;
     }
 
 
@@ -385,6 +385,7 @@ char* TõlgiKõik(char* tõlgitav)
             tõlge = LiidaTekstid(tõlge, käsuTõlge.Tekst);
             free(käsuTõlge.Tekst);
             i += käsuTõlge.Arv;
+            continue;
         }
 
         struct Environment* env = KasEnvironment(&tõlgitav[i]);

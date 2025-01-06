@@ -28,6 +28,18 @@ void prindiTaane()
 }
 
 
+void prindiTextmodeKäsuInfo(struct TextmodeKäsk* käsk)
+{
+    printf("%s\n", käsk->käsualgus);
+    printf("%s\n", käsk->definitsioon);
+    printf("%d\n", käsk->argumentideKogus);
+    for (unsigned int i = 0; i<käsk->argumentideKogus; i++)
+    {
+        printf("Arg%d: %s, Lõpp: %s\n", i+1, käsk->argumentideNimed[i],käsk->argumentideLõpud[i]);
+    }
+}
+
+
 void prindiVärviga(char* tekst, char* värv)
 {
     HANDLE hStdout = GetStdHandle(STD_OUTPUT_HANDLE);

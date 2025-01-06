@@ -7,12 +7,14 @@ struct KäskList käskList;
 struct EnvironmentList environList;
 struct TextmodeKäskList textmodeKäskList;
 
+unsigned int rekursiooniTase;
+unsigned int taandePikkus = 4;
+
 int main() {
     SetConsoleOutputCP(CP_UTF8);
 
     AmmendaConfig();
 
-    struct TextmodeKäsk* tulemus = KasTextmodeKäsk("//");
-    puts("TULEMUS:");
-    puts(tulemus->käsualgus);
+    char* tulemus = TõlgiKõik("suurpealk uuga\nteemapealk buuga\n");
+    puts(tulemus);
 }

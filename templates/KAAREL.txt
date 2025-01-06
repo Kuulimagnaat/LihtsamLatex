@@ -1,40 +1,17 @@
 \documentclass{article}
 \usepackage{amsmath}
-\usepackage{multicol}
 \usepackage{amssymb}
-\setlength{\columnsep}{7mm}
 \usepackage[estonian]{babel}
 \usepackage[margin=2cm, paper=a4paper]{geometry}
 \usepackage{parskip}
 \usepackage{hyperref}
-\pagestyle{empty}
 \usepackage{graphicx}
-\usepackage{enumitem}
-\usepackage{siunitx}
 \usepackage{cancel}
-\sisetup{per-mode=fraction}
-\sisetup{exponent-product = \cdot, output-product = \cdot}
-\newcommand{\imp}{\ensuremath{\;\Rightarrow\;}}
-\counterwithout{section}{subsection}
-\renewcommand{\thesubsection}{\arabic{subsection}}
-\setlength{\parskip}{2mm}
-\usepackage{titlesec}
-\titlespacing*{\section}
-{0pt}{15mm}{7mm}
-\titlespacing*{\subsection}
-{0pt}{6mm}{2mm}
- \titleformat{\section}
-{\normalfont\Large\bfseries\filcenter}{\fbox{\itshape\thesection}}{1em}{}
 
-\makeatletter
-% the original definition in amsmath
-%\def\intkern@{\mkern-6mu\mathchoice{\mkern-3mu}{}{}{}}
-\def\intkern@{\mkern-6mu\mathchoice{\mkern-5mu}{}{}{}}
-\makeatother
+\pagestyle{empty}
+
 
 
 \begin{document}
-\begin{multicols*}{2}
 {{content}}
-\end{multicols*}{2}
 \end{document}

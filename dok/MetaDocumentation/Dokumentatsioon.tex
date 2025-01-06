@@ -1,0 +1,23 @@
+\documentclass{article}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage[estonian]{babel}
+\usepackage[margin=2cm, paper=a4paper]{geometry}
+\usepackage{parskip}
+\usepackage{hyperref}
+\usepackage{graphicx}
+\usepackage{cancel}
+
+\pagestyle{empty}
+
+
+
+\let\originalleft\left
+\let\originalright\right
+\renewcommand{\left}{\mathopen{}\mathclose\bgroup\originalleft}
+\renewcommand{\right}{\aftergroup\egroup\originalright}
+
+\begin{document}
+\begin{center}\section*{Lihtsamlatexi dokumentatsioon}\end{center}teemapealk lmaoxd 
+dsa
+\end{document}

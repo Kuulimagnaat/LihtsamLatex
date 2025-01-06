@@ -130,7 +130,7 @@ char* get_template_name(const char* config_path) {
 extern int _do_nothing(const char* str);
 
 int main() {
-    int len = _do_nothing("Hi");
+    //int len = _do_nothing("Hi");
     
     SetConsoleOutputCP(CP_UTF8);    
 

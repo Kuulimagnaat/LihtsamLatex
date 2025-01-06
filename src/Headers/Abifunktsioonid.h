@@ -1,6 +1,7 @@
 #ifndef Abifunktsioonid_h
 #define Abifunktsioonid_h
 #include <stdio.h>
+#include "Kõigetõlge.h"
 
 long int LeiaFailiSuurus(FILE* f);
 void AmmendaConfig();
@@ -10,5 +11,6 @@ char* VõtaTekstIndeksini(char* tekst, unsigned int indeks);
 char* LeiaTekstEnneTekste(char* tekst, char** lõpud, unsigned int lõppudeKogus);
 void prindiVärviga(char* tekst, char* värv);
 void prindiTaane();
+void prindiTextmodeKäsuInfo(struct TextmodeKäsk* käsk);
 
 #endif
