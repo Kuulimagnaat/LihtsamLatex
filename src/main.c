@@ -127,10 +127,13 @@ char* get_template_name(const char* config_path) {
 
 
 // See peab olema sama nimega, mis "global ..." .asm failis, sest see on see funktsioon, mida kompilaator sealt otsib. Nende nimetamistega tuleb üldse ettevaatlik olla.
-extern int do_nothing();
+extern int _do_nothing(const char* str);
 
 int main() {
+    int len = _do_nothing("Hi");
+    
     SetConsoleOutputCP(CP_UTF8);    
+
 
     // ...\luuga\duuga\        <-- Kaust, kust programm käivitati – currend working directory.
     char cwd[MAX_PATH_LENGTH];
