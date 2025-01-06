@@ -1,8 +1,11 @@
-section .text
-global do_nothing;
+global _do_nothing
 
-; Function: do_nothing
-; Output: rax = 0
-do_nothing:
-    mov rax, 1
-    ret
+_do_nothing:
+    push rcx
+    xor rcx, rcx
+
+_strlen_null:
+    mov rax, rcx            ; Move the counter (length) into rax (return value)
+
+    pop rcx                 ; Restore RCX from the stack
+    ret      
