@@ -112,7 +112,7 @@ void InitTextModeKäsudList()
 }
 
 
-// Funktsioon, mis loeb kõik mathmode käsud, textmode käsud ja keskkonnad config.txt failist ja paneb need vastavatesse structidesse. Kui workingdirectorys ei ole configit, siis teeb sinna koopia exediris olevast configist.
+// Funktsioon, mis loeb kõik mathmode käsud, textmode käsud ja keskkonnad config.txt failist ja paneb need vastavatesse structidesse. Kui workingdirectorys ei ole configit, siis teeb sinna koopia exediris olevast configist. 
 void AmmendaConfig()
 {
     // ...\luuga\duuga\        <-- Kaust, kust programm käivitati – currend working directory.

@@ -141,7 +141,7 @@ int main() {
     char exe_path[MAX_PATH_LENGTH];
     // ...\uuga\buuga\          <-- sama dir, aga ilma a.exe nimeta lõpus
     char exe_dir[MAX_PATH_LENGTH];
-    // ...\uuga\buuga\src\config.txt    <-- Programmi config faili asukoht failipuus.
+    // ...\uuga\buuga\src\config.txt    <-- Programmi config faili täisnimi.
     char config_path[MAX_PATH_LENGTH];
     // ...\uuga\buuga\src\templatefailinimi.txt
     char template_path[MAX_PATH_LENGTH];
@@ -168,8 +168,14 @@ int main() {
         *last_backslash = '\0';  // Cut the path at the last backslash
     }
 
-    // Koostatakse programmi exe faili aadressi abil aadress, kus asub config.txt. 
-    snprintf(config_path, sizeof(config_path), "%s\\src\\config.txt", exe_dir);
+    // Koostatakse config.txt faili täisnimi.
+    snprintf(config_path, sizeof(config_path), "%s\\config.txt", cwd);
+    // Proovitakse faili avada, et näha, kas see on cwd kaustas. Kui ei, ss võetakse see exedir kasutast.
+    FILE* configFail = fopen(config_path, "r");
+    if (configFail == NULL)
+    {
+        snprintf(config_path, sizeof(config_path), "%s\\src\\config.txt", exe_dir);
+    }
 
 
     // Debugimiseks:
@@ -185,7 +191,7 @@ int main() {
     // Construct full path to the template file in the templates folder
     snprintf(template_path, sizeof(template_path), "%s\\templates\\%s.txt", exe_dir, template_name);
 
-    // Otsitakse funktsiooni abil working directoryst esimene tekstifail peale "config.txt" faili. See on lähtekoodifail.
+    // Leitakse lähtekoodifail. So esimene tekstifail, mis ei ole nimega "config.txt".
     char main_txt_file[MAX_PATH_LENGTH];
     if (!find_first_txt_file(main_txt_file)) {
         free(template_name);
