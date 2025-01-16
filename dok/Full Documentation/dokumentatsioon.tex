@@ -187,9 +187,9 @@ Mathmode sees kasutamiseks mõeldud mathmode käskudele lisaks saab kasutaja def
 Kuna textmode käsud on mõneti nüansikamad, kui mathmodekäsud, siis on parim neid selgitada näitega. Allpool on esitatud üks keskmise käsu definitsioon. Numbritega on tähistatud selle definitsiooni osad ja seejärel selgitatakse, millega on tegu.
 \begin{tcolorbox}
 \begin{verbatim}
-      1       2   3    2 4 5  6  57 8 _________9______________    10  _____9____  11 ______9_____
-	edevpealkiri (pealkiri)   (alune) -> \begin{center}\section*{pealkiri}\newline alune\end{center}
-	
+      1       2   3    2 4 5  6  5  8 _________9________________   10   _9_  11 ______9_________
+	edevpealkiri (pealkiri)   (alune) -> \begin{center}\n\section*{pealkiri}\nalune\n\end{center}\n
+                                  7                 12                   12     12            12
 \end{verbatim}
 \end{tcolorbox}
 \begin{enumerate}
@@ -203,7 +203,8 @@ Kuna textmode käsud on mõneti nüansikamad, kui mathmodekäsud, siis on parim 
 	\item See on teist argumenti lõpetav tekst. Näites on teist arvumenti lõpetav tekst tühi sõne. Kui kumbagi argumenti lõpetav tekst on tühi sõne, siis loetakse vastava argumendi lõpuks realõpp e uuereamärk.
 	\item Tegu on tähistusega, mis eraldab definitsiooni vasakut poolt paremast poolest. Selleks on tekst \code{\; -> \;} – selles on tühikud kummalgi pool. Oluline on meeles pidada, et tühikud on selle tähistuse osa. Vasakul on kirjeldatud, kuidas käsk algab, kuidas argumendid eraldatud on ja kui palju neid on. Parem pool aga kirjeldab seda, milliseks tekstiks vasaku poole järgi vormistatud tekst lähtekoodis tõlgendada.
 	\item Kõik see tekst on see, mis lähtekoodis kirjutatud käsualguse teksti asemel pannakse \LaTeX i faili. Kohtades, kus käsu paremal poolel on kirjas argumentide nimed, saadetakse \LaTeX i faili tekstid, mis loeti argumentideks.
-	\item Esimene argument pannakse kohale (10) ja teine kohale (11).
+	\item Esimene argument pannakse kohale (10) ja teine kohale (11).\setcounter{enumi}{11}
+	\item Textmodekäsu paremale poolele saab kirjutada teksti \code{\textbackslash n}, mis on eriline tekstilõik, mille asemel pannakse \LaTeX i faili reavahetusmärk, mitte tekst \code{\textbackslash n}. Kui tahta tõlkesse panna teksti \code{\textbackslash n}, siis tuleb kirjutada \code{\textbackslash\textbackslash n}
 \end{enumerate}
 Selle käsu kasutamine lähtekoodifailis näeks muu teksti seas välja järgmine.
 \begin{tcolorbox}
@@ -217,7 +218,10 @@ Ja see tõlgitakse järgmiseks \LaTeX i koodiks.
 \begin{tcolorbox}
 \begin{verbatim}
 Tere mina olen Kaarel ja see on minu fancy ass pealkiri.
-\begin{center}\section*{MIMMA 6. kodune töö}\newline Kaarel Parve, 3. variant, 15.12.2024\end{center}
+\begin{center}
+\section*{MIMMA 6. kodune töö}
+Kaarel Parve, 3. variant, 15.12.2024
+\end{center}
 Uuga buuga veel matemaatilist juttu mitme muutuja funktsionaalreak koondumine blaa.
 \end{verbatim}
 \end{tcolorbox}
