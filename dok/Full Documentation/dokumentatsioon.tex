@@ -108,7 +108,7 @@ Igas template failis peab aga olema märksõna
 \begin{center}
 	\tcbox[top=3mm, bottom=3mm]{\{\{content\}\}}
 \end{center}
-mis enamasti käib koostatava dokumendi alustava ja lõpetava definitsiooni vahele, st. sinna, kuhu tõlge minema peaks.
+mis enamasti käib koostatava dokumendi alustava ja lõpetava definitsiooni vahele. See koht, kus template failis on kirjas \code{\{\{content\}\}}, asendatakse kasutaja kirjutatud lähtekoodifaili tõlkega. Tähendab, lõpuks kompileeritava \TeX-faili päis ja jalus on pärit template failist, aga sisuks on kood, mille genereerib programm tõlkides kasutaja kirjutatud lähtekoodi. Seda, kuidas kasutaja kirjutatud lähtekoodifaili tõlgitakse, kontrollib \code{config.txt} fail.
 
 \section{Config.txt}
 Nüüd saame liikuda järgmise faili juurde. Peamised käskude ja keskkondade definitsioonid, sealjuures ka muud lipud, lähevad kõik \code{config.txt} faili. Algselt võiks selle sisuks olla
@@ -132,26 +132,23 @@ enum [multiline, end:{--}] -> \begin{enumerate} #content \end{enumerate} | (item
 \end{tcolorbox}
 
 Välimuseltki on selge, et selle faili sisu on neljas eri osas. Iga osa kirjeldatakse allpool eraldi.
-\subsection{Üldised lipud}
-\textbf{Üldised lipud.} Nendeks on lipud, mida saab defineerida faili alguses ning mis kuidagimoodi mõjutavad programmi tööd. Hetkel on nendeks
-\begin{itemize}
-    \item \code{template} - Määrab ära template faili nime, mida kompileerimisel kasutatakse. Samanimeline fail peab leiduma \code{template} folderis.
-\end{itemize}
+\subsection{Template faili nimi}
+Reaga \code{template = KAAREL} määratakse template faili nimi, mida kompileerimisel kasutatakse. Selle faili nimi peab olema kirjutatud ilma \code{.txt} laienduseta. Samanimeline fail peab leiduma kaustas nimega \code{templates}. Näite puhul peab leiduma selles kaustas fail \code{KAAREL.txt}.
 
-\textbf{Käsu definitsioonid.} Teadaolevalt saab LaTeX koodis kasutada erinevaid käske. Neid saabki siinsamas defineerida. Käsu definitsiooni saame jaotada kaheks pooleks
+\subsection{Käsu definitsioonid}Peamine asi, mis meie programmiga teeb \LaTeX i kirjutamist kiiremaks on käskude defineerimine. Nendega on võimalik suhteliselt lihtsal moel kirjutatud tekst asendada keerulise \LaTeX i koodiga. Neid saabki siinsamas defineerida. Käsu definitsiooni saame jaotada kaheks pooleks
 \begin{center}
-	\tcbox[top=3mm, bottom=3mm]{[Tekst, mida lähtekoodis otsitakse.] -> [Tekst, mis sellega asendatakse.]}
+	\tcbox[top=3mm, bottom=3mm]{Tekst, mida lähtekoodis otsitakse. -> Tekst, mis sellega asendatakse.}
 \end{center}
 Niimoodi saame defineerida lihtsad tekstasenduse käsud, näiteks
 
 \begin{tcolorbox}
-\begin{lstlisting}
-alfa -> \textbackslash alpha
-kord -> \textbackslash cdot
-RR -> \textbackslash mathbb{R}
-\end{lstlisting}
+\begin{verbatim}
+alfa -> \alpha
+kord -> \cdot
+RR -> \mathbb{R}
+\end{verbatim}
 \end{tcolorbox}
-Vahest sellest aga ei piisa. Peame suutma ka defineerida integraale, summasid ning muid abikäske, mis võtavad endale teatud arv argumente. Selleks saab defineeritavas käsus anda sisse $n$ argumenti, kujul
+Vahel sellest aga ei piisa. Peame suutma ka defineerida integraale, summasid ning muid abikäske, mis võtavad endale teatud arv argumente. Selleks saab defineeritavas käsus anda sisse $n$ argumenti, kujul
 \begin{center}
 	\tcbox[top=3mm, bottom=3mm]{käsuNimi(arg1)[arg2]$\ldots$ -> $\mathcal{F}$(arg1, arg2,$\ldots$)}
 \end{center}
@@ -159,11 +156,17 @@ kus \vspace{-2mm}
 \begin{center}
 	\ttfamily $\mathcal{F}$(arg1, arg2,$\ldots$)
 \end{center}
-on vastava käsu LaTeXi definitsioon, mis sisaldab endas vajalike argumente (kusjuures need peavad olema sama nimega, mis käsu definitsiooni vasakul pool).
+on vastava käsu LaTeXi definitsioon, mis sisaldab endas vajalikke argumente (kusjuures need peavad olema sama nimega, mis käsu definitsiooni vasakul pool).
 Samuti tuleb eristada käsu defineerimisel argumentide tüüpe. Nendeks on
 \begin{itemize}
 \item \tcbox[before=, after=, tcbox raise base]{(argumendiNimi)} -- Ümarad sulud tähendavad pikemat argumenti. See tähendab, et lähtekoodis argumendi lõppu tähistab ainult tühik või rea lõpp. Sellele vastandub lühem argumenditüüp.
-\item \tcbox[before=, after=, tcbox raise base]{[argumendiNimi]} -- Kandilised sulud tähendavad lühemat argumenti. See tähendab, et lähtekoodis tähistavad argumendi lõppu peale tühiku ka tähemärgid \code+,\code-,\code*, \code= ja \code,. Tightipeale ei ole vahet, kas definitsioonis on argumenditüüp märgitud pikaks või lühikeseks. Vahe tuleb aga sisse siis kui tahetakse näiteks kirjutada polünoome.
+\item \tcbox[before=, after=, tcbox raise base]{[argumendiNimi]} -- Kandilised sulud tähendavad lühemat argumenti. See tähendab, et lähtekoodis tähistavad argumendi lõppu peale tühiku ka tähemärgid \code+,\code-,\code*, \code= ja \code,. Tihtipeale ei ole vahet, kas definitsioonis on argumenditüüp märgitud pikaks või lühikeseks. Vahe tuleb aga sisse siis kui tahetakse näiteks kirjutada polünoome.
+Definitsiooni \code{\^{}(arg1) -> \^{}\{arg1\}} puhul tõlgitakse lähtekoodi tekst \code{a\^{}n+b\^{}m} koodiks
+\begin{center}
+	\tcbox[top=3mm, bottom=3mm]{a\^{}\{n+b\^{}\{m\}\}}
+\end{center}
+Polünoomi kirjutamise soovi jaoks see on vale. Õige tõlge oleks \code{a\^{}\{n\}+b\^{}\{m\}}, mis saavutatakse, kui definitsioonis oleks kasutatud kandilisi sulgusid järgmiselt \code{\^{}[arg1] -> \^{}\{arg1\}}.
+
 \end{itemize}
 Niisiis toome mõned näited
 \begin{center}
@@ -175,7 +178,8 @@ Ainus käsk, mida defineerima ei pea, on jagamine, mida automaatselt tõlgitakse
 \begin{center}
 \texttt{a/b -> \textbackslash frac\{a\}\{b\}}
 \end{center}
-\textbf{Keskkonna definitsioonid.}
+
+\subsection{Texmode käsud}
 
 \end{document}
 
