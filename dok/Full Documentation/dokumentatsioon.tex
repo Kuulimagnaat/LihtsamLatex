@@ -80,12 +80,47 @@
 
 \begin{document}
 \section*{Sissejuhatus}
-Tegemist on C-keele projekti LihtsamLatex dokumentatsiooniga. Et tegu on meie enda välja mõeldud keele kompilaatoriga, siis peaks dokumentatsioon olema põhjalik.
+Tegemist on C-keele projekti LihtsamLatex dokumentatsiooniga. Dokumentatsioon on põhjalik, sest meie projekt on palju suurem, kui C-keele aine nõuab. See on programm, mis tõlgib kasutaja lihtsa ja kiirelt kirjutatud \emph{lähtekoodifaili} keerulisemaks \LaTeX i keeles kirjutatud \emph{tõlkeks}. Iga koht, kus meie programm tajub lähtekoodis \emph{käsu} kasutamist, asendatakse tõlkes selle käsu definitsiooniga. Käsud on defineeritud \emph{config} failis, kus kasutaja saab nõutud formaati järgides käske juurde lisada, vähemaks võtta ja muuta. Programm jookseb pidevalt, aga tõlkeprotsess käivitub ainult siis, kui kasutaja salvestab lähtekoodifaili. Peale igat tõlkimist programm kompileerib tõlkeks saadud \LaTeX i koodi, et saada \code{pdf} fail. Kui kasutajal on sobiv \code{pdf}-viewer, siis ta saab näha, kuidas pdf värksndab peale seda, kui on lähtekoodi salvestatud.
 
 
-Programmi töötamiseks peab kasutajal installitud olema mõni \TeX\ keele kompilaator, näiteks MiK\TeX\ või muu \TeX i kompilaator, mis kasutaks käsku \code{pdflatex}. Seda käsku kasutab programm, et peale lähtekoodi tõlgendamist ja \LaTeX i koodi genereerimist see ka kompileerida pdf-failiks. Samuti on tarvilik \code{config.txt} faili olemasolu programmi enda kaustas ning mingi template faili olemasolu \code{templates} kaustas.
 
-Programmi kasutamiseks peab kasutaja looma ühe tekstifaili, mida edaspidi dokumnetatsioonis nimetatakse \emph{lähtekoodifailiks}. Sinna hakkab kasutaja kirjutama koodi, mida meie programm tõlgib. Seda kasutaja kirjutatud koodi nimetatakse edaspidi \emph{lähtekoodiks}.
+\section{Programmi kasutamine}
+\emph{Programmikaustaks} nimetame seda kausta, mille sees on kaustad \code{dok}, \code{obj}, \code{output}, \code{src} ja \code{templates}.
+
+
+
+\subsection{Enne käivitamist}
+Programmi töötamiseks peab kasutajal installitud olema mõni \TeX\ keele kompilaator, näiteks MiK\TeX\ või muu selline, mis annaks sisu käsule \code{pdflatex}. Seda käsku kasutab programm, et peale lähtekoodi tõlgendamist ja \LaTeX i koodi genereerimist see ka kompileerida pdf-failiks.
+
+Programmikaustas on meie arvutitel kompileerimise tulemusena genereeritud fail \code{a.exe}, mis ongi meie programm. Võib-olla see töötab teistel arvutitel, võib-olla ei tööta. Selleks, et kindlasti töötaks, tuleb programm kasutaja arvutil lähtekoodist kompileerida. Windowsi ja Linuxi jaoks mõeldud \code{makefile} failid on programmikaustas.
+
+Kasutajal on soovitatav lisada selle \code{a.exe} faili asukoht süsteemi \code{PATH} muutujasse, et programmi saaks käivitada kergelt misiganes kaustast. Programm on mõeldud kiirelt kasutamiseks ja kui seda ei saaks kiirelt käivitada, oleks kasutamiskogemus palju kehvem.
+
+Järgmised failid on programmil alguses kaasas. Nende sisu on mõeldud kasutajale muutmiseks, aga kasutaja ei tohi neid oma kohtadelt liigutada ega kustutada. Kui neid faile ei ole sobivas kohas, siis programm ei tööta.
+\begin{enumerate}
+	\item \code{config.txt} fail peab olema \code{src} kaustas koos muu koodiga. Selles on defineeritud algsed käsud.
+	\item Mingi nimega tekstifail peab olema \code{templates} kaustas. Selles on defineeritud tõlke päis ja jalus.
+\end{enumerate}
+
+
+
+\subsection{Kasutamine}
+Ilma oskamata seda programmi pole võimalik õigesti kasutada, mistõttu tuleb lugeda ka edasist dokumentatsiooni. Kui programmi kasutaks keegi, kes juba selle süsteemi tajub, siis tema teguviis oleks järgnevaga sarnane.
+\begin{enumerate}
+	\item Kasutaja valib mingi nö projektikausta.
+	\item Ta loob sellesse kausta lähtekoodifailiks mingi tekstifaili.
+	\item Paneb proge käima selles kaustas.
+	\item Avab lähtekoodi ja hakkab sinna kirjutama.
+	\item Salvestab, vaatab, kuidas tema ekraani teise poole peal pdf värskendab
+	\item Tuleb ette koht, kus tahaks mingit käsku kasutada
+	\item Avab sinnasamasse kausta tekkinud \code{config.txt} faili ja defineerib sinna vajaliku funktsionaalsusega käsu.
+	\item Kirjutab ja kasutab oma defineeritud käsku lähtekoodis.
+	\item Vaatab, kuidas selle käsu abil keeruline latexi konstruktsioon sai lähtekoodis loodud ainult 10 tähega.
+	\item Life has never been so good!
+\end{enumerate}
+
+
+
 
 \section{Template failid}
 Esmalt tegeleme template failidega. Template folder on mõeldud kõikide erinevate template failide hoidmiseks. Hetkel on seal ainult \code{defaultTemplate.txt}, mille sisu võiks olla järgmine
@@ -194,13 +229,13 @@ Kuna textmode käsud on mõneti nüansikamad, kui mathmodekäsud, siis on parim 
 \end{tcolorbox}
 \begin{enumerate}
 	
-	\item Tegu on käsku alustava tekstiga. Kui see tekst lähtekoodist leitakse, ss sellele järgnevat teksti tõlgitakse erilisel moel nagu käsu definitsioonis kirjeldatud on. Panna tähele, et näidatud juhul on käsku alustavaks tekstiks \code{edevpealkiri\;\;\empty} – sellel on viimane täht tühik.
-	\item Tegu on esimest argumenti avava ja sulgeva suluga. Argumentide eraldatakse muust käsudefinitsiooni tekstist neid ümb\-rit\-se\-va\-te ümarsulgude järgi. Seega ei või käsu nimes ümarsulgi kasutada, sest asja võidaks tõlgendada valesti.
+	\item Tegu on käsku alustava tekstiga. Kui see tekst lähtekoodist leitakse, ss sellele järgnevat teksti tõlgitakse erilisel moel nagu edasises kirjeldatud on. Panna tähele, et näidatud juhul on käsku alustavaks tekstiks \code{edevpealkiri\;\;\empty} – sellel on viimane täht tühik.
+	\item Tegu on esimest argumenti avava ja sulgeva suluga. Argumente eraldatakse muust käsudefinitsiooni tekstist neid ümb\-rit\-se\-va\-te ümarsulgude järgi. Seega ei või käsu nimes ümarsulgi kasutada, sest asja võidaks tõlgendada valesti.
 	\item See on esimese argumendi nimi. See tähistab teksti, mida kasutaja kirjutab lähtekoodis käsku alustava teksti järele kuni selle tekstini, mis on argumenti sulgeva sulu järel (4). Argumente saab käsul olla praktiliselt lõputu kogus.
 	\item Tegu on esimest argumenti lõpetava tekstiga. Lähtekoodis käsku alustava teksti ja esimet argumenti lõpetava teksti vahele jääv tekst loetakse esimeseks argumendiks ja see asendatakse käsu definitsiooni paremas pooles kohale, kus on esimese argumendi nimi (10). Selles näites on mõeldud, et esimene argument läheb latexi sectioni loogeliste sulgude vahele.
 	\item Need sulud eraldavad muust definitsioonist teise argumendi nime (6). Järelikult kasutaja tahab peale esimese argumendi lõppu ka teise argumendi anda.
 	\item See on teise argumendi nimi. See tähistab teksti, mis jääb lähtekoodis esimest argumenti lõpetava teksti (4) ja teist argumenti lõpetava teksti (7) vahele.
-	\item See on teist argumenti lõpetav tekst. Näites on teist arvumenti lõpetav tekst tühi sõne. Kui kumbagi argumenti lõpetav tekst on tühi sõne, siis loetakse vastava argumendi lõpuks realõpp e uuereamärk.
+	\item See on teist argumenti lõpetav tekst. Näites on teist argumenti lõpetav tekst tühi sõne. Kui kumbagi argumenti lõpetav tekst on tühi sõne, siis loetakse vastava argumendi lõpuks realõpp e uuereamärk.
 	\item Tegu on tähistusega, mis eraldab definitsiooni vasakut poolt paremast poolest. Selleks on tekst \code{\; -> \;} – selles on tühikud kummalgi pool. Oluline on meeles pidada, et tühikud on selle tähistuse osa. Vasakul on kirjeldatud, kuidas käsk algab, kuidas argumendid eraldatud on ja kui palju neid on. Parem pool aga kirjeldab seda, milliseks tekstiks vasaku poole järgi vormistatud tekst lähtekoodis tõlgendada.
 	\item Kõik see tekst on see, mis lähtekoodis kirjutatud käsualguse teksti asemel pannakse \LaTeX i faili. Kohtades, kus käsu paremal poolel on kirjas argumentide nimed, saadetakse \LaTeX i faili tekstid, mis loeti argumentideks.
 	\item Esimene argument pannakse kohale (10) ja teine kohale (11).\setcounter{enumi}{11}
@@ -227,6 +262,13 @@ Uuga buuga veel matemaatilist juttu mitme muutuja funktsionaalreak koondumine bl
 \end{tcolorbox}
 
 
+
+\section{Mis tuleks juurde lisada}
+Kuigi see programm on täiuslikkusele lähemal kui ei midagi muud, saaks seda siiski paremaks teha mitmel moel. 
+\begin{enumerate}
+	\item Ei saa lihtsal moel kirjutada käsunimesid sisaldavat teksti ilma, et neid käske tõlgitaks. Näiteks selline olukord, kus tahaks meie programmi kasutada selleks, et kirjutada dokumenti, milles oleks näide mingist võimalikust meie programmi tõlgitavast lähtekoodist. Lahendamiseks on võimalus lisada textmodekäsu definitsiooni selline süntaks, kus argumenti avava sulu ette saab panna hüüumärki näitamaks, et sellele argumendile lähtekoodist omistatavat väärtust ei tohi rekursiivselt tõkida ja et see peab minema täht tähelt tõlkesse.
+	\item Mathmodes sulgemata sulg crashib programmi. Tuleb teha midagi selleks, et programm vähemalt ei paneks end kinni.
+\end{enumerate}
 
 
 \end{document}
