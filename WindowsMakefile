@@ -1,9 +1,6 @@
 CC = gcc
 CFLAGS = -Wall -Wextra -std=c11 -Iheaders
 
-ASM = nasm
-ASMFLAGS = -f elf64
-
 # kaustad
 SRC_DIR = src
 OBJ_DIR = obj
@@ -14,7 +11,7 @@ SRC_FILES = $(filter-out $(SRC_DIR)/Katse.c, $(wildcard $(SRC_DIR)/*.c))
 OBJ_FILES = $(patsubst $(SRC_DIR)/%.c, $(OBJ_DIR)/%.o, $(SRC_FILES))
 
 # Assembli failid
-ASM_FILE = $(ASM_DIR)/A_strlen.asm
+ASM_FILE = $(ASM_DIR)/A_strlen.s
 ASM_OBJ = $(OBJ_DIR)/A_strlen.o
 
 # Output binary (now in the same directory as the Makefile)
@@ -40,7 +37,7 @@ $(OBJ_DIR)/%.o: $(SRC_DIR)/%.c
 
 # Assemble the assembly file into an object file
 $(ASM_OBJ): $(ASM_FILE)
-	$(ASM) $(ASMFLAGS) -o $@ $<
+	$(CC) -c -o $@ $<
 
 # Run the program
 run: $(TARGET)
