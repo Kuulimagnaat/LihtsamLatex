@@ -131,13 +131,6 @@ extern int TekstiPikkus(const char* str);
 
 int main() {
     SetConsoleOutputCP(CP_UTF8);    
-    
-    printf("TERE!");
-    char tekst[] = "Terekest";
-    int len = TekstiPikkus(tekst);
-    printf("Tekstipikkus: %d", len);
-    return(0);
-
 
     // ...\luuga\duuga\        <-- Kaust, kust programm käivitati – currend working directory.
     char cwd[MAX_PATH_LENGTH];
@@ -306,6 +299,11 @@ int main() {
                 free(template_name);
                 return EXIT_FAILURE;
             }
+
+            // Kasutame meie enda assembler funktsiooni, et printida terve faili pikkuse
+            int len = TekstiPikkus(koguTekst);
+            printf("Terve faili pikkus: %d\n", len);
+
 
             char* line; // Pointer for the line
             while ((line = read_line(template_file)) != NULL)
