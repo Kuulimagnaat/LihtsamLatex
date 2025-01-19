@@ -1,4 +1,4 @@
-template = DOKUMENTATSIOON
+template = KAAREL
 
 TEXTMODE KÄSUD
 //(uuga)// -> \emph{uuga}

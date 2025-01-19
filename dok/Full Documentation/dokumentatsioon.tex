@@ -342,6 +342,8 @@ Kuigi see programm on täiuslikkusele lähemal kui ei midagi muud, saaks seda si
 	\item Mathmodes sulgemata sulg crashib programmi. Tuleb teha midagi selleks, et programm vähemalt ei paneks end kinni.
 	\item Keskkondasid ei saa üksteise sisse panna.
 	\item Juhul, kui lähtekood on täiesti thi, võiks latexi dokumenti ikkagi mingi täht minna, et pdf kompileeriks edukalt. See ei eruta, kui peale tühja faili loomist proget käima pannes loodud pdf-i ei saa avada.
+	\item Programm käima pannes loetakse template failiks see, mis programmikaustas default configis on ja seda ei saa üldse muuta programmi jooksu käigus.
+	\item Sulgusid saab panna lähtekoodis argumentide ümber, et vältida nende liiga vara lõppemist juhul, kui see argument sisaldab tühikut. Sel juhul, kui sulud on lisatud selleks, et vältida argumendi varem lõppemist, ei tohi need sulud tõlkesse minna. Praegu ikkagi lähevad lühikeste argumentide puhul. Pikkade puhul on fine.s
 \end{enumerate}
 
 

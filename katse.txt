@@ -1,0 +1,23 @@
+Tere! Siin on veidi math mode värki, aga enne... siin on suur pealkiri
+suurpealk Mina, Kaarel   2003-2130
+Lmao vaatame texmodematat mm 2+2 tekst(is) 4-1 tekst(that's) 3 sumx=1 5 f(x) tekst(quick math) mm. Siin on teksti **boldis** ja siin //kaldus//. I'd like me some mm RR mm.
+
+Siin on uus lõik //lmao//. Ja siin on math mode:
+mm a^(limxtoinf a) mm
+Ja vaatame veel mitmerealist mathmode
+mm df(x)/dx, tekstkus f(x) = int-pi 0 sin(n+ 1/2)/2*sin(u/2) du
+g(x) = sumk=0 inf x^k/k! = EEE mm
+Siin me ogu austuse juures nummeradame need nutsid:
+enum 
+sveni vasak pähkel mm alfa mm.
+kaarli kolmas pühkel mm Oomega mm.
+siimu nutt /s. See on mm alfatulxy mm
+Raini testosteroonne pähkel. (kõva koorega).
+--
+Paljudel mm alfa mm-isastel nagu Kati Ain, on vaja //maatrikseid//. Näiteks
+mat3
+1   0   0
+0   69   0
+0   0   420
+--
+That's ALL
