@@ -149,7 +149,7 @@ Igas template failis peab aga olema märksõna
 mis enamasti käib koostatava dokumendi alustava ja lõpetava definitsiooni vahele. See koht, kus template failis on kirjas \code{\{\{content\}\}}, asendatakse kasutaja kirjutatud lähtekoodifaili tõlkega. Tähendab, lõpuks kompileeritava \TeX-faili päis ja jalus on pärit template failist, aga sisuks on kood, mille genereerib programm tõlkides kasutaja kirjutatud lähtekoodi. Seda, kuidas kasutaja kirjutatud lähtekoodifaili tõlgitakse, kontrollib \code{config.txt} fail.
 
 \section{Config.txt}
-Nüüd saame liikuda järgmise faili juurde. Peamised käskude ja keskkondade definitsioonid, sealjuures ka muud lipud, lähevad kõik \code{config.txt} faili. Algselt võiks selle sisuks olla
+Nüüd saame liikuda järgmise faili juurde. Peamised käskude ja keskkondade definitsioonid, sealjuures ka muud lipud, lähevad kõik \code{config.txt} faili. Näiteks üks \code{config} fail võiks olla järgmine:
 \begin{tcolorbox}
 \begin{verbatim}
 template = KAAREL
@@ -168,12 +168,21 @@ KESKKONNAD
 enum [multiline, end:{--}] -> \begin{enumerate} #content \end{enumerate} | (item(arg1) -> \item arg1)
 \end{verbatim}
 \end{tcolorbox}
+Märgime, et see on lihtsalt näide ning et programmiga tuleb kaasa põhjalikum fail.
 
 Välimuseltki on selge, et selle faili sisu on neljas eri osas. Iga osa kirjeldatakse allpool eraldi.
 \subsection{Template faili nimi}
 Reaga \code{template = KAAREL} määratakse template faili nimi, mida kompileerimisel kasutatakse. Selle faili nimi peab olema kirjutatud ilma \code{.txt} laienduseta. Samanimeline fail peab leiduma kaustas nimega \code{templates}. Näite puhul peab leiduma selles kaustas fail \code{KAAREL.txt}.
 
-\subsection{Mathmode käsud}Peamine asi, mis meie programmiga teeb \LaTeX i kirjutamist kiiremaks on käskude defineerimine. Nendega on võimalik suhteliselt lihtsal moel kirjutatud tekst asendada keerulise \LaTeX i koodiga. Kasutaja saab defineerida kaks komplekti käske. Esimene neist on mõeldud kasutamiseks olles mathmode sees. Teine on kasutamiseks textmode sees. Esmalt kirjeldame mathmode käske. Käsu definitsiooni saame jaotada kaheks pooleks
+\subsection{Mathmode käsud}Peamine asi, mis meie programmiga teeb \LaTeX i kirjutamist kiiremaks on käskude defineerimine. Nendega on võimalik suhteliselt lihtsal moel kirjutatud tekst asendada keerulise \LaTeX i koodiga. Kasutaja saab defineerida kaks komplekti käske. Esimene neist on mõeldud kasutamiseks olles mathmode sees. Teine on kasutamiseks textmode sees. Esmalt kirjeldame mathmode käske. 
+
+Lähtekoodis mathmode'i avamiseks ja lõpetamiseks on ainuke valik kasutada tähejärjendit \code{mm}. See tähendab ka seda, et nii tekstisisese matemaatika (\LaTeX is dollarid) kui displaymath'i (\LaTeX is kaldkriips ja kandilised sulud) tegemiseks peab kasutama sama alustavat ja lõpetavat sümbolite järjendit, kusjuures displaymath'i jaoks peab alustav \code{mm} olema uuel real. Lähtekoodis näeks seega matemaatika kirjutamine välja selline:
+\begin{tcolorbox}
+\begin{verbatim}
+mm Siin on matemaatiline tekst, mis võibolla kasutab ka sümboleid ning kasutaja defineeritud käske. mm
+\end{verbatim}
+\end{tcolorbox}
+Edasi selgitame käske. Käsu definitsiooni saame jaotada kaheks pooleks
 \begin{center}
 	\tcbox[top=3mm, bottom=3mm]{Tekst, mida lähtekoodis otsitakse. -> Tekst, mis sellega asendatakse.}
 \end{center}
