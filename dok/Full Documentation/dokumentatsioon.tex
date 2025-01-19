@@ -85,7 +85,7 @@ Tegemist on C-keele projekti LihtsamLatex dokumentatsiooniga. Dokumentatsioon on
 
 
 \section{Programmi kasutamine}
-\emph{Programmikaustaks} nimetame seda kausta, mille sees on kaustad \code{dok}, \code{obj}, \code{output}, \code{src} ja \code{templates}.
+\emph{Programmikaustaks} nimetame seda kausta, mille sees on kaustad \code{dok}, \code{obj}, \code{src} ja \code{templates}.
 
 
 
@@ -261,7 +261,80 @@ Uuga buuga veel matemaatilist juttu mitme muutuja funktsionaalreak koondumine bl
 \end{verbatim}
 \end{tcolorbox}
 
+\subsection{Keskkonnad}
+Keskkonnad on sisuliselt textmode käsud, mille süntaks on keerulisem kui textmode käskudel, kuid mille abil on võimalik defineerida \LaTeX \ keskkondi, mida textmode käskude abil teha ei saa või on mõttetult tülikas teha. Keskkonnad töötavad peamiselt nendes defineeritud käskude abil, mille defineerimine on täpselt samasugune, nagu mathmode käskude puhul (vt. alapeatükki 2.2). Siinkohal on oluline märkida, et keskkondade sees kasutatakse ühe käsu mitme argumendi eraldamiseks kolme tühikut!
+Esitame keskkonna defineerimise süntaksi ning seejärel selgitame igat osa eraldi:
+\begin{tcolorbox}
+\begin{verbatim}
+keskkonnaNimi [lipp1,...,lippN, end:{lõpetav sümbol}] ->
 
+-> \begin{keskkonna algus} #content \end{keskkonna lõpp} | (käsk1) ... (käskM)
+\end{verbatim}
+\end{tcolorbox}
+Definitsioonis on järgmised osad:
+\begin{enumerate}
+\item \tcbox[before=, after=, tcbox raise base]{keskkonnaNimi} -- See on tekst, mida otsitakse lähtefailis ning mille nägemisel on selge, et siit algab uus keskkond. Kõik sellel järgnev tekst loetakse keskkonna osaks.
+\item \tcbox[before=, after=, tcbox raise base]{[lipud]} -- Pärast keskkonna nime antakse kandiliste sulgude vahel kõik vajalikud lipud, mis keskkonna kohta käivad, kusjuures nende järjekord sulgude vahel ei ole oluline. Lippudeks on:
+\begin{enumerate}
+	\item \tcbox[before=, after=, tcbox raise base]{end:\{lõpetav sümbol\}} -- See on ainus \textbf{kohustuslik} lipp. Sellega antakse tähemärkide järjend, mille abil on teada, et keskkond on lõppenud.
+	\item \tcbox[before=, after=, tcbox raise base]{multiline} -- Selle lipu olemasolu tähendab, et keskkond lubab kirjutada teksti mitmele reale, ilma et oleks tarvis välja kutsuda igal real vastavat käsku. Seega on multiline lipu olemasolul tarvis välja kutsuda vastav käsk igal real, millel soovitakse, et see käsk rea ette pannakse. Kui rea ees tuntud käsku ei ole, siis eeldatakse, et see rida on jätk viimasena välja kutsutud käsule. Kui multiline lipp puudub, siis on kaks võimalust: kui keskkonnas on defineeritud kuni üks käsk, siis ei ole tarvis iga rea ette käsu nime kirjutada, see pannakse sinna automaatselt. Kui on aga rohkem kui üks käsk defineeritud, siis peab \textbf{igal real} välja kutsuma mõne käsu, sest multiline lipp puudub.
+
+	Vaatame mõnda näidet. Olgu config failis defineeritud keskkond:
+	\begin{tcolorbox}
+	\begin{verbatim}
+	enum [multiline, end:{--}] -> \begin{enumerate} #content \end{enumerate} | (item(arg1) -> \item arg1)
+	\end{verbatim}
+	\end{tcolorbox}
+	Et multiline on olemas, siis eeldatakse, et käsk kutsutakse ainult siis välja, kui soovitakse seda kasutada. Niisiis võime lähtekoodis kirjutada:
+	\begin{tcolorbox}
+	\begin{verbatim}
+	enum
+	item Tekst!
+	Siin on veel teksti. Kusjuures see lisatakse eelmise käsu otsa.
+	Siin on veel teksti. Ikkagi lisatakse see viimati kutsutud käsule otsa.
+	item Siit algab alles uus käsk!
+	--
+	\end{verbatim}
+	\end{tcolorbox}
+	mille tulemus on:
+	\begin{tcolorbox}
+	\begin{verbatim}
+	\begin{enumerate}
+	\item Tekst! Siin on veel teksti. Kusjuures see lisatakse eelmise käsu otsa. Siin on veel teksti.
+	 Ikkagi lisatakse see viimati kutsutud käsule otsa.
+	\item Siit algab alles uus käsk!
+	\end{enumerate}
+	\end{verbatim}
+	\end{tcolorbox}
+	Olgu nüüd defineeritud keskkond:
+	\begin{tcolorbox}
+	\begin{verbatim}
+	mat2 [end:{--}] -> \begin{pmatrix} #content \end{pmatrix} | (r(el1)(el2) -> el1 & el2 \\)
+	\end{verbatim}
+	\end{tcolorbox}
+	Et multiline lippu pole ja et on defineeritud ainult üks käsk \code{r}, siis ei pea me ühelgil real käsku välja kutsuma, seda tehakse meie eest. Kirjutades lähtekoodis:
+	\begin{tcolorbox}
+	\begin{verbatim}
+	mat2
+	2   5
+	98   4
+	--
+	\end{verbatim}
+	\end{tcolorbox}
+	saame tulemuseks
+	\begin{tcolorbox}
+	\begin{verbatim}
+	\begin{pmatrix}
+	2 & 5 \\
+	98 & 4 \\
+	\end{pmatrix}
+	\end{verbatim}
+	\end{tcolorbox}
+	\end{enumerate}
+	Märgime ka, et isegi kui on defineeritud ainult üks käsk ja multiline lippu pole, võib ikkagi igal real kutsuda välja keskkonna ainukest käsku, see ei muuda tulemust.
+\item \tcbox[before=, after=, tcbox raise base]{\textbackslash begin\{keskkonna algus\} \#content \textbackslash end\{keskkonna lõpp\}} -- Käskude begin ja end sisse tuleb panna keskkonna nimi nii, nagu see on \LaTeX is nimetatud. Enamasti (alati?) on keskkonna lõpu ja alguse nimed samad.
+\item \tcbox[before=, after=, tcbox raise base]{(käsk1) ... (käskM)} -- Püstkriipsu taga saab defineerida kõik käsud, mida keskkonna sees kasutada saab, iga käsk eraldi sulupaari \code{()} vahele.
+\end{enumerate}
 
 \section{Mis tuleks juurde lisada}
 Kuigi see programm on täiuslikkusele lähemal kui ei midagi muud, saaks seda siiski paremaks teha mitmel moel. 
