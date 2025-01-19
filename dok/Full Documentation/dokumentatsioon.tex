@@ -221,12 +221,16 @@ Niisiis toome mõned näited
 \texttt{sin(uuga) -> \textbackslash sin\{uuga\}}\\
 \texttt{\^{ }[mingiAsi] -> \^{ }\{mingiAsi\}}
 \end{center}
-Ainus käsk, mida defineerima ei pea, on jagamine, mida automaatselt tõlgitakse kui
+On käks käsku, mida defineerima ei pea. Esimene on jagamine:
 \begin{center}
 \texttt{a/b -> \textbackslash frac\{a\}\{b\}}
 \end{center}
+ning teine on muutujate järgi tuletise võtmine \code{tul}:
+\begin{center}
+\texttt{f tulaabc...  -> f''''\_{}\{a\^{}\{2\}bc\}}
+\end{center}
 
-\subsection{Texmode käsud}
+\subsection{Textmode käsud}
 Mathmode sees kasutamiseks mõeldud mathmode käskudele lisaks saab kasutaja defineerida texmode käskude komplekti, mille käske otsitakse tavalise teksti seest. Näiteks on textmode käske ideaalne kasutada pealkirjade kiireks vormistamiseks, kui on vaja korduvalt panna mingit teksti \LaTeX i \code{center} keskkonna sisse.
 
 Kuna textmode käsud on mõneti nüansikamad, kui mathmodekäsud, siis on parim neid selgitada näitega. Allpool on esitatud üks keskmise käsu definitsioon. Numbritega on tähistatud selle definitsiooni osad ja seejärel selgitatakse, millega on tegu.
