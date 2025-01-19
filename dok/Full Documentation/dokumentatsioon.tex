@@ -176,7 +176,7 @@ Reaga \code{template = KAAREL} määratakse template faili nimi, mida kompileeri
 
 \subsection{Mathmode käsud}Peamine asi, mis meie programmiga teeb \LaTeX i kirjutamist kiiremaks on käskude defineerimine. Nendega on võimalik suhteliselt lihtsal moel kirjutatud tekst asendada keerulise \LaTeX i koodiga. Kasutaja saab defineerida kaks komplekti käske. Esimene neist on mõeldud kasutamiseks olles mathmode sees. Teine on kasutamiseks textmode sees. Esmalt kirjeldame mathmode käske. 
 
-Lähtekoodis mathmode'i avamiseks ja lõpetamiseks on ainuke valik kasutada tähejärjendit \code{mm}. See tähendab ka seda, et nii tekstisisese matemaatika (\LaTeX is dollarid) kui displaymath'i tegemiseks (\LaTeX is kaldkriips ja kandilised sulud) peab kasutama sama alustavat ja lõpetavat sümbolite järjendit. Lähtekoodis näeks seega matemaatika kirjutamine välja selline:
+Lähtekoodis mathmode'i avamiseks ja lõpetamiseks on ainuke valik kasutada tähejärjendit \code{mm}. See tähendab ka seda, et nii tekstisisese matemaatika (\LaTeX is dollarid) kui displaymath'i (\LaTeX is kaldkriips ja kandilised sulud) tegemiseks peab kasutama sama alustavat ja lõpetavat sümbolite järjendit, kusjuures displaymath'i jaoks peab alustav \code{mm} olema uuel real. Lähtekoodis näeks seega matemaatika kirjutamine välja selline:
 \begin{tcolorbox}
 \begin{verbatim}
 mm Siin on matemaatiline tekst, mis võibolla kasutab ka sümboleid ning kasutaja defineeritud käske. mm
