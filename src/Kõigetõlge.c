@@ -49,6 +49,42 @@ struct TextmodeKäsk* KasTextmodeKäsk(char* tekst)
 }
 
 
+// Funktsioon, mis uurib, kas argumendiks antud kohal algab selline matemaatiline tekst, mille ümber ei ole mm-märke. Kui algab, siis tõlgib ära ja tagastab tõlke koos tõlgitavaks võetud teksti pikkusega. Kui ei alga,ss tagastab tekstarvu, mille tekst on NULL ja arv on 0. Mõeldud väljakutsumiseks sõnade alguses, mil on võimalik, et mingilt kohalt algav tekst on mata. Kui sellist reeglit ei järgita ja näiteks kutsuda mingi sõna viimase tähe peal seda funktisooni, siis tagastab, et on mata, kuigi obviously tglt pole.
+struct TekstArv KasTekstimata(char* tõlgitav)
+{
+    // Esiteks tahan lahendada olukorra, kus ühetäheline muutuja on ilmselgelt vaja math modesse panna, näiteks kui lähtekoodis on juttu muutujast x või kehadest A ja B. Eesti keeles ühetähelisi sõnu pole, seega võib need mathmodesse panna.
+    // Probleemiks aga tulevad lühendid. Konspekteerides tahab pidevalt kasutada v – või, j – ja, u – umbes. Kus ja kuidas tõmmata piir. Kas panna mathmodesse kõik peale väljavalitute, mis peavad jääma tekstiks, või jätta tekstiks kõik peale väljavalitute, mis peavad minema mathmodesse?
+
+    struct TekstArv tulemus;
+
+    char* lõpud[] = {" ", ".", "-", ","};
+    char* tekst = LeiaTekstEnneTekste(tõlgitav, lõpud, 4);
+    char* mittemata[] = {"u", "v", "j", "e"};
+    if (strlen(tekst) == 1)
+    {
+        // tsükkel kontrollib ega tekst ole mõni mittemata tekst, mida ei tohiks matana tõlgendada.
+        int onMata = 1;
+        for (unsigned int i=0; i<4; i++)
+        {
+            if (strcmp(tekst, mittemata[i])==0)
+            {
+                onMata = 0;
+            }
+        }
+
+        if (onMata)
+        {
+            tulemus.Arv=1;
+            tulemus.Tekst=tekst;
+            return tulemus;
+        }
+    }
+    tulemus.Arv=0;
+    tulemus.Tekst=NULL; // NULLi võib freeda, seega its all fine.
+    return tulemus;
+}
+
+
 
 /*
 Tlgikäsu kood peaks olema järgmine:
@@ -387,80 +423,37 @@ char* TõlgiKõik(char* tõlgitav)
 
 
     unsigned int pikkus = strlen(tõlgitav);
+    int onSõnaAlgus = 1;
     // Läheb üle iga tähe kogu tõlgitavas tekstis.
     for (unsigned int i = 0; i<pikkus; )
     {
-        struct TextmodeKäsk* käsk = KasTextmodeKäsk(&tõlgitav[i]);
-        if (käsk) // Sama mis käsk != NULL
+        // Kui on sõna algus ja on tekstimata, ss lisab tõlkesse hoopis selle, mitte ei tõlgi seda kohta.
+        if (onSõnaAlgus && tõlgitav[i]!=' ' && tõlgitav[i]!='\n')
         {
-            struct TekstArv käsuTõlge = TõlgiTextmodeKäsk(&tõlgitav[i], käsk);
-            tõlge = LiidaTekstid(tõlge, käsuTõlge.Tekst);
-            free(käsuTõlge.Tekst);
-            i += käsuTõlge.Arv;
-            continue;
-        }
+            onSõnaAlgus = 0;
 
-        struct Environment* env = KasEnvironment(&tõlgitav[i]);
-        if (env)
-        {
-            struct TekstArv envTõlge = TõlgiEnvironment(&tõlgitav[i], env, 0);
-            tõlge = LiidaTekstid(tõlge, envTõlge.Tekst);
-            i += envTõlge.Arv;
-            free(envTõlge.Tekst);
-            continue;
-        }
-        if (( i == 0 && KasEsimesedTähed(&tõlgitav[i], "mm ")) || KasEsimesedTähed(&tõlgitav[i], " mm ") || KasEsimesedTähed(&tõlgitav[i], "\nmm ") || KasEsimesedTähed(&tõlgitav[i], "\nmm\r\n"))
-        {
-            int onDisplayMath = 0;
-            if (KasEsimesedTähed(&tõlgitav[i], " mm "))
+            struct TekstArv tekstimataTõlge = KasTekstimata(&tõlgitav[i]);
+            if (tekstimataTõlge.Arv != 0)
             {
-                tõlge = LiidaTekstid(tõlge, " $");
-            }
-            else if (KasEsimesedTähed(&tõlgitav[i], "mm "))
-            {
+                i+=tekstimataTõlge.Arv;
                 tõlge = LiidaTekstid(tõlge, "$");
-            }
-            else if (KasEsimesedTähed(&tõlgitav[i], "\nmm\r\n"))
-            {
-                tõlge = LiidaTekstid(tõlge, "\n\\begin{gather*}\n");
-                onDisplayMath = 1;
-            }
-            else if (KasEsimesedTähed(&tõlgitav[i], "\nmm "))
-            {
-                tõlge = LiidaTekstid(tõlge, "\n\\begin{gather*}");
-                onDisplayMath = 1;
-            }
-            i += (KasEsimesedTähed(&tõlgitav[i], "\nmm\r\n") || KasEsimesedTähed(&tõlgitav[i], "\nmm ") || KasEsimesedTähed(&tõlgitav[i], " mm ") ? 4 : 3);
-
-            unsigned int start = i;
-            while (i < pikkus && !(KasEsimesedTähed(&tõlgitav[i], " mm") || KasEsimesedTähed(&tõlgitav[i], "\nmm"))) {
-                i++;
-            }
-
-            char* tõlgitavMata = VõtaTekstIndeksini(&tõlgitav[start], i - start);
-            char* mataTõlge = TõlgiMathMode(tõlgitavMata);
-            tõlge = LiidaTekstid(tõlge, mataTõlge);
-
-            free(mataTõlge);
-            free(tõlgitavMata);
-
-            if (onDisplayMath == 0) {
+                tõlge = LiidaTekstid(tõlge, tekstimataTõlge.Tekst);
                 tõlge = LiidaTekstid(tõlge, "$");
-            } else {
-                tõlge = LiidaTekstid(tõlge, "\\end{gather*}");
+                continue;
             }
+        }
 
-            i += 3;
-        }
-        else 
+        // Muul juhul tõlgib seda kohta.
+        struct TekstArv tulemus;
+        tulemus = TõlgiKõikSellesKohas(&tõlgitav[i]);
+        tõlge = LiidaTekstid(tõlge, tulemus.Tekst);
+
+        // Ja kõige lõpuks, kui osutub, et käesolev täht on tühik v uusrida, ss algab uus sõna. Ss peale i kasvatamist on i kohal uus sõna.
+        if (tõlgitav[i] == ' ' || tõlgitav[i] == '\n')
         {
-            char* täht = malloc(2);
-            täht[0] = tõlgitav[i];
-            täht[1] = '\0';
-            tõlge = LiidaTekstid(tõlge, täht);
-            free(täht);
-            i++;
+            onSõnaAlgus = 1;
         }
+        i += tulemus.Arv;
     }
     return tõlge;
 }

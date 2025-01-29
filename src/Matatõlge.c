@@ -414,7 +414,8 @@ char* LeiaSuluSisu(const char* tekst)
     //Sulutase algab arvust 1, sest otsitakse sulgu, mis viiks sulutaseme nulli.
     unsigned int sulutase = 1;
 
-    for (unsigned int i = 0; tekst[i]!='\0'; i++)
+    unsigned int i = 0;
+    for (; tekst[i]!='\0'; i++)
     {
         if (i >= maht)
         {
@@ -446,8 +447,22 @@ char* LeiaSuluSisu(const char* tekst)
         }
         mälu[i] = tekst[i];
     }
-    perror("Ei leitud sulgevat sulgu :(\n");
-    exit(EXIT_FAILURE);
+    prindiVärviga("Sulud ei klapi.", "punane");
+    if (sulutase == 1)
+    {
+        printf(" Rida %d. Tõlgitakse edasi justkui oleks 1 puuduolev sulg rea lõpus.", reanumber);
+    }
+    else
+    {
+        printf(" Rida %d. Tõlgitakse edasi justkui oleks %d puuduolevat sulgu rea lõpus.", reanumber, sulutase);
+    }
+    mälu[i] = '\0';
+    #if LeiaSuluSisuDebug == 1
+    rekursiooniTase -= 1;
+    prindiTaane();
+    printf("VÄLJA: %s\n", mälu);
+    #endif
+    return mälu;
 }
 
 

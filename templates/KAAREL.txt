@@ -1,17 +1,67 @@
 \documentclass{article}
 \usepackage{amsmath}
+\usepackage{multicol}
 \usepackage{amssymb}
+\setlength{\columnsep}{7mm}
 \usepackage[estonian]{babel}
 \usepackage[margin=2cm, paper=a4paper]{geometry}
 \usepackage{parskip}
 \usepackage{hyperref}
-\usepackage{graphicx}
-\usepackage{cancel}
-
 \pagestyle{empty}
+\usepackage{graphicx}
+\usepackage{enumitem}
+\usepackage{siunitx}
+\sisetup{per-mode=fraction}
+\sisetup{exponent-product = \cdot, output-product = \cdot}
+\newcommand{\imp}{\ensuremath{\;\Rightarrow\;}}
 
+%idk, seda hetkel pole vaja, vb muutub oluliseks kui mitu sectionit teha.
+%\counterwithout{section}{subsection}
 
+% Teeb nii, et subsectioninumbrid oleks üks täisarv ega sisaldaks sectioninumbrit.
+\renewcommand{\thesubsection}{\arabic{subsection}}
+
+% Lõiguvahe
+\setlength{\parskip}{2mm}
+
+\usepackage{titlesec}
+% Suurpealkiri 15 mm ette, 7 mm järgi.
+\titlespacing*{\section}
+{0pt}{15mm}{7mm}
+\titlespacing*{\subsection}
+{0pt}{8mm}{1mm}
+ \titleformat{\section}
+
+% Seda ka vaja vb siis, kui teha sectioneid.
+%{\normalfont\Large\bfseries\filcenter}{\fbox{\itshape\thesection}}{1em}{}
+
+% Mitu inti rohkem üksteisele lähemal
+\makeatletter
+% the original definition in amsmath
+%\def\intkern@{\mkern-6mu\mathchoice{\mkern-3mu}{}{}{}}
+\def\intkern@{\mkern-6mu\mathchoice{\mkern-5mu}{}{}{}}
+\makeatother
+
+% Valemite ette ja taha 3 mm, venimisest tulev võimalik kasv nulliks.
+\expandafter\def\expandafter\normalsize\expandafter{%
+	\normalsize%
+	\setlength\abovedisplayskip{3mm}%
+	\setlength\belowdisplayskip{3mm}%
+	\setlength\abovedisplayshortskip{0mm}%
+	\setlength\belowdisplayshortskip{0mm}%
+}
 
 \begin{document}
+\begin{multicols*}{2}
+	% Sisukorra reavahed suuremaks, sest nii on kenam
+	\renewcommand{\baselinestretch}{1.4}\normalsize
+	\tableofcontents
+	\setcounter{page}{0}
+	\newpage
+\end{multicols*}
+
+
+\begin{multicols*}{2}
 {{content}}
+\end{multicols*}
 \end{document}
