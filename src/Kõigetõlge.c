@@ -448,7 +448,7 @@ char* TõlgiKõik(char* tõlgitav)
         tulemus = TõlgiKõikSellesKohas(&tõlgitav[i]);
         tõlge = LiidaTekstid(tõlge, tulemus.Tekst);
 
-        // Ja kõige lõpuks, kui osutub, et käesolev täht on tühik v uusrida, ss algab uus sõna. Ss peale i kasvatamist on i kohal uus sõna.
+        // Ja kõige lõpuks, kui osustub, et käesolev täht on tühik v uusrida, ss algab uus sõna. Ss peale i kasvatamist on i kohal uus sõna.
         if (tõlgitav[i] == ' ' || tõlgitav[i] == '\n')
         {
             onSõnaAlgus = 1;
