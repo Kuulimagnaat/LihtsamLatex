@@ -14,6 +14,7 @@ struct KäskList käskList;
 struct EnvironmentList environList;
 int reanumber = 1;
 struct TextmodeKäskList textmodeKäskList;
+char* templateTekst = NULL;
 
 // Muutuja, mis hoiab endas seda infot, kui sügaval rekursiooniga ollakse. Võimaldab printida sügavusele vastavalt tühkuid debug sõnumite ette, et oleks kenam.
 unsigned int rekursiooniTase;
@@ -215,7 +216,6 @@ int main() {
             {
                 last_mod_time = current_config_mod_time;
             }
-            //last_mod_time = current_source_mod_time;
                 
 
             // Täidetakse käsklist ja envlist, tekitatakse configfail cwd-sse, kui vaja.
@@ -248,7 +248,7 @@ int main() {
             }
 
 
-            char* koguTekst = 0;
+            char* koguTekst = NULL;
             long length;
             FILE* koguFail = fopen(main_path, "rb");
 
@@ -300,24 +300,34 @@ int main() {
                 return EXIT_FAILURE;
             }
 
-            // Kasutame meie enda assembler funktsiooni, et printida terve faili pikkuse
-            int len = TekstiPikkus(koguTekst);
-            printf("Terve faili pikkus: %d\n", len);
-
 
             char* line; // Pointer for the line
-            while ((line = read_line(template_file)) != NULL)
+            unsigned int lugemisIndeks = 0;
+
+            puts("Tere!");
+            // Läheb üle templateTeksti iga rea.
+            while (1)
             {
+                puts("See tsükkel on lõputu");
+                // Kui muidu tahaks, et lugemisindeks hakkaks osutama uue rea algusele tuleks teha lugemisindeks += strlen(praegunerida)+1 aga viimasel real see paneks tekstilõpumärgist ühe võrra üle, seega igal real kõige esimese asjana kontrollitakse ega eelneval kohal pole tekstilõpumärki.
+                if (lugemisIndeks != 0 && templateTekst[lugemisIndeks-1] == '\0')
+                {
+                    break;
+                }
+                line = LeiaTekstEnneTeksti(&templateTekst[lugemisIndeks], "\n");
+                printf("Rida on: %s", line);
+                lugemisIndeks += strlen(line)+1;
                 // Check if the line contains a placeholder for content
-                if (strcmp(line, "{{content}}") == 0)
+                if (KasEsimesedTähed(line, "{{content}}"))
                 {
                     // Process the main.txt content
                     char* tõlge = TõlgiKõik(koguTekst);
                     fprintf(output_file, "%s\n", tõlge);
                     free(tõlge);
+                    //free(koguTekst);
                     puts("Faili tõlkimine toimis.");
                 }
-                else if (strcmp(line, "\\begin{document}") == 0)
+                else if (KasEsimesedTähed(line, "\\begin{document}"))
                 {   
                     // Trükib output.tex faili begindoci ette ühe olulise ümberdefinitsiooni, mis fixib ära väikesed valevahed left(, right) sulgude ümber. Asi teeb sama välja mis see, kui kasutaja trükiks selle sisse oma template faili. Siiski, kasutaja ei peaks seda tegema, sest tegu on programmi tekitatud probleemiga – las programm ise fixib selle.
                     fprintf(output_file, "\\let\\originalleft\\left\n\\let\\originalright\\right\n\\renewcommand{\\left}{\\mathopen{}\\mathclose\\bgroup\\originalleft}\n\\renewcommand{\\right}{\\aftergroup\\egroup\\originalright}\n\n");
@@ -353,6 +363,7 @@ int main() {
             
             free_environment_list(&environList);
             free_käsk_list(&käskList);
+            free(templateTekst);
         }
     }
 

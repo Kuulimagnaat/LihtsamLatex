@@ -621,7 +621,7 @@ void read_commands_from_config(const char* filepath, struct KäskList* käsk_lis
             onMathmodeKäskudeJuures = 1;
             continue;
         }
-        if (KasEsimesedTähed(line, "KESKKONNAD") || KasEsimesedTähed(line, "TEXTMODE KÄSUD"))
+        if (KasEsimesedTähed(line, "KESKKONNAD") || KasEsimesedTähed(line, "TEXTMODE KÄSUD") || KasEsimesedTähed(line, "TEMPLATE FAIL"))
         {
             onMathmodeKäskudeJuures = 0;
             continue;
@@ -1398,7 +1398,7 @@ void read_environments_from_config(const char* filepath, struct EnvironmentList*
             onKeskkondadeJuures = 1;
             continue;
         }
-        if (KasEsimesedTähed(line, "MATHMODE KÄSUD") || KasEsimesedTähed(line, "TEXTMODE KÄSUD"))
+        if (KasEsimesedTähed(line, "MATHMODE KÄSUD") || KasEsimesedTähed(line, "TEXTMODE KÄSUD") || KasEsimesedTähed(line, "TEMPLATE FAIL"))
         {
             onKeskkondadeJuures = 0;
             continue;

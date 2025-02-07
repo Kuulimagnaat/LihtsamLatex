@@ -12,5 +12,6 @@ char* LeiaTekstEnneTekste(char* tekst, char** lõpud, unsigned int lõppudeKogus
 void prindiVärviga(char* tekst, char* värv);
 void prindiTaane();
 void prindiTextmodeKäsuInfo(struct TextmodeKäsk* käsk);
+//long long VõtaFailiSuurus(const wchar_t* name);
 
 #endif

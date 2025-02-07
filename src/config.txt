@@ -39,3 +39,17 @@ KESKKONNAD
 
 enum [multiline, end:{--}] -> \begin{enumerate} #content \end{enumerate} | (item(arg1) -> \item arg1)
 mat3 [end:{--}] -> \begin{pmatrix} #content \end{pmatrix} | (r(arg1)(arg2)(arg3) -> arg1 & arg2 & arg3\\)
+
+
+TEMPLATE FAIL
+\documentclass{article}
+\usepackage{amsfonts}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage[estonian]{babel}
+
+\usepackage{parskip}
+
+\begin{document}
+{{content}}
+\end{document}

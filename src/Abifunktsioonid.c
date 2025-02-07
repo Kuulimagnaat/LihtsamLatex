@@ -13,6 +13,7 @@ extern struct EnvironmentList environList;
 extern struct TextmodeKäskList textmodeKäskList;
 extern unsigned int rekursiooniTase;
 extern unsigned int taandePikkus;
+extern char* templateTekst;
 
 
 void prindiTaane()
@@ -112,10 +113,10 @@ void InitTextModeKäsudList()
 }
 
 
-// Funktsioon, mis loeb kõik mathmode käsud, textmode käsud ja keskkonnad config.txt failist ja paneb need vastavatesse structidesse. Kui workingdirectorys ei ole configit, siis teeb sinna koopia exediris olevast configist. 
+// Funktsioon, mis loeb kõik mathmode käsud, textmode käsud ja keskkonnad config.txt failist ja paneb need vastavatesse globaalsetesse structidesse. Lisaks loeb sisse template teksti, eraldab vajaliku mälu ja paneb globaalse templateTeksti sellele viitama. Kui workingdirectorys ei ole configit, siis teeb sinna koopia exediris olevast configist. 
 void AmmendaConfig()
 {
-    // ...\luuga\duuga\        <-- Kaust, kust programm käivitati – currend working directory.
+    // ...\luuga\duuga\        <-- Kaust, kust programm käivitati – current working directory.
     char cwd[MAX_PATH_LENGTH];
     // ...\uuga\buuga\a.exe        <-- Programmi exe faili directory, kus on ka programmi exe faili nimi lõpus.
     char exe_path[MAX_PATH_LENGTH];
@@ -176,19 +177,8 @@ void AmmendaConfig()
 
     InitTextModeKäsudList();
     TextmodeKäsudConfigist(cwdConfigPath);
-    //puts("TextmodeKäsudConfigist jooksis.");
 
-
-    /*
-    init_käsk_list(&käskList);
-    read_commands_from_config(config_path, &käskList);
-
-    init_environment_list(&environList);
-    read_environments_from_config(config_path, &environList);
-
-    InitTextModeKäsudList();
-    TextmodeKäsudConfigist(config_path);
-    puts("TextmodeKäsudConfigist jooksis.");*/
+    TemplateConfigist(cwdConfigPath);
 }
 
 // Funktsioon, mis leiab kui mitme tähe võrra erineb teine tekst esimesest tekstist.
@@ -204,3 +194,17 @@ unsigned int MitmeTäheVõrraErineb(const char* tekst1, const char* tekst2)
     }
     return loendur;
 }
+
+
+/*
+long long VõtaFailiSuurus(const wchar_t* name)
+{
+    WIN32_FILE_ATTRIBUTE_DATA fad;
+    if (!GetFileAttributesEx(name, GetFileExInfoStandard, &fad))
+        return -1; // error condition, could call GetLastError to find out more
+    LARGE_INTEGER size;
+    size.HighPart = fad.nFileSizeHigh;
+    size.LowPart = fad.nFileSizeLow;
+    return size.QuadPart;
+}
+*/

@@ -12,6 +12,7 @@ extern struct KäskList käskList;
 extern struct EnvironmentList environList;
 extern int reanumber;
 extern unsigned int rekursiooniTase;
+extern char* templateTekst;
 
 
 // Initialize a TextModeKäskList. Argumenti pole vaja, sest textmodekäsklist on globaalne. Mdea, miks initKäsklistil ja initEnvListil on nõutud argumenti.
@@ -294,6 +295,44 @@ struct TekstArv TõlgiTextmodeKäsk(char* tekst, struct TextmodeKäsk* käsk)
     return tagastus;
 }
 
+// Funktsioon, mis loeb config.txt failist sobivast kohast sisse 
+void TemplateConfigist(const char* config_path)
+{
+    templateTekst = malloc(1);
+    templateTekst[0] = '\0';
+
+    FILE* file = fopen(config_path, "r");
+    if (!file) {
+        perror("Unable to open config file");
+        exit(EXIT_FAILURE);
+    }
+
+    char* line;
+    int onTemplateFailiJuures = 0;
+    while ((line = read_line(file)) != NULL) 
+    {
+        if (KasEsimesedTähed(line, "TEMPLATE FAIL"))
+        {
+            free(line);
+            onTemplateFailiJuures = 1;
+            continue;
+        }
+        if (KasEsimesedTähed(line, "KESKKONNAD") || KasEsimesedTähed(line, "MATHMODE KÄSUD") || KasEsimesedTähed(line, "TEXTMODE KÄSUD"))
+        {
+            free(line);
+            onTemplateFailiJuures = 0;
+            continue;
+        }
+        
+        if (onTemplateFailiJuures)
+        {
+            templateTekst = LiidaTekstid(templateTekst, line);
+            templateTekst = LiidaTekstid(templateTekst, "\n");
+        }
+        free(line);
+    }
+    fclose(file);
+}
 
 void TextmodeKäsudConfigist(char* config_path)
 {
@@ -313,7 +352,7 @@ void TextmodeKäsudConfigist(char* config_path)
             onTextmodeKäskudeJuures = 1;
             continue;
         }
-        if (KasEsimesedTähed(line, "KESKKONNAD") || KasEsimesedTähed(line, "MATHMODE KÄSUD"))
+        if (KasEsimesedTähed(line, "KESKKONNAD") || KasEsimesedTähed(line, "MATHMODE KÄSUD") || KasEsimesedTähed(line, "TEMPLATE FAIL"))
         {
             free(line);
             onTextmodeKäskudeJuures = 0;
