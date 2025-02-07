@@ -142,8 +142,6 @@ int main() {
     // ...\uuga\buuga\src\config.txt    <-- Programmi config faili täisnimi.
     char config_path[MAX_PATH_LENGTH];
     // ...\uuga\buuga\src\templatefailinimi.txt
-    char template_path[MAX_PATH_LENGTH];
-    // ...\uuga\buuga\config.txt
     char cwdConfigPath[MAX_PATH_LENGTH];
 
 
@@ -179,20 +177,11 @@ int main() {
     // Debugimiseks:
     //print_environment_info(&environList.environments[0]);
 
-    // config.txt failist eraldatakse template faili nimi, millest koostatakse aadress, mis viitab soovitavale template failile.
-    char* template_name = get_template_name(config_path);
-    if (!template_name) {
-        fprintf(stderr, "Error: Template name not specified in config.txt.\n");
-        return EXIT_FAILURE;
-    }
 
-    // Construct full path to the template file in the templates folder
-    snprintf(template_path, sizeof(template_path), "%s\\templates\\%s.txt", exe_dir, template_name);
 
     // Leitakse lähtekoodifail. So esimene tekstifail, mis ei ole nimega "config.txt".
     char main_txt_file[MAX_PATH_LENGTH];
     if (!find_first_txt_file(main_txt_file)) {
-        free(template_name);
         return EXIT_FAILURE;
     }
 
@@ -218,32 +207,14 @@ int main() {
             }
                 
 
-            // Täidetakse käsklist ja envlist, tekitatakse configfail cwd-sse, kui vaja.
+            // Täidetakse käsklist ja envlist ja templateTekst ja tekitatakse configfail cwd-sse, kui vaja.
             AmmendaConfig();
 
 
-            // config.txt failist eraldatakse template faili nimi, millest koostatakse aadress, mis viitab soovitavale template failile.
-            char* template_name = get_template_name(config_path);
-            if (!template_name) {
-                fprintf(stderr, "Koodi ei kompileerita, sest config.txt failis on template fail määramata.\n");
-            }
 
-            // Construct full path to the template file in the templates folder
-            snprintf(template_path, sizeof(template_path), "%s\\templates\\%s.txt", exe_dir, template_name);
-
-            // Open the specified template file
-            FILE* template_file = fopen(template_path, "r");
-            if (template_file == NULL) {
-                fprintf(stderr, "Unable to open template file: %s\n", template_path);
-                free(template_name);
-                return EXIT_FAILURE;
-            }
-
-            // Otsitakse funktsiooni abil working directoryst esimene tekstifail, mis on see, kust loetakse kasutaja krijtuatud latexiks tõlgitavat teksti.
+            // Kui lähtekoodifaili ei leidu, ss error.
             char main_txt_file[MAX_PATH_LENGTH];
             if (!find_first_txt_file(main_txt_file)) {
-                fclose(template_file);
-                free(template_name);
                 return EXIT_FAILURE;
             }
 
@@ -272,8 +243,6 @@ int main() {
             FILE* file = fopen(main_path, "rb");
             if (file == NULL) {
                 perror("Unable to open the main .txt file in the current directory");
-                fclose(template_file);
-                free(template_name);
                 return EXIT_FAILURE;
             }
 
@@ -295,8 +264,6 @@ int main() {
             if (output_file == NULL) {
                 perror("Error creating output.tex file");
                 fclose(file);
-                fclose(template_file);
-                free(template_name);
                 return EXIT_FAILURE;
             }
 
@@ -344,7 +311,6 @@ int main() {
 
             // Close all files
             fclose(file);
-            fclose(template_file);
             fclose(output_file);
 
             // Compile output.tex to a .pdf using pdflatex
@@ -359,7 +325,6 @@ int main() {
             }
 
             // Free the template name memory
-            free(template_name);
             
             free_environment_list(&environList);
             free_käsk_list(&käskList);
