@@ -47,3 +47,7 @@ run: $(TARGET)
 clean:
 	rmdir /s /q $(OBJ_DIR)
 	del a.exe
+
+debug:
+	gcc $(filter-out $(SRC_DIR)/main.c, $(wildcard $(SRC_DIR)/*.c))
+	a.exe

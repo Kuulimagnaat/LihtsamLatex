@@ -99,7 +99,7 @@ Minna üle definitsiooni parema poole ja iga tähe peal kontrollida, kas seal al
 
 
 // Funktsioon, millele antakse mingi tekst ja see teeb selle tekstiga pmst sama, mis tavaline tõlgikõik, ainult et läbib tsükli ainult ühe korra ja ainult esimese tähe peal. Seega kui esimene täht pole mingi käsu algus, ss lic tagastatakse tekstarv, kus tekst on see üks täht ja arv on 1. Kui aga esimesel tähel on käsk, ss tõlgitakse terve see käsk, tagastatakse käsu tõlge ja arv, kui mitu tähte tuleb tõlgitavas tekstis edasi minna. Seda funtksiooni on vaja, et textmodekäskude tõlkimisel teha tõlkimist tähthaaval, lastes kontrollida pärast iga tõlke sammu, ega polda argumendi lõpuni jõutud. Literaalselt copy-paste tõlgikõigest, aga tsükkel jookseb ainult ühe korra ja minimaalsed muudatused selleks, et tagastaks tekstarvu.
-struct TekstArv TõlgiKõikSellesKohas(char* tõlgitav)
+struct TekstArv TõlgiKõikSellesKohas(char* tõlgitav, unsigned int tähtiVarem)
 {
     struct TekstArv tulemus;
 
@@ -143,7 +143,7 @@ struct TekstArv TõlgiKõikSellesKohas(char* tõlgitav)
             tulemus.Tekst = tõlge;
             return tulemus;
         }
-        if ((i == 0 && KasEsimesedTähed(&tõlgitav[i], "mm ")) || KasEsimesedTähed(&tõlgitav[i], " mm ") || KasEsimesedTähed(&tõlgitav[i], "\nmm ") || KasEsimesedTähed(&tõlgitav[i], "\nmm\r\n"))
+        if ((tähtiVarem == 0 && KasEsimesedTähed(&tõlgitav[i], "mm ")) || KasEsimesedTähed(&tõlgitav[i], " mm ") || KasEsimesedTähed(&tõlgitav[i], "\nmm ") || KasEsimesedTähed(&tõlgitav[i], "\nmm\r\n") || KasEsimesedTähed(&tõlgitav[i], "\nmm\n"))
         {
             int onDisplayMath = 0;
             if (KasEsimesedTähed(&tõlgitav[i], " mm "))
@@ -154,7 +154,7 @@ struct TekstArv TõlgiKõikSellesKohas(char* tõlgitav)
             {
                 tõlge = LiidaTekstid(tõlge, "$");
             }
-            else if (KasEsimesedTähed(&tõlgitav[i], "\nmm\r\n"))
+            else if (KasEsimesedTähed(&tõlgitav[i], "\nmm\r\n") || KasEsimesedTähed(&tõlgitav[i], "\nmm\n"))
             {
                 tõlge = LiidaTekstid(tõlge, "\n\\begin{gather*}\n");
                 onDisplayMath = 1;
@@ -164,7 +164,18 @@ struct TekstArv TõlgiKõikSellesKohas(char* tõlgitav)
                 tõlge = LiidaTekstid(tõlge, "\n\\begin{gather*}");
                 onDisplayMath = 1;
             }
-            i += (KasEsimesedTähed(&tõlgitav[i], "\nmm\r\n") || KasEsimesedTähed(&tõlgitav[i], "\nmm ") || KasEsimesedTähed(&tõlgitav[i], " mm ") ? 4 : 3);
+            if (KasEsimesedTähed(&tõlgitav[i], "\nmm\r\n"))
+            {
+                i+=5;
+            }
+            else if (KasEsimesedTähed(&tõlgitav[i], "\nmm ") || KasEsimesedTähed(&tõlgitav[i], " mm ") ||KasEsimesedTähed(&tõlgitav[i], "\nmm\n"))
+            {
+                i+=4;
+            }
+            else
+            {
+                i+=3;
+            }
 
             unsigned int start = i;
             while (i < pikkus && !(KasEsimesedTähed(&tõlgitav[i], " mm") || KasEsimesedTähed(&tõlgitav[i], "\nmm"))) {
@@ -180,7 +191,10 @@ struct TekstArv TõlgiKõikSellesKohas(char* tõlgitav)
 
             if (onDisplayMath == 0) {
                 tõlge = LiidaTekstid(tõlge, "$");
-            } else {
+            } else if(KasEsimesedTähed(&tõlgitav[i], "\nmm")){
+                tõlge = LiidaTekstid(tõlge, "\n\\end{gather*}");
+            }
+            else {
                 tõlge = LiidaTekstid(tõlge, "\\end{gather*}");
             }
 
@@ -242,7 +256,7 @@ struct TekstArv TõlgiTextmodeKäsk(char* tekst, struct TextmodeKäsk* käsk)
         // Läheb üle lähtekoodi teksti tähthaaval ja kui mõni käsk tuleb ette, ss kutsub rekursiivselt välja uue textmode käsu tõlkimist. Kui lõpuks on nii, et kõik ettetulnud käsud on tõlgitud ja ette tuleb argumendilõpp, ss on argument eraldatud.
         for ( ; KasEsimesedTähed(&tekst[i], käsk->argumentideLõpud[j]) == 0; )
         {
-            struct TekstArv kohaTõlge = TõlgiKõikSellesKohas(&tekst[i]);
+            struct TekstArv kohaTõlge = TõlgiKõikSellesKohas(&tekst[i], i);
             
             argumendiTõlge = LiidaTekstid(argumendiTõlge, kohaTõlge.Tekst);
             i += kohaTõlge.Arv;
@@ -484,7 +498,7 @@ char* TõlgiKõik(char* tõlgitav)
 
         // Muul juhul tõlgib seda kohta.
         struct TekstArv tulemus;
-        tulemus = TõlgiKõikSellesKohas(&tõlgitav[i]);
+        tulemus = TõlgiKõikSellesKohas(&tõlgitav[i], i);
         tõlge = LiidaTekstid(tõlge, tulemus.Tekst);
 
         // Ja kõige lõpuks, kui osustub, et käesolev täht on tühik v uusrida, ss algab uus sõna. Ss peale i kasvatamist on i kohal uus sõna.

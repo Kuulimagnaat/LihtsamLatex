@@ -6,7 +6,8 @@
 struct KäskList käskList;
 struct EnvironmentList environList;
 struct TextmodeKäskList textmodeKäskList;
-
+char* templateTekst;
+unsigned int reanumber;
 unsigned int rekursiooniTase;
 unsigned int taandePikkus = 4;
 
@@ -15,6 +16,6 @@ int main() {
 
     AmmendaConfig();
 
-    char* tulemus = TõlgiKõik("teemapealk Sissejuhatus\n\nTundub, et kood [[main.txt]] bruh Pärisori [[pärisori]].\nPikk kood. Bruh Lõpp.\n");
+    char* tulemus = TõlgiKõik("komm on, aga mm a/b mm või\nmm\n6/4\nmm");
     puts(tulemus);
 }

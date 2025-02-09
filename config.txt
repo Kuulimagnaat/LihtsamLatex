@@ -1,0 +1,55 @@
+template = KAAREL
+
+TEXTMODE KÄSUD
+//(uuga)// -> \emph{uuga}
+**(buuga)** -> \textbf{buuga}
+teemapealk (pealk) -> \subsection*{pealk}
+[[(arg1)]] -> \code{arg1}
+Pikk kood.(arg1)Lõpp. -> \begin{tcolorbox}\n\begin{verbatim}\narg1\n\end{verbatim}\n\end{tcolorbox}
+
+MATHMODE KÄSUD
+sum(al)(ül) -> \sum_{al}^{ül}
+... -> \dots
+^[lmao] -> ^{lmao}
+to -> \to
+inf -> \infty
+alfa -> \alpha
+epsilon -> \varepsilon
+delta -> \delta
+RR -> \mathbb R
+sqrt(asd) -> \sqrt{asd}
+kord -> \cdot
+int(uih)(oih) -> \int_{uih}^{oih}
+lim(uugh) -> \lim_{uugh}
+sin(kabuug) -> \sin{kabuug}
+pi -> \pi
+in -> \in
+tilde(täht) -> \tilde{täht}
+.: -> \vdots
+_[a1] -> _{a1}
+fii -> \varphi
+iga -> \forall
+in -> \in
+vahe -> \qquad
+EE -> \mathbb{E}
+vek[asi] -> \vec{asi}
+!= -> \neq
+
+KESKKONNAD
+
+enum [multiline, end:{--}] -> \begin{enumerate} #content \end{enumerate} | (item(arg1) -> \item arg1)
+mat3 [end:{--}] -> \begin{pmatrix} #content \end{pmatrix} | (r(arg1)(arg2)(arg3) -> arg1 & arg2 & arg3\\)
+
+
+TEMPLATE FAIL
+\documentclass{article}
+\usepackage{amsfonts}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage[estonian]{babel}
+
+\usepackage{parskip}
+
+\begin{document}
+{{content}}
+\end{document}
